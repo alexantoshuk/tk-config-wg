@@ -208,7 +208,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # get the current scene path and extract fields from it using the work
         # template:
         work_fields = work_template.get_fields(path)
-        work_fields["cachename"] = item.properties.get("cachename")
+        work_fields["cachename"] = item.properties.get(
+            "cachename").replace(':', '..')
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)

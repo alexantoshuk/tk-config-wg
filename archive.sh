@@ -1,4 +1,5 @@
 #!/bin/bash
 
+NAME=$(basename $PWD)
 DATA=$(date +'%d.%m.%Y')
-git archive -o ../config_${DATA}.zip HEAD
+git archive -o ../${NAME}-${DATA}.zip HEAD

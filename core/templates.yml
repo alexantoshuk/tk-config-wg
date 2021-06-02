@@ -162,7 +162,9 @@ keys:
         type: sequence
         format_spec: "05"
         alias: SEQ
-
+    
+    cachename:
+        type: str
 
 #
 # The paths section contains all the the key locations where files are to be stored
@@ -435,7 +437,9 @@ paths:
     #
 
     asset_alembic_cache:
-        definition: '@asset_root/publish/caches/{name}.v{version}.abc'
+        definition: '@asset_root/publish/caches/{cachename}.v{version}.abc'
+    shot_alembic_cache:
+        definition: '@shot_root/publish/caches/{cachename}.v{version}.abc'
 
 
     #
@@ -507,7 +511,7 @@ paths:
     # The location of published maya files
     maya_asset_publish:
         definition: '@asset_root/publish/maya/{name}.v{version}.{maya_extension}'
-
+  
 
     #
     # Houdini

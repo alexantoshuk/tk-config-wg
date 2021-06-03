@@ -149,8 +149,10 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # for use in subsequent methods
         item.properties["publish_template"] = publish_template
 
-        # check that the AbcExport command is available!
+        # * try to load AbcExport plugin
         cmds.loadPlugin('AbcExport')
+
+        # check that the AbcExport command is available!
         if not mel.eval('exists "AbcExport"'):
             self.logger.debug(
                 "Item not accepted because alembic export command 'AbcExport' "
@@ -208,8 +210,19 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # get the current scene path and extract fields from it using the work
         # template:
         work_fields = work_template.get_fields(path)
-        work_fields["cachename"] = item.properties.get(
-            "cachename").replace(':', '..')
+
+        # * append maya.node from collected geometry and replace ':' to '..' in node name to work for windows
+        work_fields["maya.node"] = item.properties.get(
+            "maya.node").replace(':', '..')
+
+        if "abc_preroll" not in item.properties:
+            self.logger.warning(
+                "'abcPreroll' attribute is not founded. Use 0 by default.")
+            item.properties["abc_preroll"] = 0
+        if "abc_samples" not in item.properties:
+            self.logger.warning(
+                "'abcSamples' attribute is not founded. Use 2 by default.")
+            item.properties["abc_samples"] = 2
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
@@ -232,7 +245,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         if "version" in work_fields:
             item.properties["publish_version"] = work_fields["version"]
 
-        # run the base class validation
+        # * return grand parent validate method
+
         return super(HookBaseClass, self).validate(settings, item)
 
     def publish(self, settings, item):
@@ -247,9 +261,12 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         publisher = self.parent
 
+        # * get abc cache data
+        maya_node = item.properties["maya.node"]
+        abc_preroll = item.properties["abc_preroll"]
+        abc_samples = item.properties["abc_samples"]
         # get the path to create and publish
         publish_path = item.properties["path"]
-        cachename = item.properties["cachename"]
 
         # ensure the publish folder exists:
         publish_folder = os.path.dirname(publish_path)
@@ -266,14 +283,20 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
             "-writeFaceSets",
             # write uv's (only the current uv set gets written)
             "-uvWrite",
+            "-noNormals",
         ]
 
         # find the animated frame range to use:
         start_frame, end_frame = _find_scene_animation_range()
         if start_frame and end_frame:
+            # * add 2 frames to the ends and preroll
+            start_frame = start_frame - 2 - abc_preroll
+            end_frame = end_frame + 2
             alembic_args.append("-fr %d %d" % (start_frame, end_frame))
+            alembic_args.append("-step {0}".format(1.0/abc_samples))
 
-        alembic_args.append("-root '%s'" % cachename)
+        # * set object to export
+        alembic_args.append("-root '%s'" % maya_node)
         # Set the output path:
         # Note: The AbcExport command expects forward slashes!
         alembic_args.append("-file '%s'" % publish_path.replace("\\", "/"))

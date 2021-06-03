@@ -17,14 +17,8 @@ import sgtk
 HookBaseClass = sgtk.get_hook_baseclass()
 
 
-# def is_publish(s):
-#     s = s.rsplit(':', 1)[-1]
-#     if s.startswith('_'):
-#         return False
-#     return 'gPublish' in s.split('_')
-
-
 def is_publish(s):
+    # * is check if object can be published
     if not cmds.getAttr(s+".useOutlinerColor"):
         return False
     color = cmds.getAttr(s+".outlinerColor")[0]
@@ -109,7 +103,8 @@ class MayaSessionCollector(HookBaseClass):
                 },
             )
 
-            # self.collect_playblasts(item, project_root)
+            self.collect_playblasts(item, project_root)
+            # TODO: do we really need it?
             # self.collect_alembic_caches(item, project_root)
         else:
 
@@ -227,12 +222,23 @@ class MayaSessionCollector(HookBaseClass):
 
         :param parent_item: Parent Item instance
         """
+        # * collect all checked objects in scene for publishing
         for g in (x for x in cmds.ls(assemblies=1) if is_publish(x)):
 
             geo_item = parent_item.create_item(
                 "maya.session.geometry", "Geometry", g
             )
-            geo_item.properties["cachename"] = g
+            geo_item.properties["maya.node"] = g
+            try:
+                geo_item.properties["abc_preroll"] = cmds.getAttr(
+                    g+".abcPreroll")
+            except:
+                pass
+            try:
+                geo_item.properties["abc_samples"] = cmds.getAttr(
+                    g+".abcSamples")
+            except:
+                pass
             # get the icon path to display for this item
             icon_path = os.path.join(
                 self.disk_location, os.pardir, "icons", "geometry.png")

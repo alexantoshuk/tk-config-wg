@@ -15,6 +15,8 @@ includes:
 
 ################################################################################
 
+
+
 # 3dsmaxplus
 settings.tk-multi-loader2.3dsmaxplus: &settings_tk-multi-loader2_3dsmaxplus
   action_mappings:
@@ -28,7 +30,6 @@ settings.tk-multi-loader2.3dsmaxplus: &settings_tk-multi-loader2_3dsmaxplus
     entity_type: Asset
     filters:
     - [project, is, '{context.project}']
-    # - [project, is, {type: Project, id: 155}]
     hierarchy: [sg_asset_type, code]
   - caption: Shots
     entity_type: Shot
@@ -82,7 +83,11 @@ settings.tk-multi-loader2.houdini:
     entity_type: Asset
     filters:
     - [project, is, '{context.project}']
-    # - [project, is, {type: Project, id: 155}]
+    hierarchy: [sg_asset_type, code]
+  - caption: Asset Library
+    entity_type: Asset
+    filters:
+    - [project, is, {type: Project, id: 155}]
     hierarchy: [sg_asset_type, code]
   - caption: Shots
     entity_type: Shot
@@ -134,8 +139,11 @@ settings.tk-multi-loader2.maya:
     entity_type: Asset
     filters:
     - [project, is, "{context.project}"]
-    # TODO: fixit
-    # - [project, is, {type: Project, id: 155}]
+    hierarchy: [sg_asset_type, code]
+  - caption: Asset Library
+    entity_type: Asset
+    filters:
+    - [project, is, {type: Project, id: 155}]
     hierarchy: [sg_asset_type, code]
   - caption: Shots
     entity_type: Shot

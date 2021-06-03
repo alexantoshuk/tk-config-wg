@@ -10,6 +10,7 @@
 
 import os
 import sys
+import glob
 import maya.cmds as cmds
 import maya.mel as mel
 import sgtk
@@ -17,6 +18,8 @@ import sgtk
 from tank_vendor import six
 
 HookBaseClass = sgtk.get_hook_baseclass()
+
+VER_LIMIT = 10
 
 
 class MayaSessionGeometryPublishPlugin(HookBaseClass):
@@ -315,6 +318,29 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # Now that the path has been generated, hand it off to the
         super(HookBaseClass, self).publish(settings, item)
+
+    def finalize(self, settings, item):
+        """
+        Execute the finalization pass. This pass executes once all the publish
+        tasks have completed, and can for example be used to version up files.
+        :param settings: Dictionary of Settings. The keys are strings, matching
+            the keys returned in the settings property. The values are `Setting`
+            instances.
+        :param item: Item to process
+        """
+
+        if "publish_version" in item.properties:
+            path = item.properties["publish_path"]
+            pattern = path[:-len("000.abc")] + "???.abc"
+            for f in sorted(glob.iglob(pattern))[:-VER_LIMIT]:
+                try:
+                    os.remove(f)
+                    self.logger.info(
+                        "Remove '{0}' because of version limit = {1}".format(path, VER_LIMIT))
+                except:
+                    self.logger.info("Can't remove '{0}'".format(path))
+
+        return
 
 
 def _find_scene_animation_range():

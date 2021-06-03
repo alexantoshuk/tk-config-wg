@@ -162,8 +162,9 @@ keys:
         type: sequence
         format_spec: "05"
         alias: SEQ
-    
-    cachename:
+
+    # * Maya node
+    maya.node:        
         type: str
 
 #
@@ -437,9 +438,9 @@ paths:
     #
 
     asset_alembic_cache:
-        definition: '@asset_root/publish/caches/{cachename}.v{version}.abc'
+        definition: '@asset_root/publish/caches/{maya.node}.v{version}.abc'
     shot_alembic_cache:
-        definition: '@shot_root/publish/caches/{cachename}.v{version}.abc'
+        definition: '@shot_root/publish/caches/{maya.node}.v{version}.abc'
 
 
     #

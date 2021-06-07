@@ -100,7 +100,7 @@ settings.tk-multi-publish2.3dsmax.shot_step: *settings_tk-multi-publish2_3dsmaxp
 
 # asset step
 settings.tk-multi-publish2.houdini.asset_step:
-  collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py"
+  collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py:{config}/tk-houdini/basic/collector.py"
   collector_settings:
       Work Template: houdini_asset_work
   publish_plugins:
@@ -169,7 +169,7 @@ settings.tk-multi-publish2.mari.asset_step:
 
 # asset step
 settings.tk-multi-publish2.maya.asset_step:
-  collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py:{config}/tk-maya/tk-multi-publish2/basic/collector.py"
+  collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py:{config}/tk-maya/basic/collector.py"
   collector_settings:
       Work Template: maya_asset_work
       # Temp Template: maya_asset_work_alembic_cache
@@ -188,7 +188,7 @@ settings.tk-multi-publish2.maya.asset_step:
     settings:
         Publish Template: maya_asset_publish
   - name: Publish to Shotgun
-    hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py:{config}/tk-maya/tk-multi-publish2/basic/publish_session_geometry.py"
+    hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py:{config}/tk-maya/basic/publish_session_geometry.py"
     settings:
         Publish Template: asset_alembic_cache
   help_url: *help_url
@@ -196,7 +196,7 @@ settings.tk-multi-publish2.maya.asset_step:
 
 # shot step
 settings.tk-multi-publish2.maya.shot_step:
-  collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py:{config}/tk-maya/tk-multi-publish2/basic/collector.py"
+  collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py:{config}/tk-maya/basic/collector.py"
   collector_settings:
       Work Template: maya_shot_work
   publish_plugins:
@@ -214,7 +214,7 @@ settings.tk-multi-publish2.maya.shot_step:
     settings:
         Publish Template: maya_shot_publish
   - name: Publish to Shotgun
-    hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py:{config}/tk-maya/tk-multi-publish2/basic/publish_session_geometry.py"
+    hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py:{config}/tk-maya/basic/publish_session_geometry.py"
     settings:
         Publish Template: shot_alembic_cache
   help_url: *help_url

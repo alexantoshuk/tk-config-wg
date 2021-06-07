@@ -40,7 +40,7 @@ class BeforeRegisterCommand(HookBaseClass):
         :rtype: str
         """
         # We're going to end up getting a SoftwareVersion for Nuke Studio that
-        # wants to route us to the tk-nuke engine instance. We don't want that, so
+        # wants to route rebus to the tk-nuke engine instance. We don't want that, so
         # we'll redirect to tk-nukestudio.
 
         if platform.system() == "Windows":

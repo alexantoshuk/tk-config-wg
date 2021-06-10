@@ -44,14 +44,26 @@ class BeforeRegisterCommand(HookBaseClass):
         # we'll redirect to tk-nukestudio.
 
         if platform.system() == "Windows":
-            tk_root = "W:/TOOLS"
+            tkroot = "W:/tk"
+            app_path = tkroot + '/app/' + platform.system()
+            os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
+            os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
         else:
-            tk_root = "/home/ali/cgtk"
+            tkroot = "/home/ali/tk"
+
+        os.environ['OCIO'] = tkroot + \
+            '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
+        os.environ['NUKE_PATH'] = tkroot + '/.nuke'
+        os.environ['HSITE'] = tkroot
+
         if software_version.product == "NukeStudio":
             engine_instance_name = "tk-nukestudio"
+
+        if engine_instance_name in ("tk-nuke",  "tk-nukestudio"):
+            pass
         elif engine_instance_name == "tk-maya":
             pass
         elif engine_instance_name == "tk-houdini":
-            # os.environ['HSITE'] = tk_root
             pass
+
         return engine_instance_name

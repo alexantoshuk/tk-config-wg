@@ -21,6 +21,28 @@ HookBaseClass = sgtk.get_hook_baseclass()
 VER_LIMIT = 0
 
 
+def is_time_dependent(node):
+    td = [False]
+
+    def _walk(node):
+        if node.isTimeDependent():
+            td[0] = True
+            return True
+        child_cat_name = node.childTypeCategory().name()
+        if child_cat_name == 'Object':
+            for n in node.children():
+                if _walk(n):
+                    return True
+        else:
+            r = node.renderNode()
+            if r and r.isTimeDependent():
+                td[0] = True
+                return True
+
+    _walk(node)
+    return td[0]
+
+
 class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
     """
     Plugin for publishing an open houdini session.
@@ -279,13 +301,16 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
 
         # ...and execute it:
         try:
+
             self.parent.log_debug(
                 "Create alembic node: /out/{0}/{1}".format(tmp_subnet, node_name))
             alembic_node = tmp_subnet.createNode(
                 'alembic', node_name)
 
+            node = hou.node(node_path)
+
             alembic_node.setParms({
-                'trange': 1,
+                'trange': int(is_time_dependent(node)),
                 'filename': publish_path,
                 'root': '/obj',
                 'objects': node_name,
@@ -302,8 +327,9 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
             alembic_node.render()
 
         except Exception as e:
-            self.logger.error("Failed to export Geometry: %s" % e)
-            return
+            error_msg = "Failed to export Geometry: %s" % e
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
         finally:
             self.parent.log_debug("Destroy: /out/%s" % tmp_subnet_name)
             tmp_subnet.destroy()

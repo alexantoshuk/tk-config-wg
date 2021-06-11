@@ -305,7 +305,8 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
             self.logger.error("Failed to export Geometry: %s" % e)
             return
         finally:
-            # tmp_subnet.destroy()
+            self.parent.log_debug("Destroy: /out/%s" % tmp_subnet_name)
+            tmp_subnet.destroy()
             pass
 
         # Now that the path has been generated, hand it off to the

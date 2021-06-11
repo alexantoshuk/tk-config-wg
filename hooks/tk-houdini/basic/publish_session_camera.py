@@ -347,7 +347,9 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
             alembic_node.render()
 
         except Exception as e:
-            self.logger.error("Failed to export Geometry: %s" % e)
+            error_msg = "Failed to export Camera: %s" % e
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
             return
         finally:
             self.parent.log_debug("Destroy: /out/%s" % tmp_subnet_name)

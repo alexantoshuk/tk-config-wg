@@ -247,7 +247,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         # publish plugin. Also set the publish_path to be explicit.
         item.properties["path"] = publish_template.apply_fields(work_fields)
         item.properties["publish_path"] = item.properties["path"]
-
+        item.properties["publish_type"] = "Alembic Camera"
         # use the work file's version number when publishing
         if "version" in work_fields:
             item.properties["publish_version"] = work_fields["version"]
@@ -268,6 +268,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
 
         publisher = self.parent
 
+        item.properties["publish_type"] = "Alembic Camera"
         # * get abc cache data
         node_path = item.properties["node"]
         cam_path = item.properties["camera"]

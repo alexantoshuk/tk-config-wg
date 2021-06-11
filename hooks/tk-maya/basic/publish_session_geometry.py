@@ -19,7 +19,7 @@ from tank_vendor import six
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
-VER_LIMIT = 10
+VER_LIMIT = 0
 
 
 class MayaSessionGeometryPublishPlugin(HookBaseClass):
@@ -195,9 +195,9 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # get the normalized path
         path = sgtk.util.ShotgunPath.normalize(path)
-
+        maya_node = item.properties.get("maya.node")
         # check that there is still geometry in the scene:
-        if not cmds.ls(geometry=True, noIntermediate=True):
+        if not cmds.ls(maya_node):
             error_msg = (
                 "Validation failed because there is no geometry in the scene "
                 "to be exported. You can uncheck this plugin or create "
@@ -215,8 +215,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         work_fields = work_template.get_fields(path)
 
         # * append maya.node from collected geometry and replace ':' to '..' in node name to work for windows
-        work_fields["maya.node"] = item.properties.get(
-            "maya.node").replace(':', '..')
+        work_fields["maya.node"] = maya_node.replace(':', '..')
 
         if "abc_preroll" not in item.properties:
             self.logger.warning(

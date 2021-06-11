@@ -437,10 +437,15 @@ paths:
     # Alembic caches
     #
 
-    asset_alembic_cache:
+    maya_asset_alembic_cache:
         definition: '@asset_root/publish/caches/{maya.node}.v{version}.abc'
-    shot_alembic_cache:
+    maya_shot_alembic_cache:
         definition: '@shot_root/publish/caches/{maya.node}.v{version}.abc'
+
+    houdini_asset_alembic_cache:
+        definition: '@asset_root/publish/caches/{houdini.node}.v{version}.abc'
+    houdini_shot_alembic_cache:
+        definition: '@shot_root/publish/caches/{houdini.node}.v{version}.abc'
 
 
     #

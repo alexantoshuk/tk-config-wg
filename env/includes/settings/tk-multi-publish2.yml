@@ -59,7 +59,7 @@ settings.tk-multi-publish2.3dsmaxplus.asset_step: &settings_tk-multi-publish2_3d
   - name: Publish to Shotgun
     hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py"
     settings:
-        Publish Template: asset_alembic_cache
+        Publish Template: maya_asset_alembic_cache
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -117,6 +117,14 @@ settings.tk-multi-publish2.houdini.asset_step:
     hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
     settings:
         Publish Template: houdini_asset_publish
+  - name: Publish to Shotgun
+    hook: "{self}/publish_file.py:{config}/tk-houdini/basic/publish_session_geometry.py"
+    settings:
+        Publish Template: houdini_asset_alembic_cache
+  - name: Publish to Shotgun
+    hook: "{self}/publish_file.py:{config}/tk-houdini/basic/publish_session_camera.py"
+    settings:
+        Publish Template: houdini_asset_alembic_cache
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -139,6 +147,14 @@ settings.tk-multi-publish2.houdini.shot_step:
     hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
     settings:
         Publish Template: houdini_shot_publish
+  - name: Publish to Shotgun
+    hook: "{self}/publish_file.py:{config}/tk-houdini/basic/publish_session_geometry.py"
+    settings:
+        Publish Template: houdini_shot_alembic_cache
+  - name: Publish to Shotgun
+    hook: "{self}/publish_file.py:{config}/tk-houdini/basic/publish_session_camera.py"
+    settings:
+        Publish Template: houdini_shot_alembic_cache
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -190,7 +206,7 @@ settings.tk-multi-publish2.maya.asset_step:
   - name: Publish to Shotgun
     hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py:{config}/tk-maya/basic/publish_session_geometry.py"
     settings:
-        Publish Template: asset_alembic_cache
+        Publish Template: maya_asset_alembic_cache
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -216,7 +232,7 @@ settings.tk-multi-publish2.maya.shot_step:
   - name: Publish to Shotgun
     hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py:{config}/tk-maya/basic/publish_session_geometry.py"
     settings:
-        Publish Template: shot_alembic_cache
+        Publish Template: maya_shot_alembic_cache
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 

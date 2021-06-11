@@ -9,6 +9,7 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
+import sys
 import hou
 import sgtk
 
@@ -83,6 +84,7 @@ class HoudiniSessionCollector(HookBaseClass):
         :param dict settings: Configured settings for this collector
         :param parent_item: Root item instance
         """
+
         # create an item representing the current houdini session
         item = self.collect_current_houdini_session(settings, parent_item)
 
@@ -96,6 +98,8 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # collect other, non-toolkit outputs to present for publishing
         self.collect_node_outputs(item)
+        self._collect_session_camera(item)
+        self._collect_session_geometry(item)
 
     def collect_current_houdini_session(self, settings, parent_item):
         """
@@ -201,6 +205,100 @@ class HoudiniSessionCollector(HookBaseClass):
                     # include the node path to make it clear to the user how it
                     # was collected within the current session.
                     item.name = "%s (%s)" % (item.name, node.path())
+
+    def _collect_session_camera(self, parent_item):
+        """
+        Creates items for session camera to be exported.
+
+        :param parent_item: Parent Item instance
+        """
+        def is_publish(node):
+            return node.comment().strip() == "# Publish Camera"
+
+        # * collect all checked objects in scene for publishing
+        for node in hou.node("/obj").children():
+            if not is_publish(node):
+                continue
+
+            node_path = node.path()
+            cam_path = node_path
+            if node.type().name() != 'cam':
+                def _search_cam(node):
+                    if node.name().startswith('_'):
+                        return
+                    if node.childTypeCategory().name() == 'Object':
+                        for n in node.children():
+                            cam = _search_cam(n)
+                            if cam:
+                                return cam
+
+                    elif node.type().name() == 'cam':
+                        return node
+
+                cam = _search_cam(node)
+                if not cam:
+                    continue
+                cam_path = cam.path()
+
+            geo_item = parent_item.create_item(
+                "houdini.session.camera", "Camera", node_path
+            )
+            geo_item.properties["camera"] = cam_path
+            geo_item.properties["node"] = node.path()
+            geo_item.properties["houdini.node"] = node.name()
+
+            try:
+                geo_item.properties["abc_preroll"] = node.evalParm(
+                    "abc_preroll")
+            except:
+                pass
+            try:
+                geo_item.properties["abc_samples"] = node.evalParm(
+                    "abc_samples")
+            except:
+                pass
+            # get the icon path to display for this item
+            icon_path = os.path.join(
+                self.disk_location, os.pardir, "icons", "camera.png")
+
+            geo_item.set_icon_from_path(icon_path)
+            geo_item.name = "{0}.abc ({1})".format(node.name(), cam_path)
+
+    def _collect_session_geometry(self, parent_item):
+        """
+        Creates items for session geometry to be exported.
+
+        :param parent_item: Parent Item instance
+        """
+        def is_publish(node):
+            return node.comment().strip() == "# Publish Alembic"
+
+        # * collect all checked objects in scene for publishing
+        for node in hou.node("/obj").children():
+            if not is_publish(node):
+                continue
+            sys.stderr.write("{0}\n".format(node.path()))
+            geo_item = parent_item.create_item(
+                "houdini.session.geometry", "Geometry", node.path()
+            )
+            geo_item.properties["node"] = node.path()
+            geo_item.properties["houdini.node"] = node.name()
+            try:
+                geo_item.properties["abc_preroll"] = node.evalParm(
+                    "abc_preroll")
+            except:
+                pass
+            try:
+                geo_item.properties["abc_samples"] = node.evalParm(
+                    "abc_samples")
+            except:
+                pass
+            # get the icon path to display for this item
+            icon_path = os.path.join(
+                self.disk_location, os.pardir, "icons", "geometry.png")
+
+            geo_item.set_icon_from_path(icon_path)
+            geo_item.name = "{0}.abc ({1})".format(node.name(), node.path())
 
     def collect_tk_alembicnodes(self, parent_item):
         """

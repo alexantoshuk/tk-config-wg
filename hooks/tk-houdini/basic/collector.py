@@ -223,22 +223,24 @@ class HoudiniSessionCollector(HookBaseClass):
             node_path = node.path()
             cam_path = node_path
             if node.type().name() != 'cam':
+                cam = [None]
+
                 def _search_cam(node):
                     if node.name().startswith('_'):
                         return
                     if node.childTypeCategory().name() == 'Object':
                         for n in node.children():
-                            cam = _search_cam(n)
-                            if cam:
-                                return cam
+                            if _search_cam(n):
+                                return True
 
                     elif node.type().name() == 'cam':
-                        return node
+                        cam[0] = node
+                        return True
 
-                cam = _search_cam(node)
-                if not cam:
+                _search_cam(node)
+                if not cam[0]:
                     continue
-                cam_path = cam.path()
+                cam_path = cam[0].path()
 
             geo_item = parent_item.create_item(
                 "houdini.session.camera", "Camera", node_path
@@ -277,7 +279,7 @@ class HoudiniSessionCollector(HookBaseClass):
         for node in hou.node("/obj").children():
             if not is_publish(node):
                 continue
-            sys.stderr.write("{0}\n".format(node.path()))
+            # sys.stderr.write("{0}\n".format(node.path()))
             geo_item = parent_item.create_item(
                 "houdini.session.geometry", "Geometry", node.path()
             )

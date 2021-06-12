@@ -91,6 +91,10 @@ keys:
     node:
         type: str
 
+    houdini.node:
+        alias: node
+        type: str
+        
     aov_name:
         type: str
 

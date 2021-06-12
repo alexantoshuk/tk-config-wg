@@ -228,15 +228,15 @@ class MayaSessionCollector(HookBaseClass):
             geo_item = parent_item.create_item(
                 "maya.session.geometry", "Geometry", g
             )
-            geo_item.properties["maya.node"] = g
+            geo_item.properties["node"] = g
             try:
                 geo_item.properties["abc_preroll"] = cmds.getAttr(
-                    g+".abcPreroll")
+                    g + ".abcPreroll")
             except:
                 pass
             try:
                 geo_item.properties["abc_samples"] = cmds.getAttr(
-                    g+".abcSamples")
+                    g + ".abcSamples")
             except:
                 pass
             # get the icon path to display for this item

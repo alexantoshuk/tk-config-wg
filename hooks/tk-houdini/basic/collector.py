@@ -247,7 +247,6 @@ class HoudiniSessionCollector(HookBaseClass):
             )
             geo_item.properties["camera"] = cam_path
             geo_item.properties["node"] = node.path()
-            geo_item.properties["houdini.node"] = node.name()
 
             try:
                 geo_item.properties["abc_preroll"] = node.evalParm(
@@ -284,7 +283,7 @@ class HoudiniSessionCollector(HookBaseClass):
                 "houdini.session.geometry", "Geometry", node.path()
             )
             geo_item.properties["node"] = node.path()
-            geo_item.properties["houdini.node"] = node.name()
+
             try:
                 geo_item.properties["abc_preroll"] = node.evalParm(
                     "abc_preroll")

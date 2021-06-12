@@ -195,7 +195,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # get the normalized path
         path = sgtk.util.ShotgunPath.normalize(path)
-        maya_node = item.properties.get("maya.node")
+        maya_node = item.properties.get("node")
         # check that there is still geometry in the scene:
         if not cmds.ls(maya_node):
             error_msg = (
@@ -214,8 +214,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # template:
         work_fields = work_template.get_fields(path)
 
-        # * append maya.node from collected geometry and replace ':' to '..' in node name to work for windows
-        work_fields["maya.node"] = maya_node.replace(':', '..')
+        # * append node from collected geometry and replace ':' to '..' in node name to work for windows
+        work_fields["node"] = maya_node.replace(':', '..')
 
         if "abc_preroll" not in item.properties:
             self.logger.warning(
@@ -264,7 +264,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         publisher = self.parent
 
         # * get abc cache data
-        maya_node = item.properties["maya.node"]
+        maya_node = item.properties["node"]
         abc_preroll = item.properties["abc_preroll"]
         abc_samples = item.properties["abc_samples"]
         # get the path to create and publish

@@ -203,7 +203,8 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
             raise Exception(error_msg)
 
         node_path = item.properties["node"]
-        node_name = item.properties["houdini.node"]
+        node_name = node_name = node_path.rsplit("/", 1)[-1]
+
         if not node_name.startswith('camera'):
             error_msg = "The name of the camera subnet '%s' must be started with 'camera' word." % node_path
             self.logger.error(error_msg)
@@ -272,7 +273,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         # * get abc cache data
         node_path = item.properties["node"]
         cam_path = item.properties["camera"]
-        node_name = item.properties["houdini.node"]
+        node_name = node_path.rsplit("/", 1)[-1]
 
         abc_preroll = item.properties["abc_preroll"]
         abc_samples = item.properties["abc_samples"]

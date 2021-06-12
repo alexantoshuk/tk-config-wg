@@ -88,9 +88,9 @@ keys:
     eye:
         type: str
 
-    houdini.node:
-        alias: node
+    node:
         type: str
+
     aov_name:
         type: str
 
@@ -163,9 +163,6 @@ keys:
         format_spec: "05"
         alias: SEQ
 
-    # * Maya node
-    maya.node:        
-        type: str
 
 #
 # The paths section contains all the the key locations where files are to be stored
@@ -437,17 +434,12 @@ paths:
     # Alembic caches
     #
 
-    maya_asset_alembic_cache:
-        definition: '@asset_root/publish/caches/{maya.node}.v{version}.abc'
-    maya_shot_alembic_cache:
-        definition: '@shot_root/publish/caches/{maya.node}.v{version}.abc'
+    asset_alembic_cache:
+        definition: '@asset_root/publish/caches/{node}.v{version}.abc'
+    shot_alembic_cache:
+        definition: '@shot_root/publish/caches/{node}.v{version}.abc'
 
-    houdini_asset_alembic_cache:
-        definition: '@asset_root/publish/caches/{houdini.node}.v{version}.abc'
-    houdini_shot_alembic_cache:
-        definition: '@shot_root/publish/caches/{houdini.node}.v{version}.abc'
-
-
+  
     #
     # Photoshop
     #

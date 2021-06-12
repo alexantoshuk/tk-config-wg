@@ -201,6 +201,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
             raise Exception(error_msg)
 
         node_path = item.properties["node"]
+        node_name = node_path.rsplit("/", 1)[-1]
         node = hou.node(node_path)
         if not node:
             error_msg = "Node '%s' is not exists." % node_path
@@ -227,7 +228,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
                 "'abc_samples' parameter is not founded. Use 2 by default.")
             item.properties["abc_samples"] = 2
 
-        work_fields['node'] = item.properties["houdini.node"]
+        work_fields['node'] = node_name
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
@@ -268,7 +269,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
 
         # * get abc cache data
         node_path = item.properties["node"]
-        node_name = item.properties["houdini.node"]
+        node_name = node_path.rsplit("/", 1)[-1]
 
         abc_preroll = item.properties["abc_preroll"]
         abc_samples = item.properties["abc_samples"]

@@ -16,31 +16,12 @@ import hou
 
 from tank_vendor import six
 
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from houdini_utils import alembic_export, is_time_dependent
+
 HookBaseClass = sgtk.get_hook_baseclass()
 
 VER_LIMIT = 0
-
-
-def is_time_dependent(node):
-    td = [False]
-
-    def _walk(node):
-        if node.isTimeDependent():
-            td[0] = True
-            return True
-        child_cat_name = node.childTypeCategory().name()
-        if child_cat_name == 'Object':
-            for n in node.children():
-                if _walk(n):
-                    return True
-        else:
-            r = node.renderNode()
-            if r and r.isTimeDependent():
-                td[0] = True
-                return True
-
-    _walk(node)
-    return td[0]
 
 
 class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
@@ -287,54 +268,17 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
 
         # find the animated frame range to use:
         start_frame, end_frame = _find_scene_animation_range()
-
-        if start_frame and end_frame:
-            # * add 2 frames to the ends and preroll
-            start_frame = start_frame - 2 - abc_preroll
-            end_frame = end_frame + 2
-
-        tmp_subnet_name = '__tmp__'
-        self.parent.log_debug("Create temp subnet: /out/%s" % tmp_subnet_name)
-        tmp_subnet = hou.node('/out/' + tmp_subnet_name)
-        if tmp_subnet:
-            tmp_subnet.destroy()
-        tmp_subnet = hou.node('/out').createNode('subnet', tmp_subnet_name)
-
-        # ...and execute it:
+        node = hou.node(node_path)
+        if not is_time_dependent(node):
+            end_frame = start_frame
         try:
-
-            self.parent.log_debug(
-                "Create alembic node: /out/{0}/{1}".format(tmp_subnet, node_name))
-            alembic_node = tmp_subnet.createNode(
-                'alembic', node_name)
-
-            node = hou.node(node_path)
-
-            alembic_node.setParms({
-                'trange': int(is_time_dependent(node)),
-                'filename': publish_path,
-                'root': '/obj',
-                'objects': node_name,
-                'packed_transform': 1,
-                'motionBlur': True,
-                'samples': abc_samples,
-            })
-            frange_p = alembic_node.parmTuple("f")
-            frange_p.deleteAllKeyframes()
-            frange_p.set((start_frame, end_frame, 1))
-
-            self.parent.log_debug("Executing node: %s" %
-                                  alembic_node.path())
-            alembic_node.render()
-
+            self.parent.log_debug("Export alembic file: %s" % publish_path)
+            alembic_export('/obj', node_name, publish_path, start=start_frame,
+                           end=end_frame, preroll=abc_preroll, samples=abc_samples)
         except Exception as e:
             error_msg = "Failed to export Geometry: %s" % e
             self.logger.error(error_msg)
             raise Exception(error_msg)
-        finally:
-            self.parent.log_debug("Destroy: /out/%s" % tmp_subnet_name)
-            tmp_subnet.destroy()
-            pass
 
         # Now that the path has been generated, hand it off to the
         super(HoudiniSessionGeometryPublishPlugin,

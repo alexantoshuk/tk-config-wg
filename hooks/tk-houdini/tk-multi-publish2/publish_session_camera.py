@@ -16,26 +16,12 @@ import hou
 
 from tank_vendor import six
 
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from houdini_utils import create_fetch_camera, alembic_export
+
 HookBaseClass = sgtk.get_hook_baseclass()
 
 VER_LIMIT = 0
-
-
-def create_fetch_camera(parent, name, fetchcam_path):
-    fetch_camera_node = parent.createNode("cam", name)
-    chopnet = fetch_camera_node.createNode('chopnet')
-    object_chop = chopnet.createNode('object')
-    object_chop.setParms({
-        'targetpath': fetchcam_path,
-        'compute': 7,  # full transform
-        'range': 1,  # use current frame
-    })
-
-    object_chop.setExportFlag(True)
-    for pname in ('aspect', 'focal', 'aperture', 'near', 'far', 'winx', 'winy', 'winsizex', 'winsizey', 'shutter', 'focus', 'fstop'):
-        fetch_camera_node.parm(pname).setExpression(
-            'ch("{0}/{1}")'.format(fetchcam_path, pname))
-    return fetch_camera_node
 
 
 class HoudiniSessionCamerPublishPlugin(HookBaseClass):
@@ -292,20 +278,11 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         # find the animated frame range to use:
         start_frame, end_frame = _find_scene_animation_range()
 
-        if start_frame and end_frame:
-            # * add 2 frames to the ends and preroll
-            start_frame = start_frame - 2 - abc_preroll
-            end_frame = end_frame + 2
-
         tmp_subnet_name = '__tmp__'
-        self.parent.log_debug("Create temp subnet: /out/%s" % tmp_subnet_name)
-        tmp_subnet = hou.node('/out/' + tmp_subnet_name)
-        if tmp_subnet:
-            tmp_subnet.destroy()
-        tmp_subnet = hou.node('/out').createNode('subnet', tmp_subnet_name)
-
         tmp_obj_subnet = None
         if node_path != cam_path:
+            self.parent.log_debug(
+                "Create temp subnet: /obj/%s" % tmp_subnet_name)
             tmp_obj_subnet = hou.node('/obj/' + tmp_subnet_name)
             if tmp_obj_subnet:
                 tmp_obj_subnet.destroy()
@@ -327,39 +304,19 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
                 objects = fetch_camera_node.path()
 
             self.parent.log_debug(
-                "Create alembic node: /out/{0}/{1}".format(tmp_subnet, node_name))
-            alembic_node = tmp_subnet.createNode(
-                'alembic', node_name)
-
-            alembic_node.setParms({
-                'trange': 1,
-                'filename': publish_path,
-                'root': root,
-                'objects': objects,
-                'packed_transform': 1,
-                'motionBlur': True,
-                'samples': abc_samples,
-            })
-            frange_p = alembic_node.parmTuple("f")
-            frange_p.deleteAllKeyframes()
-            frange_p.set((start_frame, end_frame, 1))
-
-            self.parent.log_debug("Executing node: %s" %
-                                  alembic_node.path())
-            alembic_node.render()
-
+                "Export camera alembic file: %s" % publish_path)
+            alembic_export(root, objects, publish_path, start=start_frame,
+                           end=end_frame, preroll=abc_preroll, samples=abc_samples)
         except Exception as e:
             error_msg = "Failed to export Camera: %s" % e
             self.logger.error(error_msg)
             raise Exception(error_msg)
             return
         finally:
-            self.parent.log_debug("Destroy: /out/%s" % tmp_subnet_name)
-            tmp_subnet.destroy()
             if tmp_obj_subnet:
-                self.parent.log_debug("Destroy: /obj/%s" % tmp_subnet_name)
+                self.parent.log_debug(
+                    "Destroy temp subnet: %s" % tmp_obj_subnet.path())
                 tmp_obj_subnet.destroy()
-            pass
 
         # Now that the path has been generated, hand it off to the
         super(HoudiniSessionCamerPublishPlugin,

@@ -8,10 +8,14 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
+
+import sgtk
+import hou
 import os
 import sys
-import hou
-import sgtk
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from houdini_utils import search_camera
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -26,29 +30,6 @@ _HOUDINI_OUTPUTS = {
         "wren": "wr_picture",  # wren wireframe
     },
 }
-
-
-def search_camera(node):
-    if node.type().name() == 'cam':
-        return node
-
-    cam = [None]
-
-    def _search_cam(node):
-        if node.name().startswith('_'):
-            return
-        if node.childTypeCategory().name() == 'Object':
-            for n in node.children():
-                if _search_cam(n):
-                    return True
-
-        elif node.type().name() == 'cam':
-            cam[0] = node
-            return True
-
-    _search_cam(node)
-
-    return cam[0]
 
 
 class HoudiniSessionCollector(HookBaseClass):

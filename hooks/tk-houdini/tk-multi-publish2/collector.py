@@ -28,6 +28,29 @@ _HOUDINI_OUTPUTS = {
 }
 
 
+def search_camera(node):
+    if node.type().name() == 'cam':
+        return node
+
+    cam = [None]
+
+    def _search_cam(node):
+        if node.name().startswith('_'):
+            return
+        if node.childTypeCategory().name() == 'Object':
+            for n in node.children():
+                if _search_cam(n):
+                    return True
+
+        elif node.type().name() == 'cam':
+            cam[0] = node
+            return True
+
+    _search_cam(node)
+
+    return cam[0]
+
+
 class HoudiniSessionCollector(HookBaseClass):
     """
     Collector that operates on the current houdini session. Should inherit from
@@ -222,25 +245,10 @@ class HoudiniSessionCollector(HookBaseClass):
 
             node_path = node.path()
             cam_path = node_path
-            if node.type().name() != 'cam':
-                cam = [None]
-
-                def _search_cam(node):
-                    if node.name().startswith('_'):
-                        return
-                    if node.childTypeCategory().name() == 'Object':
-                        for n in node.children():
-                            if _search_cam(n):
-                                return True
-
-                    elif node.type().name() == 'cam':
-                        cam[0] = node
-                        return True
-
-                _search_cam(node)
-                if not cam[0]:
-                    continue
-                cam_path = cam[0].path()
+            cam_node = search_camera(node)
+            if not cam_node:
+                continue
+            cam_path = cam_node.path()
 
             geo_item = parent_item.create_item(
                 "houdini.session.camera", "Camera", node_path

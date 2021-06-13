@@ -216,7 +216,7 @@ class HoudiniActions(HookBaseClass):
 
         app = self.parent
 
-        name = sg_publish_data.get("name", "alembic").rstrip(".abc")
+        name = sg_publish_data.get("name", "alembic")
         path = self.get_publish_path(sg_publish_data)
 
         # houdini doesn't like UNC paths.

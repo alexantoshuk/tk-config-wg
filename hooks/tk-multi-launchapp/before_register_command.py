@@ -9,8 +9,6 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import sgtk
-import os
-import platform
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -43,27 +41,7 @@ class BeforeRegisterCommand(HookBaseClass):
         # wants to route rebus to the tk-nuke engine instance. We don't want that, so
         # we'll redirect to tk-nukestudio.
 
-        if platform.system() == "Windows":
-            tkroot = "W:/tk"
-            app_path = tkroot + '/app/' + platform.system()
-            os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
-            os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
-        else:
-            tkroot = "/home/ali/tk"
-
-        os.environ['OCIO'] = tkroot + \
-            '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
-        os.environ['NUKE_PATH'] = tkroot + '/.nuke'
-        os.environ['HSITE'] = tkroot
-
         if software_version.product == "NukeStudio":
             engine_instance_name = "tk-nukestudio"
-
-        if engine_instance_name in ("tk-nuke",  "tk-nukestudio"):
-            pass
-        elif engine_instance_name == "tk-maya":
-            pass
-        elif engine_instance_name == "tk-houdini":
-            pass
 
         return engine_instance_name

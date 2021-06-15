@@ -16,8 +16,9 @@ import hou
 
 from tank_vendor import six
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from houdini_utils import create_fetch_camera, alembic_export
+import houdini_utils
+reload(houdini_utils)
+from houdini_utils import alembic_camera_export
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -254,13 +255,8 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         """
 
         publisher = self.parent
-
         item.properties["publish_type"] = "Alembic Camera"
-        # * get abc cache data
-        node_path = item.properties["node"]
         cam_path = item.properties["camera"]
-        node_name = node_path.rsplit("/", 1)[-1]
-
         abc_preroll = item.properties["abc_preroll"]
         abc_samples = item.properties["abc_samples"]
         # get the path to create and publish
@@ -278,45 +274,19 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         # find the animated frame range to use:
         start_frame, end_frame = _find_scene_animation_range()
 
-        tmp_subnet_name = '__tmp__'
-        tmp_obj_subnet = None
-        if node_path != cam_path:
-            self.parent.log_debug(
-                "Create temp subnet: /obj/%s" % tmp_subnet_name)
-            tmp_obj_subnet = hou.node('/obj/' + tmp_subnet_name)
-            if tmp_obj_subnet:
-                tmp_obj_subnet.destroy()
-            tmp_obj_subnet = hou.node(
-                '/obj').createNode('subnet', tmp_subnet_name)
-
         # ...and execute it:
         try:
-            root = '/obj'
-            objects = node_name
-            if tmp_obj_subnet:
-                self.parent.log_debug(
-                    "Create temp 'fetch_camera' node: /obj/{0}/{1}".format(tmp_subnet_name, node_name))
-
-                fetch_camera_node = create_fetch_camera(
-                    tmp_obj_subnet, node_name, cam_path)
-
-                root = tmp_obj_subnet.path()
-                objects = fetch_camera_node.path()
-
             self.parent.log_debug(
                 "Export camera alembic file: %s" % publish_path)
-            alembic_export(root, objects, publish_path, start=start_frame,
-                           end=end_frame, preroll=abc_preroll, samples=abc_samples)
+
+            alembic_camera_export(cam_path, publish_path, start=start_frame,
+                                  end=end_frame, preroll=abc_preroll, samples=abc_samples)
+
         except Exception as e:
             error_msg = "Failed to export Camera: %s" % e
             self.logger.error(error_msg)
-            raise Exception(error_msg)
+            # raise Exception(error_msg)
             return
-        finally:
-            if tmp_obj_subnet:
-                self.parent.log_debug(
-                    "Destroy temp subnet: %s" % tmp_obj_subnet.path())
-                tmp_obj_subnet.destroy()
 
         # Now that the path has been generated, hand it off to the
         super(HoudiniSessionCamerPublishPlugin,

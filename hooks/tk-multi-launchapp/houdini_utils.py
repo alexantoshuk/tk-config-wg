@@ -1,5 +1,15 @@
 
 import hou
+import sys
+import os
+
+
+def is_publish_alembic(node):
+    return node.comment().strip() == "# Publish Alembic"
+
+
+def is_publish_camera(node):
+    return node.comment().strip() == "# Publish Camera"
 
 
 def is_time_dependent(node):
@@ -62,6 +72,40 @@ def create_fetch_camera(parent, name, fetchcam_path):
         fetch_camera_node.parm(pname).setExpression(
             'ch("{0}/{1}")'.format(fetchcam_path, pname))
     return fetch_camera_node
+
+
+def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=8):
+    tmp_subnet_name = '__tmp__'
+    tmp_obj_subnet = None
+
+    node = hou.node(campath)
+    campath = node.path()
+    name = campath.split('/', 3)[2]
+    objnet = hou.node('/obj')
+    if node.parent() != objnet:
+        tmp_obj_subnet = hou.node('/obj/' + tmp_subnet_name)
+        if tmp_obj_subnet:
+            tmp_obj_subnet.destroy()
+        tmp_obj_subnet = objnet.createNode('subnet', tmp_subnet_name)
+
+    # ...and execute it:
+    try:
+        root = '/obj'
+        objects = name
+        if tmp_obj_subnet:
+            fetch_camera_node = create_fetch_camera(
+                tmp_obj_subnet, name, campath)
+
+            root = tmp_obj_subnet.path()
+            objects = fetch_camera_node.path()
+
+        alembic_export(root, objects, filename,
+                       start, end, preroll, samples)
+    except Exception as e:
+        raise e
+    finally:
+        if tmp_obj_subnet:
+            tmp_obj_subnet.destroy()
 
 
 def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2):

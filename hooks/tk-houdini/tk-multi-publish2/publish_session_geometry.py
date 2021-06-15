@@ -16,7 +16,8 @@ import hou
 
 from tank_vendor import six
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import houdini_utils
+reload(houdini_utils)
 from houdini_utils import alembic_export, is_time_dependent
 
 HookBaseClass = sgtk.get_hook_baseclass()
@@ -278,7 +279,8 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         except Exception as e:
             error_msg = "Failed to export Geometry: %s" % e
             self.logger.error(error_msg)
-            raise Exception(error_msg)
+            # raise Exception(error_msg)
+            return
 
         # Now that the path has been generated, hand it off to the
         super(HoudiniSessionGeometryPublishPlugin,

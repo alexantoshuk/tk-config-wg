@@ -14,8 +14,9 @@ import hou
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from houdini_utils import search_camera
+import houdini_utils
+reload(houdini_utils)
+from houdini_utils import search_camera, is_publish_camera, is_publish_alembic
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -216,12 +217,10 @@ class HoudiniSessionCollector(HookBaseClass):
 
         :param parent_item: Parent Item instance
         """
-        def is_publish(node):
-            return node.comment().strip() == "# Publish Camera"
 
         # * collect all checked objects in scene for publishing
         for node in hou.node("/obj").children():
-            if not is_publish(node):
+            if not is_publish_camera(node):
                 continue
 
             node_path = node.path()
@@ -260,12 +259,10 @@ class HoudiniSessionCollector(HookBaseClass):
 
         :param parent_item: Parent Item instance
         """
-        def is_publish(node):
-            return node.comment().strip() == "# Publish Alembic"
 
         # * collect all checked objects in scene for publishing
         for node in hou.node("/obj").children():
-            if not is_publish(node):
+            if not is_publish_alembic(node):
                 continue
             # sys.stderr.write("{0}\n".format(node.path()))
             geo_item = parent_item.create_item(

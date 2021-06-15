@@ -17,6 +17,11 @@ import sgtk
 
 from tank_vendor import six
 
+import maya_utils
+reload(maya_utils)
+from maya_utils import alembic_export
+
+
 HookBaseClass = sgtk.get_hook_baseclass()
 
 VER_LIMIT = 0
@@ -214,8 +219,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # template:
         work_fields = work_template.get_fields(path)
 
-        # * append node from collected geometry and replace ':' to '..' in node name to work for windows
-        work_fields["node"] = maya_node.replace(':', '..')
+        # * append node from collected geometry and replace ':' to '__' in node name to work for windows
+        work_fields["node"] = maya_node.replace(':', '__')
 
         if "abc_preroll" not in item.properties:
             self.logger.warning(
@@ -249,7 +254,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # * return grand parent validate method
 
-        return super(HookBaseClass, self).validate(settings, item)
+        return super(MayaSessionGeometryPublishPlugin, self).validate(settings, item)
 
     def publish(self, settings, item):
         """
@@ -274,50 +279,20 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         publish_folder = os.path.dirname(publish_path)
         self.parent.ensure_folder_exists(publish_folder)
 
-        # set the alembic args that make the most sense when working with Mari.
-        # These flags will ensure the export of an Alembic file that contains
-        # all visible geometry from the current scene together with UV's and
-        # face sets for use in Mari.
-        alembic_args = [
-            # only renderable objects (visible and not templated)
-            "-renderableOnly",
-            # write shading group set assignments (Maya 2015+)
-            "-writeFaceSets",
-            # write uv's (only the current uv set gets written)
-            "-uvWrite",
-            # do not export vertex normals
-            "-noNormals",
-        ]
-
         # find the animated frame range to use:
         start_frame, end_frame = _find_scene_animation_range()
-        if start_frame and end_frame:
-            # * add 2 frames to the ends and preroll
-            start_frame = start_frame - 2 - abc_preroll
-            end_frame = end_frame + 2
-            alembic_args.append("-fr %d %d" % (start_frame, end_frame))
-            alembic_args.append("-step {0}".format(1.0/abc_samples))
-
-        # * set object to export
-        alembic_args.append("-root '%s'" % maya_node)
-        # Set the output path:
-        # Note: The AbcExport command expects forward slashes!
-        alembic_args.append("-file '%s'" % publish_path.replace("\\", "/"))
-
-        # build the export command.  Note, use AbcExport -help in Maya for
-        # more detailed Alembic export help
-        abc_export_cmd = 'AbcExport -j "%s"' % " ".join(alembic_args)
 
         # ...and execute it:
         try:
-            self.parent.log_debug("Executing command: %s" % abc_export_cmd)
-            mel.eval(abc_export_cmd)
+            self.parent.log_debug("Export alembic: %s" % publish_path)
+            alembic_export(maya_node, publish_path, start=start_frame,
+                           end=end_frame, preroll=abc_preroll, samples=abc_samples)
         except Exception as e:
             self.logger.error("Failed to export Geometry: %s" % e)
             return
 
         # Now that the path has been generated, hand it off to the
-        super(HookBaseClass, self).publish(settings, item)
+        super(MayaSessionGeometryPublishPlugin, self).publish(settings, item)
 
     def finalize(self, settings, item):
         """

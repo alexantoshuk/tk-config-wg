@@ -10,19 +10,17 @@
 
 import glob
 import os
+import sys
 import maya.cmds as cmds
 import maya.mel as mel
 import sgtk
 
+
+import maya_utils
+reload(maya_utils)
+from maya_utils import search_camera, is_publish_camera, is_publish_alembic
+
 HookBaseClass = sgtk.get_hook_baseclass()
-
-
-def is_publish(s):
-    # * is check if object can be published
-    if not cmds.getAttr(s+".useOutlinerColor"):
-        return False
-    color = cmds.getAttr(s+".outlinerColor")[0]
-    return color != (0.0, 0.0, 0.0)
 
 
 class MayaSessionCollector(HookBaseClass):
@@ -119,6 +117,7 @@ class MayaSessionCollector(HookBaseClass):
                 },
             )
 
+        self._collect_session_camera(item)
         if cmds.ls(geometry=True, noIntermediate=True):
             self._collect_session_geometry(item)
 
@@ -216,6 +215,40 @@ class MayaSessionCollector(HookBaseClass):
             super(MayaSessionCollector, self)._collect_file(
                 parent_item, cache_path)
 
+    def _collect_session_camera(self, parent_item):
+        """
+        Creates items for session camera to be exported.
+
+        :param parent_item: Parent Item instance
+        """
+        # * collect all checked objects in scene for publishing
+        for g in (x for x in cmds.ls(assemblies=1) if is_publish_camera(x)):
+            cam_path = search_camera(g)
+            if not cam_path:
+                continue
+
+            geo_item = parent_item.create_item(
+                "maya.session.camera", "Camera", g
+            )
+            geo_item.properties["node"] = g
+            geo_item.properties["camera"] = cam_path
+            try:
+                geo_item.properties["abc_preroll"] = cmds.getAttr(
+                    g + ".abcPreroll")
+            except:
+                pass
+            try:
+                geo_item.properties["abc_samples"] = cmds.getAttr(
+                    g + ".abcSamples")
+            except:
+                pass
+            # get the icon path to display for this item
+            icon_path = os.path.join(
+                self.disk_location, os.pardir, "icons", "camera.png")
+
+            geo_item.set_icon_from_path(icon_path)
+            geo_item.name = "{0}.abc ({1})".format(g, cam_path)
+
     def _collect_session_geometry(self, parent_item):
         """
         Creates items for session geometry to be exported.
@@ -223,7 +256,7 @@ class MayaSessionCollector(HookBaseClass):
         :param parent_item: Parent Item instance
         """
         # * collect all checked objects in scene for publishing
-        for g in (x for x in cmds.ls(assemblies=1) if is_publish(x)):
+        for g in (x for x in cmds.ls(assemblies=1) if is_publish_alembic(x)):
 
             geo_item = parent_item.create_item(
                 "maya.session.geometry", "Geometry", g

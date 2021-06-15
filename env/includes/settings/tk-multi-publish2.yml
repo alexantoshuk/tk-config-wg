@@ -204,7 +204,11 @@ settings.tk-multi-publish2.maya.asset_step:
     settings:
         Publish Template: maya_asset_publish
   - name: Publish to Shotgun
-    hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
+    hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
+    settings:
+        Publish Template: asset_alembic_cache
+  - name: Publish to Shotgun
+    hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
     settings:
         Publish Template: asset_alembic_cache
   help_url: *help_url
@@ -230,7 +234,11 @@ settings.tk-multi-publish2.maya.shot_step:
     settings:
         Publish Template: maya_shot_publish
   - name: Publish to Shotgun
-    hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
+    hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
+    settings:
+        Publish Template: shot_alembic_cache
+  - name: Publish to Shotgun
+    hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
     settings:
         Publish Template: shot_alembic_cache
   help_url: *help_url

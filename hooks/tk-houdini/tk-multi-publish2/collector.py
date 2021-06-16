@@ -246,6 +246,11 @@ class HoudiniSessionCollector(HookBaseClass):
                     "abc_samples")
             except:
                 pass
+            try:
+                geo_item.properties["abc_units"] = node.evalParm(
+                    "abc_units")
+            except:
+                pass
             # get the icon path to display for this item
             icon_path = os.path.join(
                 self.disk_location, os.pardir, "icons", "camera.png")
@@ -278,6 +283,11 @@ class HoudiniSessionCollector(HookBaseClass):
             try:
                 geo_item.properties["abc_samples"] = node.evalParm(
                     "abc_samples")
+            except:
+                pass
+            try:
+                geo_item.properties["abc_units"] = node.evalParm(
+                    "abc_units")
             except:
                 pass
             # get the icon path to display for this item

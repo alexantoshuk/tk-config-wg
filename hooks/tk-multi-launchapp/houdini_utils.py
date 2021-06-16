@@ -63,18 +63,25 @@ def create_fetch_camera(parent, name, fetchcam_path):
     object_chop = chopnet.createNode('object')
     object_chop.setParms({
         'targetpath': fetchcam_path,
-        'compute': 7,  # full transform
-        'range': 1,  # use current frame
+        'compute': 6,  # position and rotation
+        'range': 0,  # use full animation range
+        'left': 1,  # slope
+        'right': 1,  # slope
     })
+    object_chop.parm('samplerate').setExpression('$FPS*16')
 
     object_chop.setExportFlag(True)
     for pname in ('aspect', 'focal', 'aperture', 'near', 'far', 'winx', 'winy', 'winsizex', 'winsizey', 'shutter', 'focus', 'fstop'):
         fetch_camera_node.parm(pname).setExpression(
             'ch("{0}/{1}")'.format(fetchcam_path, pname))
+
+    fetch_camera_node.parm('xOrd').set(3)
+    fetch_camera_node.parm('scale').deleteAllKeyframes()
+
     return fetch_camera_node
 
 
-def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=8):
+def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=8, scale=1.0):
     tmp_subnet_name = '__tmp__'
     tmp_obj_subnet = None
 
@@ -82,30 +89,50 @@ def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=
     campath = node.path()
     name = campath.split('/', 3)[2]
     objnet = hou.node('/obj')
-    if node.parent() != objnet:
-        tmp_obj_subnet = hou.node('/obj/' + tmp_subnet_name)
-        if tmp_obj_subnet:
-            tmp_obj_subnet.destroy()
-        tmp_obj_subnet = objnet.createNode('subnet', tmp_subnet_name)
+
+    tmp_obj_subnet = hou.node('/obj/' + tmp_subnet_name)
+    if tmp_obj_subnet:
+        tmp_obj_subnet.destroy()
+    tmp_obj_subnet = objnet.createNode('subnet', tmp_subnet_name)
 
     # ...and execute it:
     try:
         root = '/obj'
         objects = name
-        if tmp_obj_subnet:
-            fetch_camera_node = create_fetch_camera(
-                tmp_obj_subnet, name, campath)
-
-            root = tmp_obj_subnet.path()
-            objects = fetch_camera_node.path()
+        fetch_camera_node = create_fetch_camera(
+            tmp_obj_subnet, name, campath)
+        fetch_camera_node.parm('scale').set(scale)
+        root = tmp_obj_subnet.path()
+        objects = fetch_camera_node.path()
 
         alembic_export(root, objects, filename,
                        start, end, preroll, samples)
     except Exception as e:
         raise e
     finally:
-        if tmp_obj_subnet:
-            tmp_obj_subnet.destroy()
+        tmp_obj_subnet.destroy()
+
+
+def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, samples=2, scale=1.0):
+    node = hou.node(subnetpath)
+    scale_p = node.parm('scale')
+    old_scale = scale_p.eval()
+    is_locked = scale_p.isLocked()
+
+    scale_p.lock(0)
+    scale_p.set(old_scale * scale)
+
+    is_display = node.isDisplayFlagSet()
+    node.setDisplayFlag(1)
+    try:
+        alembic_export('/obj', subnetpath, filename,
+                       start, end, preroll, samples)
+    except Exception as e:
+        raise e
+    finally:
+        node.setDisplayFlag(is_display)
+        scale_p.set(old_scale)
+        scale_p.lock(is_locked)
 
 
 def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2):

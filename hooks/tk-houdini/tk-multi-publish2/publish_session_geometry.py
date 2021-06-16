@@ -18,7 +18,7 @@ from tank_vendor import six
 
 import houdini_utils
 reload(houdini_utils)
-from houdini_utils import alembic_export, is_time_dependent
+from houdini_utils import alembic_subnet_export, is_time_dependent
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -210,6 +210,11 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
                 "'abc_samples' parameter is not founded. Use 2 by default.")
             item.properties["abc_samples"] = 2
 
+        if "abc_units" not in item.properties:
+            self.logger.warning(
+                "'abc_units' parameter is not founded. Use 'centimeters' by default.")
+            item.properties["abc_units"] = 'centimeters'
+
         work_fields['node'] = node_name
 
         # ensure the fields work for the publish template
@@ -255,6 +260,10 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
 
         abc_preroll = item.properties["abc_preroll"]
         abc_samples = item.properties["abc_samples"]
+        abc_units = item.properties["abc_units"]
+        abc_scale = 1
+        if abc_units == 'centimeters':
+            abc_scale = 100
         # get the path to create and publish
         publish_path = item.properties["path"]
 
@@ -274,8 +283,8 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
             end_frame = start_frame
         try:
             self.parent.log_debug("Export alembic file: %s" % publish_path)
-            alembic_export('/obj', node_name, publish_path, start=start_frame,
-                           end=end_frame, preroll=abc_preroll, samples=abc_samples)
+            alembic_subnet_export(node_path, publish_path, start=start_frame,
+                                  end=end_frame, preroll=abc_preroll, samples=abc_samples, scale=abc_scale)
         except Exception as e:
             error_msg = "Failed to export Geometry: %s" % e
             self.logger.error(error_msg)

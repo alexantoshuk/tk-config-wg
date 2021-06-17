@@ -201,6 +201,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # get the normalized path
         path = sgtk.util.ShotgunPath.normalize(path)
         maya_node = item.properties.get("node")
+        maya_node_without_namespace = maya_node.rsplit(':', 1)[-1]
         # check that there is still geometry in the scene:
         cam_path = item.properties["camera"]
         if not cmds.ls(cam_path):
@@ -212,7 +213,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
             self.logger.error(error_msg)
             raise Exception(error_msg)
 
-        if not maya_node.rsplit(':', 1)[-1].startswith('camera'):
+        if not maya_node_without_namespace.startswith('camera'):
             error_msg = "The name of the camera group '%s' must be started with 'camera' word." % maya_node
             self.logger.error(error_msg)
             raise Exception(error_msg)

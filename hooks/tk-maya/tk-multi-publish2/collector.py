@@ -223,6 +223,7 @@ class MayaSessionCollector(HookBaseClass):
         """
         # * collect all checked objects in scene for publishing
         for g in (x for x in cmds.ls(assemblies=1) if is_publish_camera(x)):
+
             cam_path = search_camera(g)
             if not cam_path:
                 continue
@@ -230,7 +231,7 @@ class MayaSessionCollector(HookBaseClass):
             geo_item = parent_item.create_item(
                 "maya.session.camera", "Camera", g
             )
-            geo_item.properties["node"] = g
+            geo_item.properties["node"] = g.strip('|')
             geo_item.properties["camera"] = cam_path
             try:
                 geo_item.properties["abc_preroll"] = cmds.getAttr(
@@ -247,7 +248,7 @@ class MayaSessionCollector(HookBaseClass):
                 self.disk_location, os.pardir, "icons", "camera.png")
 
             geo_item.set_icon_from_path(icon_path)
-            geo_item.name = "{0}.abc ({1})".format(g, cam_path)
+            geo_item.name = "{0} ({1})".format(g.strip('|'), cam_path)
 
     def _collect_session_geometry(self, parent_item):
         """
@@ -257,11 +258,10 @@ class MayaSessionCollector(HookBaseClass):
         """
         # * collect all checked objects in scene for publishing
         for g in (x for x in cmds.ls(assemblies=1) if is_publish_alembic(x)):
-
             geo_item = parent_item.create_item(
                 "maya.session.geometry", "Geometry", g
             )
-            geo_item.properties["node"] = g
+            geo_item.properties["node"] = g.strip('|')
             try:
                 geo_item.properties["abc_preroll"] = cmds.getAttr(
                     g + ".abcPreroll")

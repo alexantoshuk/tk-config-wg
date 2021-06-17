@@ -45,6 +45,10 @@ def alembic_camera_export(camera, filename, start=1, end=1, preroll=0, samples=8
     camera_shape = cmds.listRelatives(camera, shapes=True)[0]
 
     # create temp fetch camera
+    try:
+        cmds.delete('__tmp__camera__group__')
+    except:
+        pass
     tmp_group = cmds.group(em=True, name='__tmp__camera__group__')
     try:
         fetched_cam = cmds.camera()[0]

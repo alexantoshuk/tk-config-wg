@@ -18,6 +18,7 @@ import sgtk
 from tank_vendor import six
 
 import maya_utils
+import utils
 reload(maya_utils)
 from maya_utils import alembic_export
 
@@ -201,13 +202,14 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # get the normalized path
         path = sgtk.util.ShotgunPath.normalize(path)
         maya_node = item.properties.get("node")
+
         # check that there is still geometry in the scene:
         if not cmds.ls(maya_node):
             error_msg = (
-                "Validation failed because there is no geometry in the scene "
+                "Validation failed because there is no geometry '%s' in the scene "
                 "to be exported. You can uncheck this plugin or create "
                 "geometry to export to avoid this error."
-            )
+            ) % maya_node
             self.logger.error(error_msg)
             raise Exception(error_msg)
 
@@ -305,16 +307,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         """
 
         # * limit number of versions to VER_LIMIT
-        if VER_LIMIT and ("publish_version" in item.properties):
-            path = item.properties["publish_path"]
-            pattern = path[:-len("000.abc")] + "???.abc"
-            for f in sorted(glob.iglob(pattern))[:-VER_LIMIT]:
-                try:
-                    os.remove(f)
-                    self.logger.info(
-                        "Remove '{0}' because of version limit = {1}".format(path, VER_LIMIT))
-                except:
-                    self.logger.info("Can't remove '{0}'".format(path))
+        utils.cleanup_versions(
+            item.properties["publish_path"], pattern="???.abc", max_versions=VER_LIMIT, logger=self.logger)
 
         return
 

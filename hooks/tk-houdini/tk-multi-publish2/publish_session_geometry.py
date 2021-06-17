@@ -17,6 +17,7 @@ import hou
 from tank_vendor import six
 
 import houdini_utils
+import utils
 reload(houdini_utils)
 from houdini_utils import alembic_subnet_export, is_time_dependent
 
@@ -306,16 +307,8 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         """
 
         # * limit number of versions to VER_LIMIT
-        if VER_LIMIT and ("publish_version" in item.properties):
-            path = item.properties["publish_path"]
-            pattern = path[:-len("000.abc")] + "???.abc"
-            for f in sorted(glob.iglob(pattern))[:-VER_LIMIT]:
-                try:
-                    os.remove(f)
-                    self.logger.info(
-                        "Remove '{0}' because of version limit = {1}".format(path, VER_LIMIT))
-                except:
-                    self.logger.info("Can't remove '{0}'".format(path))
+        utils.cleanup_versions(
+            item.properties["publish_path"], pattern="???.abc", max_versions=VER_LIMIT, logger=self.logger)
 
         return
 

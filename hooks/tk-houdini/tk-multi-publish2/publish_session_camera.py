@@ -18,8 +18,6 @@ from tank_vendor import six
 
 import houdini_utils
 import utils
-reload(houdini_utils)
-from houdini_utils import alembic_camera_export
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -288,8 +286,8 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
             self.parent.log_debug(
                 "Export camera alembic file: %s" % publish_path)
 
-            alembic_camera_export(cam_path, publish_path, start=start_frame,
-                                  end=end_frame, preroll=abc_preroll, samples=abc_samples, scale=abc_scale)
+            houdini_utils.alembic_camera_export(cam_path, publish_path, start=start_frame,
+                                                end=end_frame, preroll=abc_preroll, samples=abc_samples, scale=abc_scale)
 
         except Exception as e:
             error_msg = "Failed to export Camera: %s" % e

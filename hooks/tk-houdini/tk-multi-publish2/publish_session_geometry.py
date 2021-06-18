@@ -18,8 +18,6 @@ from tank_vendor import six
 
 import houdini_utils
 import utils
-reload(houdini_utils)
-from houdini_utils import alembic_subnet_export, is_time_dependent
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -280,12 +278,12 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         # find the animated frame range to use:
         start_frame, end_frame = _find_scene_animation_range()
         node = hou.node(node_path)
-        if not is_time_dependent(node):
+        if not houdini_utils.is_time_dependent(node):
             end_frame = start_frame
         try:
             self.parent.log_debug("Export alembic file: %s" % publish_path)
-            alembic_subnet_export(node_path, publish_path, start=start_frame,
-                                  end=end_frame, preroll=abc_preroll, samples=abc_samples, scale=abc_scale)
+            houdini_utils.alembic_subnet_export(node_path, publish_path, start=start_frame,
+                                                end=end_frame, preroll=abc_preroll, samples=abc_samples, scale=abc_scale)
         except Exception as e:
             error_msg = "Failed to export Geometry: %s" % e
             self.logger.error(error_msg)

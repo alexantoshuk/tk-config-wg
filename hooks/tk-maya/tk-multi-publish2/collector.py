@@ -14,11 +14,7 @@ import sys
 import maya.cmds as cmds
 import maya.mel as mel
 import sgtk
-
-
 import maya_utils
-reload(maya_utils)
-from maya_utils import search_camera, is_publish_camera, is_publish_alembic
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -222,9 +218,9 @@ class MayaSessionCollector(HookBaseClass):
         :param parent_item: Parent Item instance
         """
         # * collect all checked objects in scene for publishing
-        for g in (x for x in cmds.ls(assemblies=1) if is_publish_camera(x)):
+        for g in (x for x in cmds.ls(assemblies=1) if maya_utils.is_publish_camera(x)):
 
-            cam_path = search_camera(g)
+            cam_path = maya_utils.search_camera(g)
             if not cam_path:
                 continue
 
@@ -257,7 +253,7 @@ class MayaSessionCollector(HookBaseClass):
         :param parent_item: Parent Item instance
         """
         # * collect all checked objects in scene for publishing
-        for g in (x for x in cmds.ls(assemblies=1) if is_publish_alembic(x)):
+        for g in (x for x in cmds.ls(assemblies=1) if maya_utils.is_publish_alembic(x)):
             geo_item = parent_item.create_item(
                 "maya.session.geometry", "Geometry", g
             )

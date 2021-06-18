@@ -19,9 +19,6 @@ from tank_vendor import six
 
 import maya_utils
 import utils
-reload(maya_utils)
-from maya_utils import alembic_export
-
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -287,8 +284,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # ...and execute it:
         try:
             self.parent.log_debug("Export alembic: %s" % publish_path)
-            alembic_export(maya_node, publish_path, start=start_frame,
-                           end=end_frame, preroll=abc_preroll, samples=abc_samples)
+            maya_utils.alembic_export(maya_node, publish_path, start=start_frame,
+                                      end=end_frame, preroll=abc_preroll, samples=abc_samples)
         except Exception as e:
             self.logger.error("Failed to export Geometry: %s" % e)
             return

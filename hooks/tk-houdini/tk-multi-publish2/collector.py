@@ -13,10 +13,7 @@ import sgtk
 import hou
 import os
 import sys
-
 import houdini_utils
-reload(houdini_utils)
-from houdini_utils import search_camera, is_publish_camera, is_publish_alembic
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -220,12 +217,12 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # * collect all checked objects in scene for publishing
         for node in hou.node("/obj").children():
-            if not is_publish_camera(node):
+            if not houdini_utils.is_publish_camera(node):
                 continue
 
             node_path = node.path()
             cam_path = node_path
-            cam_node = search_camera(node)
+            cam_node = houdini_utils.search_camera(node)
             if not cam_node:
                 continue
             cam_path = cam_node.path()
@@ -267,7 +264,7 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # * collect all checked objects in scene for publishing
         for node in hou.node("/obj").children():
-            if not is_publish_alembic(node):
+            if not houdini_utils.is_publish_alembic(node):
                 continue
             # sys.stderr.write("{0}\n".format(node.path()))
             geo_item = parent_item.create_item(

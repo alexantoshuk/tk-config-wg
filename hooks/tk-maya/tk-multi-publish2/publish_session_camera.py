@@ -19,8 +19,6 @@ from tank_vendor import six
 
 import maya_utils
 import utils
-reload(maya_utils)
-from maya_utils import alembic_camera_export
 
 
 HookBaseClass = sgtk.get_hook_baseclass()
@@ -294,8 +292,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         try:
             self.parent.log_debug(
                 "Export camera alembic file: %s" % publish_path)
-            alembic_camera_export(cam_path, publish_path, start=start_frame,
-                                  end=end_frame, preroll=abc_preroll, samples=abc_samples)
+            maya_utils.alembic_camera_export(cam_path, publish_path, start=start_frame,
+                                             end=end_frame, preroll=abc_preroll, samples=abc_samples)
         except Exception as e:
             self.logger.error("Failed to export Camera: %s" % e)
             return

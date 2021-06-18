@@ -4,6 +4,22 @@ import sys
 import os
 
 
+def node_types(node_type_category, pattern):
+    '''Return a list of node types in a particular node type category
+       whose names match a pattern.'''
+    import fnmatch
+
+    return [node_type
+            for node_type_name, node_type in node_type_category.nodeTypes().items()
+            if fnmatch.fnmatch(node_type_name, pattern)]
+
+
+def node_type_instances(node_type_category, pattern):
+    '''Return a list of nodes in a particular node type category
+       whose names match a pattern.'''
+    return [n for ty in node_types(node_type_category, pattern) for n in ty.instances()]
+
+
 def is_publish_alembic(node):
     return node.comment().strip() == "# Publish Alembic"
 

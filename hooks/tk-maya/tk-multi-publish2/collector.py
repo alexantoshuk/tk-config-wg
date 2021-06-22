@@ -240,8 +240,7 @@ class MayaSessionCollector(HookBaseClass):
             except:
                 pass
             # get the icon path to display for this item
-            icon_path = os.path.join(
-                self.disk_location, os.pardir, "icons", "camera.png")
+            icon_path = self._icons_dir() + "/camera.png"
 
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0} ({1})".format(g.strip('|'), cam_path)
@@ -269,8 +268,7 @@ class MayaSessionCollector(HookBaseClass):
             except:
                 pass
             # get the icon path to display for this item
-            icon_path = os.path.join(
-                self.disk_location, os.pardir, "icons", "geometry.png")
+            icon_path = self._icons_dir() + "/geometry.png"
 
             geo_item.set_icon_from_path(icon_path)
 
@@ -364,3 +362,6 @@ class MayaSessionCollector(HookBaseClass):
                 # the item has been created. update the display name to include
                 # the an indication of what it is and why it was collected
                 item.name = "%s (Render Layer: %s)" % (item.name, layer)
+
+    def _icons_dir(self):
+        return os.path.join(self.disk_location, os.pardir, os.pardir, os.pardir, "icons")

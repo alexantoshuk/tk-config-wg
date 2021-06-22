@@ -305,7 +305,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # * limit number of versions to VER_LIMIT
         utils.cleanup_versions(
-            item.properties["publish_path"], pattern="???.abc", max_versions=VER_LIMIT, logger=self.logger)
+            item.properties["publish_path"], pattern=".v???.abc", max_versions=VER_LIMIT, logger=self.logger)
 
         return
 

@@ -273,7 +273,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         """
 
         publisher = self.parent
-        item.properties["publish_type"] = "Alembic Camera"
+
         cam_path = item.properties["camera"]
         maya_node = item.properties["node"]
         abc_preroll = item.properties["abc_preroll"]
@@ -313,7 +313,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # * limit number of versions to VER_LIMIT
         utils.cleanup_versions(
-            item.properties["publish_path"], pattern="???.abc", max_versions=VER_LIMIT, logger=self.logger)
+            item.properties["publish_path"], pattern=".v???.abc", max_versions=VER_LIMIT, logger=self.logger)
         return
 
 

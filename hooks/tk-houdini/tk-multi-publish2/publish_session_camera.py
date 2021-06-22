@@ -258,7 +258,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         """
 
         publisher = self.parent
-        item.properties["publish_type"] = "Alembic Camera"
+
         cam_path = item.properties["camera"]
         abc_preroll = item.properties["abc_preroll"]
         abc_samples = item.properties["abc_samples"]
@@ -311,7 +311,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
 
         # * limit number of versions to VER_LIMIT
         utils.cleanup_versions(
-            item.properties["publish_path"], pattern="???.abc", max_versions=VER_LIMIT, logger=self.logger)
+            item.properties["publish_path"], pattern=".v???.abc", max_versions=VER_LIMIT, logger=self.logger)
 
         return
 

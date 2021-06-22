@@ -20,6 +20,10 @@ def node_type_instances(node_type_category, pattern):
     return [n for ty in node_types(node_type_category, pattern) for n in ty.instances()]
 
 
+def is_publish_objnet(node):
+    return node.comment().strip() == "# Publish Network"
+
+
 def is_publish_alembic(node):
     return node.comment().strip() == "# Publish Alembic"
 

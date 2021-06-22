@@ -12,9 +12,12 @@
 Hook that loads defines all the available actions, broken down by publish type.
 """
 import os
+import hou
+import sys
 import re
 import sgtk
-
+import houdini_utils
+reload(houdini_utils)
 HookBaseClass = sgtk.get_hook_baseclass()
 
 
@@ -98,6 +101,26 @@ class HoudiniActions(HookBaseClass):
                 }
             )
 
+        if "import_matnet" in actions:
+            action_instances.append(
+                {
+                    "name": "import_matnet",
+                    "params": None,
+                    "caption": "Import",
+                    "description": "Import Material Network file.",
+                }
+            )
+
+        if "import_objnet" in actions:
+            action_instances.append(
+                {
+                    "name": "import_objnet",
+                    "params": None,
+                    "caption": "Import",
+                    "description": "Import Object Network file.",
+                }
+            )
+
         if "file_cop" in actions:
             action_instances.append(
                 {
@@ -170,6 +193,12 @@ class HoudiniActions(HookBaseClass):
         if name == "import_alembic_camera":
             self._import_alembic_camera(path, sg_publish_data)
 
+        if name == "import_matnet":
+            self._import_matnet(path, sg_publish_data)
+
+        if name == "import_objnet":
+            self._import_objnet(path, sg_publish_data)
+
         if name == "file_cop":
             self._file_cop(path, sg_publish_data)
 
@@ -184,7 +213,6 @@ class HoudiniActions(HookBaseClass):
         :param path: Path to file.
         :param sg_publish_data: Shotgun data dictionary with all the standard publish fields.
         """
-        import hou
 
         if not os.path.exists(path):
             raise Exception("File not found on disk - '%s'" % path)
@@ -202,7 +230,96 @@ class HoudiniActions(HookBaseClass):
             ignore_load_warnings=False,
         )
 
+   ##############################################################################################################
+
+    def _import_objnet(self, path, sg_publish_data):
+        """Import the supplied path as a objnet
+
+        :param str path: The path to the file to import.
+        :param dict sg_publish_data: The publish data for the supplied path.
+
+        """
+
+        app = self.parent
+        name = sg_publish_data["name"]
+        name, _ = os.path.splitext(name)
+        path = self.get_publish_path(sg_publish_data)
+
+        # houdini doesn't like UNC paths.
+        path = path.replace("\\", "/")
+
+        obj_context = hou.node("/obj")
+
+        objnet_node = obj_context.node(name)
+        if not objnet_node:
+            objnet_node = obj_context.createNode(
+                'subnet', name)
+
+            objnet_node.moveToGoodPosition()
+            app.log_debug("Created objnet: %s  path: '%s' " %
+                          (objnet_node.path(), path))
+
+            network_module = hou.nodeType(
+                hou.ropNodeTypeCategory(), "wg::network::1.0").hdaModule()
+            network_module.add_network_reader_parms(
+                objnet_node, pattern="*.objnet")
+        else:
+            app.log_debug("Objnet: %s  already exists " % objnet_node.path())
+
+        try:
+            objnet_node.parm("network_filename").set(path)
+            objnet_node.parm("network_reload").pressButton()
+        except:
+            pass
+
+        _show_node(objnet_node)
+
     ##############################################################################################################
+
+    def _import_matnet(self, path, sg_publish_data):
+        """Import the supplied path as a matnet
+
+        :param str path: The path to the file to import.
+        :param dict sg_publish_data: The publish data for the supplied path.
+
+        """
+
+        app = self.parent
+        name = sg_publish_data["name"]
+        name, _ = os.path.splitext(name)
+        path = self.get_publish_path(sg_publish_data)
+
+        # houdini doesn't like UNC paths.
+        path = path.replace("\\", "/")
+
+        shop_context = hou.node("/shop")
+
+        matnet_node = shop_context.node(name)
+        if not matnet_node:
+            matnet_node = shop_context.createNode(
+                'matnet', name)
+
+            matnet_node.moveToGoodPosition()
+            app.log_debug("Created matnet: %s  path: '%s' " %
+                          (matnet_node.path(), path))
+
+            network_module = hou.nodeType(
+                hou.ropNodeTypeCategory(), "wg::network::1.0").hdaModule()
+            network_module.add_network_reader_parms(
+                matnet_node, pattern="*.matnet")
+        else:
+            app.log_debug("Matnet: %s  already exists " % matnet_node.path())
+
+        try:
+            matnet_node.parm("network_filename").set(path)
+            matnet_node.parm("network_reload").pressButton()
+        except:
+            pass
+
+        _show_node(matnet_node)
+
+    ##############################################################################################################
+
     def _import_alembic_camera(self, path, sg_publish_data):
         """Import the supplied path as a alembic camera
 
@@ -211,12 +328,10 @@ class HoudiniActions(HookBaseClass):
 
         """
 
-        import hou
-        import sys
-
         app = self.parent
 
         name = sg_publish_data.get("name", "alembic")
+        name, _ = os.path.splitext(name)
         path = self.get_publish_path(sg_publish_data)
 
         # houdini doesn't like UNC paths.
@@ -233,6 +348,7 @@ class HoudiniActions(HookBaseClass):
             alembic_camera_node = obj_context.createNode(
                 "alembic_camera", name)
 
+        alembic_camera_node.moveToGoodPosition()
         app.log_debug("Created alembic_camera: %s  path: '%s' " %
                       (alembic_camera_node.path(), path))
 
@@ -252,11 +368,10 @@ class HoudiniActions(HookBaseClass):
 
         """
 
-        import hou
-
         app = self.parent
 
         name = sg_publish_data.get("name", "alembic")
+        name, _ = os.path.splitext(name)
         path = self.get_publish_path(sg_publish_data)
 
         # houdini doesn't like UNC paths.
@@ -270,6 +385,7 @@ class HoudiniActions(HookBaseClass):
             # failed to create the node in this context, create at top-level
             obj_context = hou.node("/obj")
             geo_node = obj_context.createNode("geo", name)
+        geo_node.moveToGoodPosition()
 
         app.log_debug("Created geo node: %s" % (geo_node.path(),))
 
@@ -284,6 +400,14 @@ class HoudiniActions(HookBaseClass):
                 alembic_sop.path(), path)
         )
         alembic_sop.parm("reload").pressButton()
+        try:
+            assign_material_sop = alembic_sop.createOutputNode(
+                'wg::assign_material')
+            assign_material_sop.parm('asset_name').set(name)
+            assign_material_sop.setDisplayFlag(True)
+            assign_material_sop.setRenderFlag(True)
+        except:
+            pass
 
         _show_node(alembic_sop)
 
@@ -295,8 +419,6 @@ class HoudiniActions(HookBaseClass):
         :param dict sg_publish_data: The publish data for the supplied path.
 
         """
-
-        import hou
 
         app = self.parent
 
@@ -366,8 +488,6 @@ def _get_current_context(context_type):
 
     """
 
-    import hou
-
     # default to the top level context type
     context = hou.node(context_type)
 
@@ -386,8 +506,6 @@ def _get_current_network_panetab(context_type):
         type. Example: "/obj"
 
     """
-
-    import hou
 
     network_tab = None
 

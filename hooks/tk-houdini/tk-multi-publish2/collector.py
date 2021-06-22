@@ -100,6 +100,8 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # collect other, non-toolkit outputs to present for publishing
         self.collect_node_outputs(item)
+        self._collect_matnet(item)
+        self._collect_objnet(item)
         self._collect_session_camera(item)
         self._collect_session_geometry(item)
 
@@ -208,6 +210,52 @@ class HoudiniSessionCollector(HookBaseClass):
                     # was collected within the current session.
                     item.name = "%s (%s)" % (item.name, node.path())
 
+    def _collect_matnet(self, parent_item):
+        """
+        """
+        eng = sgtk.platform.current_engine()
+        if eng.context.entity['type'] != 'Asset':
+            return
+
+        asset_name = eng.context.entity['name']
+        matnet = hou.node('/shop/' + asset_name)
+        if not matnet:
+            return
+
+        matnet_path = matnet.path()
+        item = parent_item.create_item(
+            "houdini.matnet", "Materials", matnet_path)
+        item.properties["node"] = matnet_path
+
+        # get the icon path to display for this item
+        icon_path = self._icons_dir() + "/matnet.svg"
+
+        item.set_icon_from_path(icon_path)
+        item.name = matnet_path
+
+    def _collect_objnet(self, parent_item):
+        """
+        """
+        eng = sgtk.platform.current_engine()
+        if eng.context.entity['type'] != 'Shot':
+            return
+
+        shot_name = eng.context.entity['name']
+        for node in hou.node("/obj").children():
+            if not houdini_utils.is_publish_objnet(node):
+                continue
+            # sys.stderr.write("{0}\n".format(node.path()))
+            geo_item = parent_item.create_item(
+                "houdini.objnet", "Object Network", node.path()
+            )
+            geo_item.properties["node"] = node.path()
+
+            # get the icon path to display for this item
+            icon_path = self._icons_dir() + "/subnet.svg"
+
+            geo_item.set_icon_from_path(icon_path)
+            geo_item.name = node.path()
+
     def _collect_session_camera(self, parent_item):
         """
         Creates items for session camera to be exported.
@@ -249,8 +297,7 @@ class HoudiniSessionCollector(HookBaseClass):
             except:
                 pass
             # get the icon path to display for this item
-            icon_path = os.path.join(
-                self.disk_location, os.pardir, "icons", "camera.png")
+            icon_path = self._icons_dir() + "/camera.png"
 
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0}.abc ({1})".format(node.name(), cam_path)
@@ -288,8 +335,7 @@ class HoudiniSessionCollector(HookBaseClass):
             except:
                 pass
             # get the icon path to display for this item
-            icon_path = os.path.join(
-                self.disk_location, os.pardir, "icons", "geometry.png")
+            icon_path = self._icons_dir() + "/geometry.png"
 
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0}.abc ({1})".format(node.name(), node.path())
@@ -415,3 +461,6 @@ class HoudiniSessionCollector(HookBaseClass):
                 item.properties["work_template"] = work_template
 
             self._mantra_nodes_collected = True
+
+    def _icons_dir(self):
+        return os.path.join(self.disk_location, os.pardir, os.pardir, os.pardir, "icons")

@@ -62,6 +62,7 @@ class BreakdownSceneOperations(Hook):
                 {"node": alembic_node.path(), "type": "alembic", "path": file_path}
             )
 
+        # Alembic Camera
         alembic_camera_nodes = houdini_utils.node_type_instances(
             hou.objNodeTypeCategory(), "wg::alembic_camera::*")
 
@@ -72,6 +73,36 @@ class BreakdownSceneOperations(Hook):
 
             items.append(
                 {"node": alembic_camera_node.path(), "type": "alembic_camera",
+                 "path": file_path}
+            )
+
+        # Material Network
+        for matnet_node in hou.node('/shop').children():
+            if matnet_node.type().name() != 'matnet':
+                continue
+            try:
+                file_parm = matnet_node.parm("network_filename")
+                file_path = os.path.normpath(file_parm.eval())
+            except:
+                continue
+
+            items.append(
+                {"node": matnet_node.path(), "type": "matnet",
+                 "path": file_path}
+            )
+
+        # Object Network
+        for objnet_node in hou.node('/obj').children():
+            if objnet_node.type().name() != 'subnet':
+                continue
+            try:
+                file_parm = objnet_node.parm("network_filename")
+                file_path = os.path.normpath(file_parm.eval())
+            except:
+                continue
+
+            items.append(
+                {"node": objnet_node.path(), "type": "objnet",
                  "path": file_path}
             )
 
@@ -93,6 +124,7 @@ class BreakdownSceneOperations(Hook):
 
         # these items are to be updated. swap out the fileName parm value with the
         # new path as supplied by the breakdown app.
+
         for item in items:
 
             node_path = item["node"]
@@ -104,17 +136,37 @@ class BreakdownSceneOperations(Hook):
             # update the alembic fileName parm to the new path
             if node_type == "alembic":
 
-                alembic_node = hou.node(node_path)
+                node = hou.node(node_path)
                 engine.log_debug(
                     "Updating alembic node '%s' to: %s" % (
                         node_path, file_path)
                 )
-                alembic_node.parm("fileName").set(file_path)
+                node.parm("fileName").set(file_path)
+
             elif node_type == "alembic_camera":
 
-                alembic_camera_node = hou.node(node_path)
+                node = hou.node(node_path)
                 engine.log_debug(
                     "Updating alembic_camera node '%s' to: %s" % (
                         node_path, file_path)
                 )
-                alembic_camera_node.parm("fileName").set(file_path)
+                node.parm("fileName").set(file_path)
+
+            elif node_type == "matnet":
+                node = hou.node(node_path)
+
+                engine.log_debug(
+                    "Updating matnet node '%s' to: %s" % (
+                        node_path, file_path)
+                )
+                node.parm("network_filename").set(file_path)
+                node.parm("network_reload").pressButton()
+
+            elif node_type == "objnet":
+                node = hou.node(node_path)
+                engine.log_debug(
+                    "Updating objnet node '%s' to: %s" % (
+                        node_path, file_path)
+                )
+                node.parm("network_filename").set(file_path)
+                node.parm("network_reload").pressButton()

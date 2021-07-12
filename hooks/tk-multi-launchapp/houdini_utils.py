@@ -68,7 +68,7 @@ def search_camera(node):
                 if _search_cam(n):
                     return True
 
-        elif node.type().name() == 'cam':
+        elif node.type().name() in ('cam', 'lopimportcam', 'wg::fetchcamera::1.0'):
             cam[0] = node
             return True
 

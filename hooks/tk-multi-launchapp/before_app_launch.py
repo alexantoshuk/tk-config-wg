@@ -62,9 +62,9 @@ class BeforeAppLaunch(tank.Hook):
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
         os.environ['NUKE_PATH'] += os.pathsep + tkroot + '/.nuke'
-        os.environ['MAYA_SCRIPT_PATH'] = tkroot + '/maya/scripts'
+        os.environ['MAYA_SCRIPT_PATH'] += os.pathsep + tkroot + '/maya/scripts'
         os.environ['HSITE'] = tkroot
-        os.environ["PYTHONPATH"] += os.pathsep + os.path.dirname(__file__)
+        os.environ['PYTHONPATH'] += os.pathsep + os.path.dirname(__file__)
 
         if engine_name in ("tk-nuke", "tk-nukestudio"):
             pass

@@ -218,7 +218,9 @@ class MayaSessionCollector(HookBaseClass):
         :param parent_item: Parent Item instance
         """
         # * collect all checked objects in scene for publishing
-        for g in (x for x in cmds.ls(assemblies=1) if maya_utils.is_publish_camera(x)):
+        for g in cmds.ls(sl=True, type='transform'):
+            if not maya_utils.is_publish_camera(g):
+                continue
 
             cam_path = maya_utils.search_camera(g)
             if not cam_path:
@@ -252,7 +254,9 @@ class MayaSessionCollector(HookBaseClass):
         :param parent_item: Parent Item instance
         """
         # * collect all checked objects in scene for publishing
-        for g in (x for x in cmds.ls(assemblies=1) if maya_utils.is_publish_alembic(x)):
+        for g in cmds.ls(sl=True, type='transform'):
+            if not maya_utils.is_publish_alembic(g):
+                continue
             geo_item = parent_item.create_item(
                 "maya.session.geometry", "Geometry", g
             )

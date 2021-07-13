@@ -219,7 +219,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         work_fields = work_template.get_fields(path)
 
         # * append node from collected geometry and replace ':' to '__' in node name to work for windows
-        work_fields["node"] = maya_node.replace(':', '__')
+        work_fields["node"] = maya_node.rsplit('|', 1)[-1].replace(':', '__')
 
         if "abc_preroll" not in item.properties:
             self.logger.warning(

@@ -229,7 +229,7 @@ class MayaSessionCollector(HookBaseClass):
             geo_item = parent_item.create_item(
                 "maya.session.camera", "Camera", g
             )
-            geo_item.properties["node"] = g.strip('|')
+            geo_item.properties["node"] = g
             geo_item.properties["camera"] = cam_path
             try:
                 geo_item.properties["abc_preroll"] = cmds.getAttr(
@@ -245,7 +245,7 @@ class MayaSessionCollector(HookBaseClass):
             icon_path = self._icons_dir() + "/camera.png"
 
             geo_item.set_icon_from_path(icon_path)
-            geo_item.name = "{0} ({1})".format(g.strip('|'), cam_path)
+            geo_item.name = "{0} ({1})".format(g, cam_path)
 
     def _collect_session_geometry(self, parent_item):
         """
@@ -260,7 +260,7 @@ class MayaSessionCollector(HookBaseClass):
             geo_item = parent_item.create_item(
                 "maya.session.geometry", "Geometry", g
             )
-            geo_item.properties["node"] = g.strip('|')
+            geo_item.properties["node"] = g
             try:
                 geo_item.properties["abc_preroll"] = cmds.getAttr(
                     g + ".abcPreroll")

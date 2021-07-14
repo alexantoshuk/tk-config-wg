@@ -34,14 +34,14 @@ def search_camera(node):
         if sname.startswith('_') or tname.startswith('_'):
             continue
 
-        return "|".join(s[:-1])
+        return "|".join(s[:-1])  # return camera transform full path
 
 
 def alembic_camera_export(camera, filename, start=1, end=1, preroll=0, samples=8):
     # sys.stderr.write("{0} {1} {2} {3} {4} {5}".format(
     #     camera, filename, start, end, preroll, samples))
     camera = cmds.ls(camera, long=True)[0]
-    camera_name = camera.strip("|").rsplit("|", 2)[0]
+    camera_name = camera.rsplit("|", 1)[-1]
     camera_shape = cmds.listRelatives(camera, shapes=True)[0]
 
     # create temp fetch camera

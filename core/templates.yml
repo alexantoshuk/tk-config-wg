@@ -58,6 +58,33 @@ keys:
     segment_name:
         type: str
 
+    mat.layer:
+      type: str
+    mat.layer.num:
+      type: int
+    mat.name:   
+      type: str
+    mat.channel:   
+      type: str
+    mat.variant:
+      type: str
+    tex.ext:
+      type: str
+      choices:
+            tif: TIFF Image
+            exr: EXR  Image
+            jpg: JPEG Image
+            tx: TX Image
+            rat: RAT Image
+      
+    colorspace:
+      type: str
+      choices:
+            raw: Raw (Linear) colorspace
+            srgb: sRGB colorspace
+            acescg: ACEScg colorspace
+
+
     # Represents the optional output name for frames written by the Shotgun Write Node
     nuke.output:
         alias: output
@@ -343,6 +370,7 @@ paths:
     houdini_shot_extra_plane:
         definition: '@shot_root/work/images/{name}/{houdini.node}/{aov_name}/v{version}/{width}x{height}/{Shot}_{name}_v{version}.{SEQ}.exr'
 
+     
     houdini_shot_objnet_publish:
         definition: '@shot_root/publish/houdini/{node}.v{version}.objnet'
 
@@ -440,11 +468,18 @@ paths:
     #
     # Alembic caches
     #
-
     asset_alembic_cache:
         definition: '@asset_root/publish/caches/{node}.v{version}.abc'
     shot_alembic_cache:
         definition: '@shot_root/publish/caches/{node}.v{version}.abc'
+
+
+    # Textures
+    work_asset_texture:
+        definition: '@asset_root/work/images/{mat.name}[_{mat.layer}_{mat.layer.num}]/{mat.channel}[_{mat.variant}]_{colorspace}.{UDIM}.{tex.ext}'
+
+    publish_asset_texture:
+        definition: '@asset_root/publish/caches/{mat.name}[_{mat.layer}_{mat.layer.num}]/{mat.channel}[_{mat.variant}]_{colorspace}.v{version}.{UDIM}.{tex.ext}'
 
   
     #

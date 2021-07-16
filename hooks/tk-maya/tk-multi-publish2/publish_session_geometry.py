@@ -18,7 +18,7 @@ import sgtk
 from tank_vendor import six
 
 import maya_utils
-import utils
+import common_utils
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -304,7 +304,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         """
 
         # * limit number of versions to VER_LIMIT
-        utils.cleanup_versions(
+        common_utils.cleanup_versions(
             item.properties["publish_path"], pattern=".v???.abc", max_versions=VER_LIMIT, logger=self.logger)
 
         return

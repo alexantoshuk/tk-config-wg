@@ -53,9 +53,9 @@ class BeforeAppLaunch(tank.Hook):
 
         if platform.system() == "Windows":
             tkroot = "W:/tk"
-            app_path = tkroot + '/app/' + platform.system()
-            os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
-            os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
+            # app_path = tkroot + '/app/' + platform.system()
+            # os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
+            # os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
         else:
             tkroot = "/home/ali/tk"
 
@@ -67,7 +67,7 @@ class BeforeAppLaunch(tank.Hook):
         #     'MAYA_SCRIPT_PATH', '') + os.pathsep + tkroot + '/maya/scripts'
         os.environ['HSITE'] = tkroot
         os.environ['PYTHONPATH'] = os.environ.get(
-            'PYTHONPATH', '') + os.pathsep + os.path.dirname(__file__)
+            'PYTHONPATH', '') + os.pathsep + os.path.join(os.path.dirname(__file__), 'utils')
 
         if engine_name in ("tk-nuke", "tk-nukestudio"):
             pass

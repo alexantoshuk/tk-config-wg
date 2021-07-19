@@ -55,16 +55,17 @@ class BeforeAppLaunch(tank.Hook):
         cur_proj_path = ctx.sgtk.paths_from_entity(
             ctx.project['type'], ctx.project['id'])[0]
 
-        sys.path.append(os.path.normpath(cur_proj_path))
+        cur_proj_path = os.path.normpath(cur_proj_path)
+        sys.path.append(cur_proj_path)
         self.logger.debug(
-            "Try to load project environment from 'project_env.py'")
+            "Try to load project environment from '%s/proj_env.py'" % cur_proj_path)
         try:
             import proj_env
             self.logger.debug(
-                "Loading project environment from 'project_env.py' done successfully")
+                "Loading project environment from '%s/proj_env.py' done successfully" % cur_proj_path)
         except:
             self.logger.error(
-                "Fail to load project environment from 'project_env.py'")
+                "Fail to load project environment from '%s/proj_env.py'" % cur_proj_path)
 
         if platform.system() == "Windows":
             tkroot = "W:/tk"

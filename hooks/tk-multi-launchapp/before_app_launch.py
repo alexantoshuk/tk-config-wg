@@ -50,6 +50,21 @@ class BeforeAppLaunch(tank.Hook):
 
         # you can set environment variables like this:
         # os.environ["MY_SETTING"] = "foo bar"
+        ctx = self.parent.context
+        cur_proj_path = None
+        cur_proj_path = ctx.sgtk.paths_from_entity(
+            ctx.project['type'], ctx.project['id'])[0]
+
+        sys.path.append(os.path.normpath(cur_proj_path))
+        self.logger.debug(
+            "Try to load project environment from 'project_env.py'")
+        try:
+            import proj_env
+            self.logger.debug(
+                "Loading project environment from 'project_env.py' done successfully")
+        except:
+            self.logger.error(
+                "Fail to load project environment from 'project_env.py'")
 
         if platform.system() == "Windows":
             tkroot = "W:/tk"
@@ -66,6 +81,7 @@ class BeforeAppLaunch(tank.Hook):
         # os.environ['MAYA_SCRIPT_PATH'] = os.environ.get(
         #     'MAYA_SCRIPT_PATH', '') + os.pathsep + tkroot + '/maya/scripts'
         os.environ['HSITE'] = tkroot
+
         os.environ['PYTHONPATH'] = os.environ.get(
             'PYTHONPATH', '') + os.pathsep + os.path.join(os.path.dirname(__file__), 'utils')
 

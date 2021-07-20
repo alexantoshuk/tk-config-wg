@@ -476,10 +476,10 @@ paths:
 
     # Textures
     work_asset_texture:
-        definition: '@asset_root/work/images/{mat.name}[_{mat.layer}_{mat.layer.num}]/{mat.channel}[_{mat.variant}]_{colorspace}.{UDIM}.{tex.ext}'
+        definition: '@asset_root/work/images/{mat.name}_{mat.channel}[_{mat.variant}]_{colorspace}.{UDIM}.{tex.ext}'
 
     publish_asset_texture:
-        definition: '@asset_root/publish/caches/{mat.name}[_{mat.layer}_{mat.layer.num}]/{mat.channel}[_{mat.variant}]_{colorspace}.v{version}.{UDIM}.{tex.ext}'
+        definition: '@asset_root/publish/caches/{mat.name}_{mat.channel}[_{mat.variant}]_{colorspace}.v{version}.{UDIM}.{tex.ext}'
 
   
     #
@@ -551,7 +551,7 @@ paths:
     # The location of published maya files
     maya_asset_publish:
         definition: '@asset_root/publish/maya/{name}.v{version}.{maya_extension}'
-  
+
 
     #
     # Houdini

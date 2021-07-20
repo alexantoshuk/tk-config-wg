@@ -193,6 +193,11 @@ class BasicSceneCollector(HookBaseClass):
         # handle files and folders differently
         if os.path.isdir(path):
             self._collect_folder(parent_item, path)
+            for dirpath, dirnames, filenames in os.walk(path):
+                for dirname in dirnames:
+                    full_dirname = os.path.join(dirpath, dirname)
+                    self._collect_folder(parent_item, full_dirname)
+
             return None
         else:
             dirname = os.path.dirname(path)
@@ -316,7 +321,6 @@ class BasicSceneCollector(HookBaseClass):
                 first_frame_file, sequence=is_sequence
             )
 
-            display_name = '/'.join((folder_name, display_name))
             # create and populate the item
             file_item = parent_item.create_item(
                 item_type, type_display, display_name)

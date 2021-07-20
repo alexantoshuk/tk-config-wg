@@ -556,11 +556,10 @@ class BasicFilePublishPlugin(HookBaseClass):
         return publish_type
 
     def _tex_publish_name(self, settings, item, work_path):
-        dirname, name = os.path.split(work_path)
-        _, matname = os.path.split(dirname)
+        _, name = os.path.split(work_path)
         name = name.replace('.%04d.', '.<UDIM>.').replace(
             '.####.', '.<UDIM>.')
-        name = '/'.join((matname, name))
+
         return name
 
     def _tex_publish_path(self, settings, item, work_path):

@@ -230,7 +230,7 @@ class HoudiniActions(HookBaseClass):
             ignore_load_warnings=False,
         )
 
-   ##############################################################################################################
+    ##############################################################################################################
 
     def _import_objnet(self, path, sg_publish_data):
         """Import the supplied path as a objnet
@@ -264,7 +264,9 @@ class HoudiniActions(HookBaseClass):
             network_module.add_network_reader_parms(
                 objnet_node, pattern="*.objnet")
         else:
-            app.log_debug("Objnet: %s  already exists " % objnet_node.path())
+            error_msg = "Objnet: %s  already exists " % objnet_node.path()
+            app.log_error(error_msg)
+            raise Exception(error_msg)
 
         try:
             objnet_node.parm("network_filename").set(path)
@@ -308,7 +310,9 @@ class HoudiniActions(HookBaseClass):
             network_module.add_network_reader_parms(
                 matnet_node, pattern="*.matnet")
         else:
-            app.log_debug("Matnet: %s  already exists " % matnet_node.path())
+            error_msg = "Matnet: %s  already exists " % matnet_node.path()
+            app.log_error(error_msg)
+            raise Exception(error_msg)
 
         try:
             matnet_node.parm("network_filename").set(path)
@@ -400,14 +404,16 @@ class HoudiniActions(HookBaseClass):
                 alembic_sop.path(), path)
         )
         alembic_sop.parm("reload").pressButton()
-        try:
-            assign_material_sop = alembic_sop.createOutputNode(
-                'wg::assign_material')
-            assign_material_sop.parm('asset_name').set(name)
-            assign_material_sop.setDisplayFlag(True)
-            assign_material_sop.setRenderFlag(True)
-        except:
-            pass
+
+        xform_node = alembic_sop.createOutputNode(
+            'xform', 'scale')
+        xform_node.parm("scale").set(0.01)
+
+        assign_material_sop = xform_node.createOutputNode(
+            'wg::assign_material')
+        assign_material_sop.parm('asset_name').set(name)
+        assign_material_sop.setDisplayFlag(True)
+        assign_material_sop.setRenderFlag(True)
 
         _show_node(alembic_sop)
 
@@ -520,7 +526,6 @@ def _get_current_network_panetab(context_type):
             and panetab.pwd().path().startswith(context_type)
             and panetab.isCurrentTab()
         ):
-
             network_tab = panetab
             break
 

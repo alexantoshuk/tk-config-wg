@@ -66,6 +66,21 @@ keys:
       type: str
     mat.channel:   
       type: str
+      choices:
+            color
+            ssscolor
+            emitcolor            
+            rough
+            coat
+            gloss
+            refl            
+            spec
+            trans
+            metal
+            bump 
+            disp
+            opac
+
     mat.variant:
       type: str
     tex.ext:
@@ -74,6 +89,7 @@ keys:
             tif: TIFF Image
             exr: EXR  Image
             jpg: JPEG Image
+            png: PNG Image
             tx: TX Image
             rat: RAT Image
       
@@ -591,7 +607,7 @@ paths:
         definition: '@asset_root/work/images/{name}/{houdini.node}/{aov_name}/v{version}/{width}x{height}/{Asset}_{name}_v{version}.{SEQ}.exr'
 
     houdini_asset_matnet_publish:
-        definition: '@asset_root/publish/houdini/{node}.v{version}.matnet'
+        definition: '@asset_root/publish/houdini/{mat.variant}.v{version}.matnet'
 
 
     #

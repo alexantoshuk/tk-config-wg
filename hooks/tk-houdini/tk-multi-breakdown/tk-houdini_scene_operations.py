@@ -15,6 +15,8 @@ from tank import Hook
 
 import hou
 import houdini_utils
+from houdini_utils import set_comment
+from common_utils import datetime_str
 
 
 class BreakdownSceneOperations(Hook):
@@ -142,6 +144,7 @@ class BreakdownSceneOperations(Hook):
                         node_path, file_path)
                 )
                 node.parm("fileName").set(file_path)
+                set_comment(node, datetime_str())
 
             elif node_type == "alembic_camera":
 
@@ -151,6 +154,7 @@ class BreakdownSceneOperations(Hook):
                         node_path, file_path)
                 )
                 node.parm("fileName").set(file_path)
+                set_comment(node, datetime_str())
 
             elif node_type == "matnet":
                 node = hou.node(node_path)
@@ -170,3 +174,5 @@ class BreakdownSceneOperations(Hook):
                 )
                 node.parm("network_filename").set(file_path)
                 node.parm("network_reload").pressButton()
+            else:
+                continue

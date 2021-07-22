@@ -4,6 +4,11 @@ import sys
 import os
 
 
+def set_comment(node, comment):
+    node.setComment(comment)
+    node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
+
+
 def node_types(node_type_category, pattern):
     '''Return a list of node types in a particular node type category
        whose names match a pattern.'''

@@ -205,9 +205,9 @@ class BasicFilePublishPlugin(HookBaseClass):
                     ["Nuke Script", "nk"],
                     ["Photoshop Image", "psd", "psb"],
                     ["VRED Scene", "vpb", "vpe", "osb"],
-                    ["Rendered Image", "dpx", "exr"],
-                    ["Texture", "tiff", "tx", "tga", "dds", "exr"],
-                    ["Image", "jpeg", "jpg", "png"],
+                    ["Rendered Image", "dpx"],
+                    ["Texture", "tiff", "tx", "tga", "dds", "exr", "jpg"],
+                    ["Image", "jpeg", "jpg", "png", "exr"],
                     ["Movie", "mov", "mp4"],
                     ["PDF", "pdf"],
                 ],
@@ -403,6 +403,12 @@ class BasicFilePublishPlugin(HookBaseClass):
 
         # handle copying of work to publish if templates are in play
         publish_file_for_thumb = self._copy_work_to_publish(settings, item)
+
+        # do not actualy publish Textures
+        ctx = item.context
+        if ctx.step and ctx.step['name'] == 'Texture':
+            return
+
         thumb = publish_file_for_thumb if publish_file_for_thumb else item.get_thumbnail_as_path()
         # arguments for publish registration
         self.logger.info("Registering publish...")
@@ -464,6 +470,9 @@ class BasicFilePublishPlugin(HookBaseClass):
             instances.
         :param item: Item to process
         """
+        ctx = item.context
+        if ctx.step and ctx.step['name'] == 'Texture':
+            return
 
         publisher = self.parent
 
@@ -943,7 +952,7 @@ class BasicFilePublishPlugin(HookBaseClass):
                 % (work_file, publish_file)
             )
 
-            return publish_file
+        return publish_file
 
     def _get_next_version_info(self, path, item):
         """

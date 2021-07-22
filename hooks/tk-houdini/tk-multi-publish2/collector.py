@@ -14,7 +14,8 @@ import hou
 import os
 import sys
 import houdini_utils
-
+import common_utils
+reload(common_utils)
 HookBaseClass = sgtk.get_hook_baseclass()
 
 # A dict of dicts organized by category, type and output file parm
@@ -100,6 +101,7 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # collect other, non-toolkit outputs to present for publishing
         self.collect_node_outputs(item)
+        self._collect_textures(item)
         self._collect_matnet(item)
         self._collect_objnet(item)
         self._collect_session_camera(item)
@@ -213,8 +215,13 @@ class HoudiniSessionCollector(HookBaseClass):
     def _collect_matnet(self, parent_item):
         """
         """
+
         eng = sgtk.platform.current_engine()
-        if eng.context.entity['type'] != 'Asset':
+        ctx = eng.context
+        if ctx.entity['type'] != 'Asset':
+            return
+
+        if not ctx.step or ctx.step['name'] != 'Surface':
             return
 
         asset_name = eng.context.entity['name']
@@ -232,6 +239,67 @@ class HoudiniSessionCollector(HookBaseClass):
 
         item.set_icon_from_path(icon_path)
         item.name = matnet_path
+
+    def _collect_textures(self, parent_item):
+        """
+        """
+
+        en = sgtk.platform.current_engine()
+        ctx = en.context
+        if ctx.entity['type'] != 'Asset':
+            return
+
+        if not ctx.step or ctx.step['name'] != 'Texture':
+            return
+
+        asset_name = en.context.entity['name']
+        matnet = hou.node('/shop/' + asset_name)
+        if not matnet:
+            return
+
+        work_template = en.get_template_by_name("work_asset_texture")
+        textures = set()
+
+        def _add_tex(node):
+            for p in node.parms():
+                if not isinstance(p.parmTemplate(), hou.StringParmTemplate):
+                    continue
+                texpath = p.eval().replace('%(UDIM)d', '<UDIM>')
+                if work_template.validate(texpath):
+                    textures.add(texpath)
+
+        for node in matnet.children():
+            ntc = node.childTypeCategory()
+            if ntc and ntc.name() == 'Vop':
+                for n in node.children():
+                    _add_tex(n)
+            else:
+                _add_tex(node)
+
+        for tex in textures:
+            item = parent_item.create_item(
+                "Texture", "Texture", tex)
+            item.properties["path"] = tex
+
+            item.properties["work_template"] = work_template
+
+            seq_files = common_utils.seq_files(tex)
+
+            item.properties["sequence_paths"] = seq_files
+
+            first = seq_files[0]
+
+            if (not first) or tex.endswith('.exr'):
+                icon_path = self._icons_dir() + "/texture.png"
+            else:
+                icon_path = first
+
+            if first:
+                item.set_thumbnail_from_path(first)
+
+            item.set_icon_from_path(icon_path)
+
+            item.name = os.path.basename(tex).replace('<UDIM>', '####')
 
     def _collect_objnet(self, parent_item):
         """

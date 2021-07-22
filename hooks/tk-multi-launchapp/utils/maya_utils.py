@@ -9,7 +9,7 @@ def is_publish_alembic(node):
         return False
     color = cmds.getAttr(node + ".outlinerColor")[0]
     r, g, b = color
-    return color != (0.0, 0.0, 0.0) and g > r
+    return color == (0.1, 0.7, 0.1)
 
 
 def is_publish_camera(node):
@@ -17,7 +17,7 @@ def is_publish_camera(node):
         return False
     color = cmds.getAttr(node + ".outlinerColor")[0]
     r, g, b = color
-    return color != (0.0, 0.0, 0.0) and r > g
+    return color == (0.8, 0.2, 0.2)
 
 
 def search_camera(node):

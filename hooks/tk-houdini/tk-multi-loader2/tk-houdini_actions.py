@@ -17,7 +17,9 @@ import sys
 import re
 import sgtk
 import houdini_utils
-reload(houdini_utils)
+from houdini_utils import set_comment
+from common_utils import datetime_str
+
 HookBaseClass = sgtk.get_hook_baseclass()
 
 
@@ -271,6 +273,7 @@ class HoudiniActions(HookBaseClass):
         try:
             objnet_node.parm("network_filename").set(path)
             objnet_node.parm("network_reload").pressButton()
+
         except:
             pass
 
@@ -317,6 +320,7 @@ class HoudiniActions(HookBaseClass):
         try:
             matnet_node.parm("network_filename").set(path)
             matnet_node.parm("network_reload").pressButton()
+
         except:
             pass
 
@@ -359,6 +363,7 @@ class HoudiniActions(HookBaseClass):
         alembic_camera_node.parm("fileName").set(path)
 
         alembic_camera_node.parm("reload").pressButton()
+        set_comment(matnet_node, datetime_str())
 
         _show_node(alembic_camera_node)
 
@@ -414,7 +419,7 @@ class HoudiniActions(HookBaseClass):
         assign_material_sop.parm('asset_name').set(name)
         assign_material_sop.setDisplayFlag(True)
         assign_material_sop.setRenderFlag(True)
-
+        set_comment(geo_node, datetime_str())
         _show_node(alembic_sop)
 
     ##############################################################################################################

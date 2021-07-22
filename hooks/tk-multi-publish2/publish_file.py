@@ -578,16 +578,16 @@ class BasicFilePublishPlugin(HookBaseClass):
         ctx = item.context
         ctx.sgtk.create_filesystem_structure(
             ctx.entity['type'], ctx.entity['id'])
+        asset_root_template = publisher.get_template_by_name(
+            "asset_root")
 
-        step_dir = ctx.sgtk.paths_from_entity(
-            ctx.step['type'], ctx.step['id'])
-
-        work_template = publisher.get_template_by_name(
-            "work_asset_texture")
+        fields = ctx.as_template_fields(asset_root_template)
+        root_path = ctx.sgtk.paths_from_template(
+            asset_root_template, fields)[0]
 
         publish_name = self._tex_publish_name(settings, item, work_path)
         publish_path = os.path.join(
-            step_dir[0], 'work', 'images', publish_name)
+            root_path, 'work', 'images', publish_name)
 
         return publish_path
 

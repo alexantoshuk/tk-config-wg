@@ -264,13 +264,17 @@ class HoudiniSessionCollector(HookBaseClass):
             for p in node.parms():
                 if not isinstance(p.parmTemplate(), hou.StringParmTemplate):
                     continue
+
                 texpath = p.eval().replace('%(UDIM)d', '<UDIM>')
+
                 if work_template.validate(texpath):
                     textures.add(texpath)
 
         for node in matnet.children():
+
             ntc = node.childTypeCategory()
-            if ntc and ntc.name() == 'Vop':
+
+            if (not node.isLockedHDA()) and ntc and ntc.name() == 'Vop':
                 for n in node.children():
                     _add_tex(n)
             else:
@@ -296,6 +300,9 @@ class HoudiniSessionCollector(HookBaseClass):
 
             if first:
                 item.set_thumbnail_from_path(first)
+
+                # disable thumbnail creation since we get it for free
+                # item.thumbnail_enabled = False
 
             item.set_icon_from_path(icon_path)
 

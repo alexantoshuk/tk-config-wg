@@ -203,7 +203,7 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
         # sys.stderr.write(str(version) + '\n')
         work_fields = work_template.get_fields(path)
         work_fields['version'] = version
-
+        
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
         if missing_keys:
@@ -218,13 +218,13 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
         # create the publish path by applying the fields. store it in the item's
         # properties. This is the path we'll create and then publish in the base
         # publish plugin. Also set the publish_path to be explicit.
-
+        item.properties["publish_version"] = version
         item.properties["publish_path"] = publish_template.apply_fields(
             work_fields)
         item.properties["publish_type"] = "Texture"
 
         # * return grand parent validate method
-        return True
+        
         return super(HoudiniTexturesPublishPlugin, self).validate(settings, item)
 
     def publish(self, settings, item):

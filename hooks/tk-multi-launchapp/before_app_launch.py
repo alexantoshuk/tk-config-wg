@@ -61,6 +61,7 @@ class BeforeAppLaunch(tank.Hook):
             "Try to load project environment from '%s/proj_env.py'" % cur_proj_path)
         try:
             import proj_env
+            reload(proj_env)
             self.logger.debug(
                 "Loading project environment from '%s/proj_env.py' done successfully" % cur_proj_path)
         except:

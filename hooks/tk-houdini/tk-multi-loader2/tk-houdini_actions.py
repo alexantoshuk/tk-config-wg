@@ -363,7 +363,7 @@ class HoudiniActions(HookBaseClass):
         alembic_camera_node.parm("fileName").set(path)
 
         alembic_camera_node.parm("reload").pressButton()
-        set_comment(matnet_node, datetime_str())
+        set_comment(alembic_camera_node, datetime_str())
 
         _show_node(alembic_camera_node)
 

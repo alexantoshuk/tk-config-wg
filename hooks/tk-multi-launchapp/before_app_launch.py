@@ -64,7 +64,7 @@ class BeforeAppLaunch(tank.Hook):
             self.logger.debug(
                 "Loading project environment from '%s/proj_env.py' done successfully" % cur_proj_path)
         except:
-            self.logger.error(
+            self.logger.warning(
                 "Fail to load project environment from '%s/proj_env.py'" % cur_proj_path)
 
         if platform.system() == "Windows":
@@ -77,18 +77,21 @@ class BeforeAppLaunch(tank.Hook):
 
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
-        os.environ['NUKE_PATH'] = os.environ.get(
-            'NUKE_PATH', '') + os.pathsep + tkroot + '/.nuke'
-        os.environ['MAYA_SCRIPT_PATH'] = os.environ.get(
-            'MAYA_SCRIPT_PATH', '') + os.pathsep + tkroot + '/maya/scripts'
+
         os.environ['HSITE'] = tkroot
 
         os.environ['PYTHONPATH'] = os.environ.get(
             'PYTHONPATH', '') + os.pathsep + os.path.join(os.path.dirname(__file__), 'utils')
 
         if engine_name in ("tk-nuke", "tk-nukestudio"):
-            pass
+            os.environ['NUKE_PATH'] = os.environ.get(
+                'NUKE_PATH', '') + os.pathsep + tkroot + '/.nuke'
+
         elif engine_name == "tk-maya":
-            pass
+            os.environ['MAYA_SCRIPT_PATH'] = os.environ.get(
+                'MAYA_SCRIPT_PATH', '') + os.pathsep + os.path.normpath(tkroot + '/maya/scripts')
+            os.environ['PYTHONPATH'] = os.environ.get(
+                'PYTHONPATH', '') + os.pathsep + os.path.normpath(tkroot + '/maya/scripts')
+
         elif engine_name == "tk-houdini":
             pass

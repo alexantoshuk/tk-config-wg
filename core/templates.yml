@@ -607,7 +607,7 @@ paths:
         definition: '@asset_root/work/images/{name}/{houdini.node}/{aov_name}/v{version}/{width}x{height}/{Asset}_{name}_v{version}.{SEQ}.exr'
 
     houdini_asset_matnet_publish:
-        definition: '@asset_root/publish/houdini/{mat.variant}.v{version}.matnet'
+        definition: '@asset_root/publish/houdini/{Asset}.v{version}.matnet'
 
 
     #

@@ -271,14 +271,12 @@ class HoudiniSessionCollector(HookBaseClass):
                     textures.add(texpath)
 
         for node in matnet.children():
-
+            _add_tex(node)
             ntc = node.childTypeCategory()
 
             if (not node.isLockedHDA()) and ntc and ntc.name() == 'Vop':
                 for n in node.children():
                     _add_tex(n)
-            else:
-                _add_tex(node)
 
         for tex in textures:
             item = parent_item.create_item(

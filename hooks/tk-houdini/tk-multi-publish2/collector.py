@@ -15,7 +15,7 @@ import os
 import sys
 import houdini_utils
 import common_utils
-reload(common_utils)
+reload(houdini_utils)
 HookBaseClass = sgtk.get_hook_baseclass()
 
 # A dict of dicts organized by category, type and output file parm
@@ -218,6 +218,29 @@ class HoudiniSessionCollector(HookBaseClass):
 
         eng = sgtk.platform.current_engine()
         ctx = eng.context
+
+        if ctx.entity['type'] == 'Shot':
+            for matnet in hou.node("/shop").children():
+
+                if matnet.type().name() != 'matnet':
+                    continue
+
+                if not houdini_utils.is_publish_matnet(matnet):
+                    continue
+
+                matnet_path = matnet.path()
+                item = parent_item.create_item(
+                    "houdini.matnet", "Materials", matnet_path)
+                item.properties["node"] = matnet_path
+
+                # get the icon path to display for this item
+                icon_path = self._icons_dir() + "/matnet.svg"
+
+                item.set_icon_from_path(icon_path)
+                item.name = matnet_path
+
+            return
+
         if ctx.entity['type'] != 'Asset':
             return
 

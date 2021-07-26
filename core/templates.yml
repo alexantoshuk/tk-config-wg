@@ -390,6 +390,9 @@ paths:
     houdini_shot_objnet_publish:
         definition: '@shot_root/publish/houdini/{node}.v{version}.objnet'
 
+    houdini_shot_matnet_publish:
+        definition: '@shot_root/publish/houdini/{node}.v{version}.matnet'
+
 
     #
     # 3dsmax
@@ -606,8 +609,11 @@ paths:
     houdini_asset_extra_plane:
         definition: '@asset_root/work/images/{name}/{houdini.node}/{aov_name}/v{version}/{width}x{height}/{Asset}_{name}_v{version}.{SEQ}.exr'
 
+    houdini_asset_objnet_publish:
+        definition: '@asset_root/publish/houdini/{node}.v{version}.objnet'
+
     houdini_asset_matnet_publish:
-        definition: '@asset_root/publish/houdini/{Asset}.v{version}.matnet'
+        definition: '@asset_root/publish/houdini/{node}.v{version}.matnet'
 
 
     #

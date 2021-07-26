@@ -155,8 +155,9 @@ class HoudiniMatnetPublishPlugin(HookBaseClass):
         # is a temporary measure until the publisher handles context switching
         # natively.
         item.context_change_allowed = False
+        checked = item.context.entity['type'] == 'Asset'
 
-        return {"accepted": accepted, "checked": True}
+        return {"accepted": accepted, "checked": checked}
 
     def validate(self, settings, item):
         """

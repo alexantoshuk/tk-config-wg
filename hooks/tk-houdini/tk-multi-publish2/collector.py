@@ -332,11 +332,7 @@ class HoudiniSessionCollector(HookBaseClass):
     def _collect_objnet(self, parent_item):
         """
         """
-        eng = sgtk.platform.current_engine()
-        if eng.context.entity['type'] != 'Shot':
-            return
 
-        shot_name = eng.context.entity['name']
         for node in hou.node("/obj").children():
             if not houdini_utils.is_publish_objnet(node):
                 continue

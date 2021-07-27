@@ -325,17 +325,17 @@ class BasicSceneCollector(HookBaseClass):
             file_item = parent_item.create_item(
                 item_type, type_display, display_name)
             icon_path = self._get_icon_path(icon_name)
-
-            if first_frame_file.endswith('.exr'):
-                file_item.set_icon_from_path(icon_path)
-            else:
-                file_item.set_icon_from_path(first_frame_file)
+            file_item.set_icon_from_path(icon_path)
+            # if first_frame_file.endswith('.exr'):
+            #     file_item.set_icon_from_path(icon_path)
+            # else:
+            #     file_item.set_icon_from_path(first_frame_file)
 
             # use the first frame of the seq as the thumbnail
-            file_item.set_thumbnail_from_path(first_frame_file)
+            # file_item.set_thumbnail_from_path(icon_path)
 
             # disable thumbnail creation since we get it for free
-            file_item.thumbnail_enabled = False
+            file_item.thumbnail_enabled = True
 
             # all we know about the file is its path. set the path in its
             # properties for the plugins to use for processing.

@@ -12,7 +12,7 @@ import os
 import sys
 import pprint
 import traceback
-
+import platform
 import sgtk
 from sgtk.util.filesystem import copy_file, ensure_folder_exists
 
@@ -402,14 +402,13 @@ class BasicFilePublishPlugin(HookBaseClass):
             )
 
         # handle copying of work to publish if templates are in play
-        publish_file_for_thumb = self._copy_work_to_publish(settings, item)
+        self._copy_work_to_publish(settings, item)
 
         # do not actualy publish Textures
-        ctx = item.context
-        if ctx.step and ctx.step['name'] == 'Texture':
-            return
+        # ctx = item.context
+        # if ctx.step and ctx.step['name'] == 'Texture':
+        #     return
 
-        thumb = publish_file_for_thumb if publish_file_for_thumb else item.get_thumbnail_as_path()
         # arguments for publish registration
         self.logger.info("Registering publish...")
         publish_data = {
@@ -420,7 +419,7 @@ class BasicFilePublishPlugin(HookBaseClass):
             "name": publish_name,
             "created_by": publish_user,
             "version_number": publish_version,
-            "thumbnail_path": thumb,
+            "thumbnail_path": item.get_thumbnail_as_path(),
             "published_file_type": publish_type,
             "dependency_paths": publish_dependencies_paths,
             "dependency_ids": publish_dependencies_ids,
@@ -470,9 +469,6 @@ class BasicFilePublishPlugin(HookBaseClass):
             instances.
         :param item: Item to process
         """
-        ctx = item.context
-        if ctx.step and ctx.step['name'] == 'Texture':
-            return
 
         publisher = self.parent
 
@@ -564,13 +560,6 @@ class BasicFilePublishPlugin(HookBaseClass):
 
         return publish_type
 
-    def _tex_publish_name(self, settings, item, work_path):
-        _, name = os.path.split(work_path)
-        name = name.replace('.%04d.', '.<UDIM>.').replace(
-            '.####.', '.<UDIM>.')
-
-        return name
-
     def _tex_publish_path(self, settings, item, work_path):
 
         publisher = self.parent
@@ -585,10 +574,32 @@ class BasicFilePublishPlugin(HookBaseClass):
         root_path = ctx.sgtk.paths_from_template(
             asset_root_template, fields)[0]
 
-        publish_name = self._tex_publish_name(settings, item, work_path)
-        publish_path = os.path.join(
-            root_path, 'work', 'images', publish_name)
+        name = os.path.basename(work_path).replace('.%04d.', '.####.')
 
+        filters = [
+            #['project.Project.id', 'is', ctx.project['id']],
+            ['entity.Asset.id', 'is', ctx.entity['id']],
+            ['task.Task.step.Step.code', 'is', 'Texture'],
+            ['published_file_type.PublishedFileType.code', 'is', 'Texture'],
+            ['name', 'is', name]
+        ]
+        fields = ['version_number']
+        order = [{'field_name': 'version_number', 'direction': 'desc'}]
+
+        sg = sgtk.platform.current_engine().shotgun
+        version_number_dict = sg.find_one(
+            'PublishedFile', filters, fields, order)
+        version_number = 1
+        if version_number_dict:
+            version_number = version_number_dict.get('version_number', None)
+            if version_number is not None:
+                version_number += 1
+            else:
+                version_number = 1
+
+        publish_path = os.path.join(root_path, 'publish', 'caches', name.replace(
+            '.####.', '.v%03d.<UDIM>.' % version_number))
+        item.properties["publish_version"] = version_number
         return publish_path
 
     def get_publish_path(self, settings, item):
@@ -725,9 +736,9 @@ class BasicFilePublishPlugin(HookBaseClass):
         path = item.properties.path
 
         # TEXTURING
-        ctx = item.context
-        if ctx.step and ctx.step['name'] == 'Texture':
-            return self._tex_publish_name(settings, item, path)
+        # ctx = item.context
+        # if ctx.step and ctx.step['name'] == 'Texture':
+        #     return self._tex_publish_name(settings, item, path)
 
         if "sequence_paths" in item.properties:
             # generate the name from one of the actual files in the sequence

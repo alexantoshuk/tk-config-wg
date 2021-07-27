@@ -134,10 +134,10 @@ settings.tk-multi-publish2.houdini.asset_step:
     hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_matnet.py"
     settings:
         Publish Template: houdini_asset_matnet_publish
-  - name: Publish to Shotgun
-    hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_textures.py"
-    settings:
-        Publish Template: publish_asset_texture
+  # - name: Publish to Shotgun
+  #   hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_textures.py"
+  #   settings:
+  #       Publish Template: publish_asset_texture
 
 
   help_url: *help_url

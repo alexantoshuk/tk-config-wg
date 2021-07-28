@@ -43,37 +43,49 @@ def set_env(ctx):
             except:
                 pass
 
+    en = sgtk.platform.current_engine()
+    ctx.sgtk.create_filesystem_structure(ctx.entity['type'], ctx.entity['id'])
+
+    if ctx.entity.get('type', None) == 'Shot':
+        root_template = en.get_template_by_name(
+            "shot_root")
+
+    elif ctx.entity.get('type', None) == 'Asset':
+        root_template = en.get_template_by_name(
+            "asset_root")
+
+    root_path = None
+    entity_root_path = None
+    if not root_template:
+        return
+
+    fields = ctx.as_template_fields(root_template)
+    root_path = ctx.sgtk.paths_from_template(
+        root_template, fields)
+    if not root_path:
+        return
+
+    root_path = root_path[0].replace("\\", "/")
+    entity_root_path = os.path.dirname(root_path)
+    hou.hscript('setenv ENTITYPATH = %s' % entity_root_path)
+    hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
+
     if ctx.step:
-        step_root_path = ctx.sgtk.paths_from_entity(
-            'Step', ctx.step['id'])
-        if step_root_path:
-            step_root_path = step_root_path[0].replace("\\", "/")
-            hou.hscript('setenv STEPPATH = %s' % step_root_path)
-            hou.hscript('setenv STEP = %s' % ctx.step['name'])
+        hou.hscript('setenv STEPPATH = %s' % root_path)
+        hou.hscript('setenv STEP = %s' % ctx.step['name'])
+
     if ctx.task:
         task_name = ctx.task.get('name', None)
         if task_name:
             hou.hscript('setenv TASK = %s' % task_name)
 
     if ctx.entity.get('type', None) == 'Shot':
-        shot_root_path = ctx.sgtk.paths_from_entity(
-            'Shot', ctx.entity['id'])
-        if shot_root_path:
-            shot_root_path = shot_root_path[0].replace("\\", "/")
-            hou.hscript('setenv SHOTPATH = %s' % shot_root_path)
-            hou.hscript('setenv SHOT = %s' % ctx.entity['name'])
-            hou.hscript('setenv ENTITYPATH = %s' % shot_root_path)
-            hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
+        hou.hscript('setenv SHOTPATH = %s' % entity_root_path)
+        hou.hscript('setenv SHOT = %s' % ctx.entity['name'])
 
     elif ctx.entity.get('type', None) == 'Asset':
-        asset_root_path = ctx.sgtk.paths_from_entity(
-            'Asset', ctx.entity['id'])
-        if asset_root_path:
-            asset_root_path = asset_root_path[0].replace("\\", "/")
-            hou.hscript('setenv ASSETPATH = %s' % asset_root_path)
-            hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
-            hou.hscript('setenv ENTITYPATH = %s' % asset_root_path)
-            hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
+        hou.hscript('setenv ASSETPATH = %s' % entity_root_path)
+        hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
 
 
 class SceneOperation(HookClass):

@@ -253,6 +253,7 @@ settings.tk-multi-workfiles2.maya.asset_step:
       filters:
       link_field: entity
       hierarchy: [step]
+  hook_scene_operation: "{config}/tk-maya/tk-multi-workfiles2/scene_operation.py"
   location: "@apps.tk-multi-workfiles2.location"
 
 # shot_step
@@ -280,6 +281,7 @@ settings.tk-multi-workfiles2.maya.shot_step:
       filters:
       link_field: entity
       hierarchy: [step]
+  hook_scene_operation: "{config}/tk-maya/tk-multi-workfiles2/scene_operation.py"
   location: '@apps.tk-multi-workfiles2.location'
 
 ################################################################################

@@ -128,4 +128,10 @@ class SceneOperation(HookClass):
 
             # do new file:
             cmds.file(newFile=True, force=True)
+
+            import animationTools as atools
+            if context.step['name'] == 'Animation':
+                reload(atools)
+                if not atools.showAnimationStages():
+                    atools.toggleStageTracking()
             return True

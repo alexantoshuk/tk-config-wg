@@ -82,6 +82,8 @@ class BreakdownSceneOperations(Hook):
         for matnet_node in hou.node('/shop').children():
             if matnet_node.type().name() != 'matnet':
                 continue
+            if matnet_node.comment().strip().startswith('#'):
+                continue
             try:
                 file_parm = matnet_node.parm("network_filename")
                 file_path = os.path.normpath(file_parm.eval())
@@ -96,6 +98,8 @@ class BreakdownSceneOperations(Hook):
         # Object Network
         for objnet_node in hou.node('/obj').children():
             if objnet_node.type().name() != 'subnet':
+                continue
+            if objnet_node.comment().strip().startswith('#'):
                 continue
             try:
                 file_parm = objnet_node.parm("network_filename")

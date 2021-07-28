@@ -108,7 +108,7 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
         # write uv's (only the current uv set gets written)
         "-uvWrite",
         # do not export vertex normals
-        "-noNormals",
+        # "-noNormals",
         "-eulerFilter",
     ]
 

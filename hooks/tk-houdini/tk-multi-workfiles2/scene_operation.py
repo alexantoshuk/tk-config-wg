@@ -20,8 +20,13 @@ HookClass = sgtk.get_hook_baseclass()
 
 
 def set_env(ctx):
-    hou.hscript('setenv -u SHOT_ROOT')
-    hou.hscript('setenv -u ASSET_ROOT')
+    hou.hscript('setenv -u SHOTPATH')
+    hou.hscript('setenv -u ASSETPATH')
+    hou.hscript('setenv -u STEPPATH')
+    hou.hscript('setenv -u SHOT')
+    hou.hscript('setenv -u ASSET')
+    hou.hscript('setenv -u STEP')
+    hou.hscript('setenv -u TASK')
     hou.hscript('setenv -u VER')
 
     # hou.hscript('setenv VER = %s' % ver)
@@ -38,19 +43,33 @@ def set_env(ctx):
             except:
                 pass
 
+    if ctx.step:
+        step_root_path = ctx.sgtk.paths_from_entity(
+            'Step', ctx.step['id'])
+        if step_root_path:
+            step_root_path = step_root_path[0].replace("\\", "/")
+            hou.hscript('setenv STEPPATH = %s' % step_root_path)
+            hou.hscript('setenv STEP = %s' % ctx.step['name'])
+    if ctx.task:
+        task_name = ctx.task.get('name', None)
+        if task_name:
+            hou.hscript('setenv TASK = %s' % task_name)
+
     if ctx.entity.get('type', None) == 'Shot':
         shot_root_path = ctx.sgtk.paths_from_entity(
             'Shot', ctx.entity['id'])
         if shot_root_path:
             shot_root_path = shot_root_path[0].replace("\\", "/")
-            hou.hscript('setenv SHOT_ROOT = %s' % shot_root_path)
+            hou.hscript('setenv SHOTPATH = %s' % shot_root_path)
+            hou.hscript('setenv SHOT = %s' % ctx.entity['name'])
 
     elif ctx.entity.get('type', None) == 'Asset':
         asset_root_path = ctx.sgtk.paths_from_entity(
             'Asset', ctx.entity['id'])
         if asset_root_path:
             asset_root_path = asset_root_path[0].replace("\\", "/")
-            hou.hscript('setenv ASSET_ROOT = %s' % asset_root_path)
+            hou.hscript('setenv ASSETPATH = %s' % asset_root_path)
+            hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
 
 
 class SceneOperation(HookClass):

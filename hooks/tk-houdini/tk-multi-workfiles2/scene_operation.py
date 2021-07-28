@@ -19,7 +19,25 @@ from tank_vendor import six
 HookClass = sgtk.get_hook_baseclass()
 
 
-def set_env(ctx):
+def ver_from_path(filepath):
+    if not filepath:
+        return
+    s = filepath.rsplit('.', 2)
+
+    if len(s) != 3:
+        return
+
+    ver = s[-2]
+    if not ver.startswith('v'):
+        return
+    try:
+        intver = int(ver[1:])
+        return ver
+    except:
+        return
+
+
+def set_env(ctx, filepath):
     hou.hscript('setenv -u SHOTPATH')
     hou.hscript('setenv -u ASSETPATH')
     hou.hscript('setenv -u STEPPATH')
@@ -29,19 +47,9 @@ def set_env(ctx):
     hou.hscript('setenv -u TASK')
     hou.hscript('setenv -u VER')
 
-    # hou.hscript('setenv VER = %s' % ver)
-    hipname = hou.hipFile.basename()
-    s = hipname.rsplit('.', 2)
-
-    hou.hscript('setenv VER = %s' % s[-2])
-    if len(s) == 3:
-        ver = s[-2]
-        if ver.startswith('v'):
-            try:
-                intver = int(ver[1:])
-                hou.hscript('setenv VER = %s' % ver)
-            except:
-                pass
+    ver = ver_from_path(filepath)
+    if ver is not None:
+        hou.hscript('setenv VER = %s' % ver)
 
     en = sgtk.platform.current_engine()
     ctx.sgtk.create_filesystem_structure(ctx.entity['type'], ctx.entity['id'])
@@ -137,25 +145,25 @@ class SceneOperation(HookClass):
                                 all others     - None
         """
 
-        if operation == "current_path":
-            set_env(context)
-            return str(hou.hipFile.name())
-        elif operation == "open":
-            # give houdini forward slashes
+        if file_path:
             file_path = file_path.replace(os.path.sep, "/")
+
+        set_env(context, file_path)
+        if operation == "current_path":
+            return str(hou.hipFile.name())
+
+        elif operation == "open":
             hou.hipFile.load(six.ensure_str(file_path))
-            # set_env(context)
+
         elif operation == "save":
             hou.hipFile.save()
-            # set_env(context)
+
         elif operation == "save_as":
-            # give houdini forward slashes
-            file_path = file_path.replace(os.path.sep, "/")
             hou.hipFile.save(six.ensure_str(file_path))
 
         elif operation == "reset":
             hou.hipFile.clear()
-            set_env(context)
+            set_env(context, file_path)
             return True
 
-        set_env(context)
+        set_env(context, file_path)

@@ -62,6 +62,8 @@ def set_env(ctx):
             shot_root_path = shot_root_path[0].replace("\\", "/")
             hou.hscript('setenv SHOTPATH = %s' % shot_root_path)
             hou.hscript('setenv SHOT = %s' % ctx.entity['name'])
+            hou.hscript('setenv ENTITYPATH = %s' % shot_root_path)
+            hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
 
     elif ctx.entity.get('type', None) == 'Asset':
         asset_root_path = ctx.sgtk.paths_from_entity(
@@ -70,6 +72,8 @@ def set_env(ctx):
             asset_root_path = asset_root_path[0].replace("\\", "/")
             hou.hscript('setenv ASSETPATH = %s' % asset_root_path)
             hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
+            hou.hscript('setenv ENTITYPATH = %s' % asset_root_path)
+            hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
 
 
 class SceneOperation(HookClass):

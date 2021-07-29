@@ -300,6 +300,11 @@ class BasicFilePublishPlugin(HookBaseClass):
             self.logger.error(error_msg)
             raise Exception(error_msg)
 
+        # TEXTURING
+        ctx = item.context
+        if ctx.step and ctx.step['name'] == 'Texture':
+            self._set_tex_publish_data(settings, item)
+
         publish_path = self.get_publish_path(settings, item)
         publish_name = self.get_publish_name(settings, item)
         # ---- determine the information required to validate
@@ -560,8 +565,8 @@ class BasicFilePublishPlugin(HookBaseClass):
 
         return publish_type
 
-    def _tex_publish_path(self, settings, item, work_path):
-
+    def _set_tex_publish_data(self, settings, item):
+        path = item.properties.get("path")
         publisher = self.parent
 
         ctx = item.context
@@ -574,7 +579,7 @@ class BasicFilePublishPlugin(HookBaseClass):
         root_path = ctx.sgtk.paths_from_template(
             asset_root_template, fields)[0]
 
-        name = os.path.basename(work_path).replace('.%04d.', '.####.')
+        name = os.path.basename(path).replace('.%04d.', '.####.')
 
         filters = [
             #['project.Project.id', 'is', ctx.project['id']],
@@ -600,6 +605,7 @@ class BasicFilePublishPlugin(HookBaseClass):
         publish_path = os.path.join(root_path, 'publish', 'caches', name.replace(
             '.####.', '.v%03d.<UDIM>.' % version_number))
         item.properties["publish_version"] = version_number
+        item.properties["publish_path"] = publish_path
         return publish_path
 
     def get_publish_path(self, settings, item):
@@ -615,14 +621,6 @@ class BasicFilePublishPlugin(HookBaseClass):
         Extracts the publish path via the configured work and publish templates
         if possible.
         """
-
-        # TEXTURING
-        ctx = item.context
-        publisher = self.parent
-        if ctx.step and ctx.step['name'] == 'Texture':
-            path = item.properties.get("path")
-
-            return self._tex_publish_path(settings, item, path)
 
         # publish type explicitly set or defined on the item
         publish_path = item.get_property("publish_path")
@@ -734,11 +732,6 @@ class BasicFilePublishPlugin(HookBaseClass):
         # fall back to the path_info logic
         publisher = self.parent
         path = item.properties.path
-
-        # TEXTURING
-        # ctx = item.context
-        # if ctx.step and ctx.step['name'] == 'Texture':
-        #     return self._tex_publish_name(settings, item, path)
 
         if "sequence_paths" in item.properties:
             # generate the name from one of the actual files in the sequence
@@ -854,7 +847,8 @@ class BasicFilePublishPlugin(HookBaseClass):
         """
         publish_file = None
 
-        # TEXTURING
+        #! TEXTURING
+        #! FIX THIS UGLY SHIT
         ctx = item.context
         if ctx.step and ctx.step['name'] == 'Texture':
             # by default, the path that was collected for publishing
@@ -872,11 +866,10 @@ class BasicFilePublishPlugin(HookBaseClass):
                     return
 
             # ---- copy the work files to the publish location
-
+            publish_file_seq = self.get_publish_path(settings, item)
             for work_file in work_files:
-
-                publish_file = self._tex_publish_path(
-                    settings, item, work_file)
+                udim = work_file.rsplit('.', 2)[-2]
+                publish_file = publish_file_seq.replace('<UDIM>', udim)
 
                 # copy the file
                 try:
@@ -893,7 +886,7 @@ class BasicFilePublishPlugin(HookBaseClass):
                     "Copied work file '%s' to publish file '%s'."
                     % (work_file, publish_file)
                 )
-            return publish_file
+            return
 
         # ---- ensure templates are available
         work_template = item.properties.get("work_template")
@@ -967,7 +960,7 @@ class BasicFilePublishPlugin(HookBaseClass):
                 % (work_file, publish_file)
             )
 
-        return publish_file
+        return
 
     def _get_next_version_info(self, path, item):
         """

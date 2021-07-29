@@ -74,9 +74,10 @@ class SceneOperation(HookClass):
             # the scene it currently has open!
             cmds.file(new=True, force=True)
             cmds.file(file_path, open=True, force=True)
-            import animationTools as atools
-            reload(atools)
-            atools.showAnimationStages()
+
+            import shotgunRoutines as sr
+            reload(sr)
+            sr.openMayaScene('Animation')
 
         elif operation == "save":
             # save the current scene:
@@ -129,9 +130,9 @@ class SceneOperation(HookClass):
             # do new file:
             cmds.file(newFile=True, force=True)
 
-            import animationTools as atools
-            if context.step['name'] == 'Animation':
-                reload(atools)
-                if not atools.showAnimationStages():
-                    atools.toggleStageTracking()
+            import shotgunRoutines as sr
+            import maya.cmds as cmds
+            reload(sr)
+            cmds.evalDeferred(lambda: sr.newMayaScene('Animation'), lp=True)
+
             return True

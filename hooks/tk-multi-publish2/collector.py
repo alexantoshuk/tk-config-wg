@@ -297,7 +297,7 @@ class BasicSceneCollector(HookBaseClass):
             if filter and (image_seq_path not in filter):
                 continue
 
-            is_sequence = len(img_seq_files) > 1
+            # is_sequence = len(img_seq_files) > 1
 
             # get info for the extension
             item_info = self._get_item_info(image_seq_path)
@@ -307,10 +307,10 @@ class BasicSceneCollector(HookBaseClass):
             # the supplied image path is part of a sequence. alter the
             # type info to account for this.
             icon_name = "image.png"
-            if is_sequence:
-                type_display = "%s Sequence" % (type_display,)
-                item_type = "%s.%s" % (item_type, "sequence")
-                icon_name = "image_sequence.png"
+            # if is_sequence:
+            type_display = "%s Sequence" % (type_display,)
+            item_type = "%s.%s" % (item_type, "sequence")
+            icon_name = "image_sequence.png"
 
             # get the first frame of the sequence. we'll use this for the
             # thumbnail and to generate the display name
@@ -318,7 +318,7 @@ class BasicSceneCollector(HookBaseClass):
             first_frame_file = img_seq_files[0]
 
             display_name = publisher.util.get_publish_name(
-                first_frame_file, sequence=is_sequence
+                first_frame_file, sequence=True#is_sequence
             )
 
             # create and populate the item
@@ -340,14 +340,14 @@ class BasicSceneCollector(HookBaseClass):
             # all we know about the file is its path. set the path in its
             # properties for the plugins to use for processing.
 
-            if is_sequence:
-                file_item.properties["path"] = image_seq_path
-                file_item.properties["sequence_paths"] = img_seq_files
-                self.logger.info("Collected file: %s" % (image_seq_path,))
-            else:
-                file_item.properties["path"] = first_frame_file
-                self.logger.info("Collected file: %s" %
-                                 (first_frame_file,))
+            # if is_sequence:
+            file_item.properties["path"] = image_seq_path
+            file_item.properties["sequence_paths"] = img_seq_files
+            self.logger.info("Collected file: %s" % (image_seq_path,))
+            # else:
+            #     file_item.properties["path"] = first_frame_file
+            #     self.logger.info("Collected file: %s" %
+            #                      (first_frame_file,))
 
             file_items.append(file_item)
 

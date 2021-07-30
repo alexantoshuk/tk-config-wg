@@ -54,24 +54,15 @@ def set_env(ctx, filepath):
     en = sgtk.platform.current_engine()
     ctx.sgtk.create_filesystem_structure(ctx.entity['type'], ctx.entity['id'])
 
-    if ctx.entity.get('type', None) == 'Shot':
-        root_template = en.get_template_by_name(
-            "shot_root")
-
-    elif ctx.entity.get('type', None) == 'Asset':
-        root_template = en.get_template_by_name(
-            "asset_root")
+    root_template_name = ctx.entity.get('type', '').lower() + '_root'
+    root_template = en.get_template_by_name(root_template_name)
 
     root_path = None
     entity_root_path = None
-    if not root_template:
-        return
 
     fields = ctx.as_template_fields(root_template)
     root_path = ctx.sgtk.paths_from_template(
         root_template, fields)
-    if not root_path:
-        return
 
     root_path = root_path[0].replace("\\", "/")
     entity_root_path = os.path.dirname(root_path)

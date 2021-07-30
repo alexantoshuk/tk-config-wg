@@ -131,7 +131,6 @@ class SceneOperation(HookClass):
             cmds.file(newFile=True, force=True)
 
             import shotgunRoutines as sr
-            import maya.cmds as cmds
             reload(sr)
             cmds.evalDeferred(lambda: sr.newMayaScene('Animation'), lp=True)
 

@@ -129,9 +129,10 @@ class SceneOperation(HookClass):
 
             # do new file:
             cmds.file(newFile=True, force=True)
-
-            import shotgunRoutines as sr
-            reload(sr)
-            cmds.evalDeferred(lambda: sr.newMayaScene('Animation'), lp=True)
+            if parent_action == "new_file":
+                import shotgunRoutines as sr
+                reload(sr)
+                cmds.evalDeferred(
+                    lambda: sr.newMayaScene('Animation'), lp=True)
 
             return True

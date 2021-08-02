@@ -47,6 +47,9 @@ def set_env(ctx, filepath):
     hou.hscript('setenv -u TASK')
     hou.hscript('setenv -u VER')
 
+    if not filepath:
+        return
+
     ver = ver_from_path(filepath)
     if ver is not None:
         hou.hscript('setenv VER = %s' % ver)
@@ -135,26 +138,26 @@ class SceneOperation(HookClass):
                                                  state, otherwise False
                                 all others     - None
         """
-
         if file_path:
             file_path = file_path.replace(os.path.sep, "/")
 
-        set_env(context, file_path)
         if operation == "current_path":
             return str(hou.hipFile.name())
 
         elif operation == "open":
             hou.hipFile.load(six.ensure_str(file_path))
+            set_env(context, file_path)
 
         elif operation == "save":
+            set_env(context, hou.hipFile.name())
             hou.hipFile.save()
 
         elif operation == "save_as":
+            set_env(context, file_path)
             hou.hipFile.save(six.ensure_str(file_path))
 
         elif operation == "reset":
             hou.hipFile.clear()
-            set_env(context, file_path)
-            return True
+            set_env(context, None)
 
-        set_env(context, file_path)
+            return True

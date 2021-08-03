@@ -70,9 +70,9 @@ class BeforeAppLaunch(tank.Hook):
 
         if platform.system() == "Windows":
             tkroot = "W:/tk"
-            # app_path = tkroot + '/app/' + platform.system()
-            # os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
-            # os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
+            app_path = tkroot + '/app/' + platform.system()
+            os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
+            os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
         else:
             tkroot = "/home/ali/tk"
 

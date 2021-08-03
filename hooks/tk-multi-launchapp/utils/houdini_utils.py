@@ -4,6 +4,84 @@ import sys
 import os
 
 
+def ver_from_path(filepath):
+    if not filepath:
+        return
+    s = filepath.rsplit('.', 2)
+
+    if len(s) != 3:
+        return
+
+    ver = s[-2]
+    if not ver.startswith('v'):
+        return
+    try:
+        intver = int(ver[1:])
+        return ver
+    except:
+        return
+
+
+def set_ver():
+    ver = ver_from_path(hou.hipFile.name())
+    if ver:
+        hou.hscript('setenv VER = %s' % ver)
+
+
+def set_env(ctx, filepath):
+    import sgtk
+    hou.hscript('setenv -u SHOTPATH')
+    hou.hscript('setenv -u ASSETPATH')
+    hou.hscript('setenv -u STEPPATH')
+    hou.hscript('setenv -u SHOT')
+    hou.hscript('setenv -u ASSET')
+    hou.hscript('setenv -u STEP')
+    hou.hscript('setenv -u TASK')
+    hou.hscript('setenv -u VER')
+
+    if not filepath:
+        return
+
+    ver = ver_from_path(filepath)
+    if ver is not None:
+        hou.hscript('setenv VER = %s' % ver)
+
+    en = sgtk.platform.current_engine()
+    ctx.sgtk.create_filesystem_structure(ctx.entity['type'], ctx.entity['id'])
+
+    root_template_name = ctx.entity.get('type', '').lower() + '_root'
+    root_template = en.get_template_by_name(root_template_name)
+
+    root_path = None
+    entity_root_path = None
+
+    fields = ctx.as_template_fields(root_template)
+    root_path = ctx.sgtk.paths_from_template(
+        root_template, fields)
+
+    root_path = root_path[0].replace("\\", "/")
+    entity_root_path = os.path.dirname(root_path)
+    hou.hscript('setenv ENTITYPATH = %s' % entity_root_path)
+    hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
+
+    if ctx.step:
+        hou.hscript('setenv STEPPATH = %s' % root_path)
+        hou.hscript('setenv STEP = %s' % ctx.step['name'])
+
+    if ctx.task:
+        task_name = ctx.task.get('name', None)
+        if task_name:
+            hou.hscript('setenv TASK = %s' % task_name)
+
+    if ctx.entity.get('type', None) == 'Shot':
+        hou.hscript('setenv SHOTPATH = %s' % entity_root_path)
+        hou.hscript('setenv SHOT = %s' % ctx.entity['name'])
+
+    elif ctx.entity.get('type', None) == 'Asset':
+        hou.hscript('setenv ASSETPATH = %s' % entity_root_path)
+        hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
+
+
 def set_comment(node, comment):
     node.setComment(comment)
     node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
@@ -23,7 +101,6 @@ def node_type_instances(node_type_category, pattern):
     '''Return a list of nodes in a particular node type category
        whose names match a pattern.'''
     return [n for ty in node_types(node_type_category, pattern) for n in ty.instances()]
-
 
 
 def is_publish_matnet(node):

@@ -281,7 +281,8 @@ class HoudiniMatnetPublishPlugin(HookBaseClass):
         common_utils.cleanup_versions(
             item.properties["publish_path"], pattern=".v???.matnet", max_versions=VER_LIMIT, logger=self.logger)
 
-        return
+        super(HoudiniMatnetPublishPlugin,
+              self).finalize(settings, item)
 
 
 def _get_save_as_action():

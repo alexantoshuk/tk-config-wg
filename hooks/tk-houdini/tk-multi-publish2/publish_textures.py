@@ -203,7 +203,7 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
         # sys.stderr.write(str(version) + '\n')
         work_fields = work_template.get_fields(path)
         work_fields['version'] = version
-        
+
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
         if missing_keys:
@@ -224,7 +224,7 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
         item.properties["publish_type"] = "Texture"
 
         # * return grand parent validate method
-        
+
         return super(HoudiniTexturesPublishPlugin, self).validate(settings, item)
 
     def publish(self, settings, item):
@@ -255,7 +255,8 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
         # common_utils.cleanup_versions(
         #     item.properties["publish_path"], pattern=".v???.matnet", max_versions=VER_LIMIT, logger=self.logger)
 
-        return
+        super(HoudiniTexturesPublishPlugin,
+              self).finalize(settings, item)
 
     def _copy_work_to_publish(self, settings, item):
         """

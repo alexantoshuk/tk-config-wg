@@ -15,79 +15,9 @@ import hou
 import sgtk
 
 from tank_vendor import six
+import houdini_utils
 
 HookClass = sgtk.get_hook_baseclass()
-
-
-def ver_from_path(filepath):
-    if not filepath:
-        return
-    s = filepath.rsplit('.', 2)
-
-    if len(s) != 3:
-        return
-
-    ver = s[-2]
-    if not ver.startswith('v'):
-        return
-    try:
-        intver = int(ver[1:])
-        return ver
-    except:
-        return
-
-
-def set_env(ctx, filepath):
-    hou.hscript('setenv -u SHOTPATH')
-    hou.hscript('setenv -u ASSETPATH')
-    hou.hscript('setenv -u STEPPATH')
-    hou.hscript('setenv -u SHOT')
-    hou.hscript('setenv -u ASSET')
-    hou.hscript('setenv -u STEP')
-    hou.hscript('setenv -u TASK')
-    hou.hscript('setenv -u VER')
-
-    if not filepath:
-        return
-
-    ver = ver_from_path(filepath)
-    if ver is not None:
-        hou.hscript('setenv VER = %s' % ver)
-
-    en = sgtk.platform.current_engine()
-    ctx.sgtk.create_filesystem_structure(ctx.entity['type'], ctx.entity['id'])
-
-    root_template_name = ctx.entity.get('type', '').lower() + '_root'
-    root_template = en.get_template_by_name(root_template_name)
-
-    root_path = None
-    entity_root_path = None
-
-    fields = ctx.as_template_fields(root_template)
-    root_path = ctx.sgtk.paths_from_template(
-        root_template, fields)
-
-    root_path = root_path[0].replace("\\", "/")
-    entity_root_path = os.path.dirname(root_path)
-    hou.hscript('setenv ENTITYPATH = %s' % entity_root_path)
-    hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
-
-    if ctx.step:
-        hou.hscript('setenv STEPPATH = %s' % root_path)
-        hou.hscript('setenv STEP = %s' % ctx.step['name'])
-
-    if ctx.task:
-        task_name = ctx.task.get('name', None)
-        if task_name:
-            hou.hscript('setenv TASK = %s' % task_name)
-
-    if ctx.entity.get('type', None) == 'Shot':
-        hou.hscript('setenv SHOTPATH = %s' % entity_root_path)
-        hou.hscript('setenv SHOT = %s' % ctx.entity['name'])
-
-    elif ctx.entity.get('type', None) == 'Asset':
-        hou.hscript('setenv ASSETPATH = %s' % entity_root_path)
-        hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
 
 
 class SceneOperation(HookClass):
@@ -138,6 +68,9 @@ class SceneOperation(HookClass):
                                                  state, otherwise False
                                 all others     - None
         """
+        # with open('/home/ali/sg.txt', 'a') as f:
+        #     f.write('{0} {1} {2} {3} {4}\n'.format(parent_action,
+        #             operation, file_path, hou.hipFile.name(), file_version))
         if file_path:
             file_path = file_path.replace(os.path.sep, "/")
 
@@ -146,18 +79,18 @@ class SceneOperation(HookClass):
 
         elif operation == "open":
             hou.hipFile.load(six.ensure_str(file_path))
-            set_env(context, file_path)
+            houdini_utils.set_env(context, file_path)
 
         elif operation == "save":
-            set_env(context, hou.hipFile.name())
+            houdini_utils.set_env(context, hou.hipFile.name())
             hou.hipFile.save()
 
         elif operation == "save_as":
-            set_env(context, file_path)
+            houdini_utils.set_env(context, file_path)
             hou.hipFile.save(six.ensure_str(file_path))
 
         elif operation == "reset":
             hou.hipFile.clear()
-            set_env(context, None)
+            houdini_utils.set_env(context, None)
 
             return True

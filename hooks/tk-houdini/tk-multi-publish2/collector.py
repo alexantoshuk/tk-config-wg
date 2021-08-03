@@ -15,7 +15,7 @@ import os
 import sys
 import houdini_utils
 import common_utils
-reload(houdini_utils)
+
 HookBaseClass = sgtk.get_hook_baseclass()
 
 # A dict of dicts organized by category, type and output file parm

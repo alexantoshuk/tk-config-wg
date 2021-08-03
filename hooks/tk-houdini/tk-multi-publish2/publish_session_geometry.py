@@ -308,7 +308,8 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         common_utils.cleanup_versions(
             item.properties["publish_path"], pattern=".v???.abc", max_versions=VER_LIMIT, logger=self.logger)
 
-        return
+        super(HoudiniSessionGeometryPublishPlugin,
+              self).finalize(settings, item)
 
 
 def _find_scene_animation_range():

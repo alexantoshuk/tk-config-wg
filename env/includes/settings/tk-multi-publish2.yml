@@ -138,7 +138,7 @@ settings.tk-multi-publish2.houdini.asset_step:
   #   hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_textures.py"
   #   settings:
   #       Publish Template: publish_asset_texture
-
+  post_phase: "{self}/post_phase.py:{config}/tk-houdini/tk-multi-publish2/post_phase.py"
 
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
@@ -178,6 +178,7 @@ settings.tk-multi-publish2.houdini.shot_step:
     hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_matnet.py"
     settings:
         Publish Template: houdini_shot_matnet_publish
+  post_phase: "{self}/post_phase.py:{config}/tk-houdini/tk-multi-publish2/post_phase.py"
 
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"

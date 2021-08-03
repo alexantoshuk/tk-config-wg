@@ -271,8 +271,8 @@ class MayaActions(HookBaseClass):
         cmds.file(
             path,
             i=True,
-            renameAll=True,
-            namespace=namespace,
+            renameAll=False,
+            # namespace=namespace,
             loadReferenceDepth="all",
             preserveReferences=True,
         )

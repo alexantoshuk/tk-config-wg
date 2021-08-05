@@ -26,6 +26,7 @@ def set_ver():
     ver = ver_from_path(hou.hipFile.name())
     if ver:
         hou.hscript('setenv VER = %s' % ver)
+        hou.hscript('varchange')
 
 
 def set_env(ctx, filepath):
@@ -40,6 +41,7 @@ def set_env(ctx, filepath):
     hou.hscript('setenv -u VER')
 
     if not filepath:
+        hou.hscript('varchange')
         return
 
     ver = ver_from_path(filepath)
@@ -80,6 +82,7 @@ def set_env(ctx, filepath):
     elif ctx.entity.get('type', None) == 'Asset':
         hou.hscript('setenv ASSETPATH = %s' % entity_root_path)
         hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
+    hou.hscript('varchange')
 
 
 def set_comment(node, comment):

@@ -236,7 +236,7 @@ def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, sampl
     node.setDisplayFlag(1)
     try:
         alembic_export('/obj', subnetpath, filename,
-                       start, end, preroll, samples)
+                       start, end, preroll, samples, build_from_path=True)
     except Exception as e:
         raise e
     finally:
@@ -245,7 +245,7 @@ def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, sampl
         scale_p.lock(is_locked)
 
 
-def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2):
+def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2, build_from_path=False):
     is_animated = end > start
 
     # add 2 frames to the ends and preroll
@@ -267,6 +267,7 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
             'packed_transform': 1,
             'motionBlur': is_animated,
             'samples': samples,
+            'build_from_path': build_from_path,
         })
 
         if is_animated:

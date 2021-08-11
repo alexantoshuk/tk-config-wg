@@ -250,14 +250,15 @@ def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, sampl
 
 def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2, build_from_path=False):
     is_animated = end > start
-
-    for node_path in objects.split():
-        node = hou.node(node_path)
-        if not node:
-            continue
-        if is_time_dependent(node):
-            is_animated = True
-            break
+    if is_animated:
+        is_animated = False
+        for node_path in objects.split():
+            node = hou.node(node_path)
+            if not node:
+                continue
+            if is_time_dependent(node):
+                is_animated = True
+                break
 
     # add 2 frames to the ends and preroll
     start_frame = max(0, start - 2 - preroll)

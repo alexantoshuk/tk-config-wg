@@ -2,6 +2,11 @@
 import hou
 import sys
 import os
+import tempfile
+
+
+def get_tempfile_name():
+    return os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
 
 
 def ver_from_path(filepath):
@@ -249,7 +254,7 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
     is_animated = end > start
 
     # add 2 frames to the ends and preroll
-    start_frame = start - 2 - preroll
+    start_frame = max(0, start - 2 - preroll)
     end_frame = end + 2
 
     tmp_alembic_node = hou.node('/out/__tmp__alembic__')
@@ -257,11 +262,11 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
         tmp_alembic_node.destroy()
     tmp_alembic_node = hou.node(
         '/out').createNode('alembic', '__tmp__alembic__')
-
+    tmp_filename = get_tempfile_name() + '.abc'
     try:
         tmp_alembic_node.setParms({
             'trange': int(is_animated),
-            'filename': filename,
+            'filename': tmp_filename,
             'root': root,
             'objects': objects,
             'packed_transform': 1,
@@ -276,9 +281,18 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
             frange_p.set((start_frame, end_frame, 1))
 
         tmp_alembic_node.render()
+        try:
+            os.rename(tmp_filename, filename)
+        except:
+            os.remove(filename)
+            os.rename(tmp_filename, filename)
 
     except Exception as e:
         raise e
 
     finally:
         tmp_alembic_node.destroy()
+        try:
+            os.remove(tmp_filename)
+        except:
+            pass

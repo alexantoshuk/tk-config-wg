@@ -2,6 +2,11 @@ import maya.cmds as cmds
 import maya.mel as mel
 import os
 import sys
+import tempfile
+
+
+def get_tempfile_name():
+    return os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
 
 
 def is_publish_alembic(node):
@@ -116,15 +121,29 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
         alembic_args.append("-fr %d %d" % (start_frame, end_frame))
         alembic_args.append("-step {0}".format(1.0 / samples))
 
+    filename = filename.replace("\\", "/")
+    tmp_filename = get_tempfile_name() + '.abc'
+
     # * set object to export
     alembic_args.append("-root '%s'" % root)
     # Set the output path:
     # Note: The AbcExport command expects forward slashes!
-    alembic_args.append("-file '%s'" % filename.replace("\\", "/"))
+    alembic_args.append("-file '%s'" % tmp_filename)
 
     # build the export command.  Note, use AbcExport -help in Maya for
     # more detailed Alembic export help
     abc_export_cmd = 'AbcExport -j "%s"' % " ".join(alembic_args)
 
-    # ...and execute it:
-    mel.eval(abc_export_cmd)
+    try:
+        # ...and execute it:
+        mel.eval(abc_export_cmd)
+        try:
+            os.rename(tmp_filename, filename)
+        except:
+            os.remove(filename)
+            os.rename(tmp_filename, filename)
+    finally:
+        try:
+            os.remove(tmp_filename)
+        except:
+            pass

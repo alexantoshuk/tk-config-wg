@@ -222,8 +222,7 @@ def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=
 
         alembic_export(root, objects, filename,
                        start, end, preroll, samples)
-    except Exception as e:
-        raise e
+
     finally:
         tmp_obj_subnet.destroy()
 
@@ -242,8 +241,7 @@ def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, sampl
     try:
         alembic_export('/obj', subnetpath, filename,
                        start, end, preroll, samples, build_from_path=True)
-    except Exception as e:
-        raise e
+
     finally:
         node.setDisplayFlag(is_display)
         scale_p.set(old_scale)
@@ -294,9 +292,6 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
         except:
             os.remove(filename)
             os.rename(tmp_filename, filename)
-
-    except Exception as e:
-        raise e
 
     finally:
         tmp_alembic_node.destroy()

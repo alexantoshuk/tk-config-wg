@@ -9,6 +9,12 @@ def get_tempfile_name():
     return os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
 
 
+def update_rops_str_parms():
+    for n in hou.node('/out').children():
+        for p in n.parmTuples():
+            p.eval()
+
+
 def ver_from_path(filepath):
     if not filepath:
         return
@@ -32,6 +38,7 @@ def set_ver():
     if ver:
         hou.hscript('setenv VER = %s' % ver)
         hou.hscript('varchange')
+    update_rops_str_parms()
 
 
 def set_env(ctx, filepath):
@@ -47,6 +54,7 @@ def set_env(ctx, filepath):
 
     if not filepath:
         hou.hscript('varchange')
+        update_rops_str_parms()
         return
 
     ver = ver_from_path(filepath)
@@ -88,6 +96,7 @@ def set_env(ctx, filepath):
         hou.hscript('setenv ASSETPATH = %s' % entity_root_path)
         hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
     hou.hscript('varchange')
+    update_rops_str_parms()
 
 
 def set_comment(node, comment):

@@ -43,6 +43,7 @@ def set_ver():
 
 def set_env(ctx, filepath):
     import sgtk
+    hou.hscript('setenv -u JOB')
     hou.hscript('setenv -u SHOTPATH')
     hou.hscript('setenv -u ASSETPATH')
     hou.hscript('setenv -u STEPPATH')
@@ -69,6 +70,10 @@ def set_env(ctx, filepath):
 
     root_path = None
     entity_root_path = None
+
+    job = ctx.sgtk.get('primary')
+    if job:
+        hou.hscript('setenv JOB = %s' % job)
 
     fields = ctx.as_template_fields(root_template)
     root_path = ctx.sgtk.paths_from_template(

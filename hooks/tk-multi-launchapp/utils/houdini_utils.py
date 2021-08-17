@@ -46,6 +46,10 @@ def set_env(ctx, filepath):
     hou.hscript('setenv -u JOB')
     hou.hscript('setenv -u SHOTPATH')
     hou.hscript('setenv -u ASSETPATH')
+    hou.hscript('setenv -u ITEMPATH')
+    hou.hscript('setenv -u ITEM')
+    hou.hscript('setenv -u ENTITYPATH')
+    hou.hscript('setenv -u ENTITY')
     hou.hscript('setenv -u STEPPATH')
     hou.hscript('setenv -u RELSTEPPATH')
     hou.hscript('setenv -u SHOT')
@@ -82,8 +86,8 @@ def set_env(ctx, filepath):
 
     root_path = root_path[0].replace("\\", "/")
     entity_root_path, stepcode = os.path.split(root_path)
-    hou.hscript('setenv ENTITYPATH = %s' % entity_root_path)
-    hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
+    hou.hscript('setenv ITEMPATH = %s' % entity_root_path)
+    hou.hscript('setenv ITEM = %s' % ctx.entity['name'])
 
     if ctx.step:
         hou.hscript('setenv STEPPATH = %s' % root_path)

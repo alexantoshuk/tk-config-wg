@@ -80,13 +80,14 @@ def set_env(ctx, filepath):
         root_template, fields)
 
     root_path = root_path[0].replace("\\", "/")
-    entity_root_path = os.path.dirname(root_path)
+    entity_root_path, stepcode = os.path.split(root_path)
     hou.hscript('setenv ENTITYPATH = %s' % entity_root_path)
     hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
 
     if ctx.step:
         hou.hscript('setenv STEPPATH = %s' % root_path)
-        hou.hscript('setenv STEP = %s' % ctx.step['name'])
+
+        hou.hscript('setenv STEP = %s' % stepcode)
 
     if ctx.task:
         task_name = ctx.task.get('name', None)

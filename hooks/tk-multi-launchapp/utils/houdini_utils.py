@@ -71,7 +71,7 @@ def set_env(ctx, filepath):
     root_path = None
     entity_root_path = None
 
-    job = ctx.sgtk.get('primary')
+    job = ctx.sgtk.roots.get('primary')
     if job:
         hou.hscript('setenv JOB = %s' % job.replace('\\', '/'))
 

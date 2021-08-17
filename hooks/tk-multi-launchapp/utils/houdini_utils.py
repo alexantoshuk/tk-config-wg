@@ -73,7 +73,7 @@ def set_env(ctx, filepath):
 
     job = ctx.sgtk.get('primary')
     if job:
-        hou.hscript('setenv JOB = %s' % job)
+        hou.hscript('setenv JOB = %s' % job.replace('\\', '/'))
 
     fields = ctx.as_template_fields(root_template)
     root_path = ctx.sgtk.paths_from_template(

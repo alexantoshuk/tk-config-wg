@@ -47,6 +47,7 @@ def set_env(ctx, filepath):
     hou.hscript('setenv -u SHOTPATH')
     hou.hscript('setenv -u ASSETPATH')
     hou.hscript('setenv -u STEPPATH')
+    hou.hscript('setenv -u RELSTEPPATH')
     hou.hscript('setenv -u SHOT')
     hou.hscript('setenv -u ASSET')
     hou.hscript('setenv -u STEP')
@@ -86,7 +87,7 @@ def set_env(ctx, filepath):
 
     if ctx.step:
         hou.hscript('setenv STEPPATH = %s' % root_path)
-
+        hou.hscript('setenv RELSTEPPATH = %s' % root_path[len(job) + 1:])
         hou.hscript('setenv STEP = %s' % stepcode)
 
     if ctx.task:

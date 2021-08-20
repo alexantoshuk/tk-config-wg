@@ -9,10 +9,409 @@ def get_tempfile_name():
     return os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names())).replace("\\", "/")
 
 
-def update_rops_parms():
-    for n in hou.node('/out').children():
-        for p in n.parmTuples():
-            p.eval()
+def update_materials():
+    import hou
+    import sgtk
+    import glob
+    import re
+    import os
+    import sys
+    import platform
+    network_io = hou.nodeType("wg::Driver/network::1.0").hdaModule()
+
+    RENDER2MAT = {
+        'redshift': 'redshift::principledshader::1.0',
+        'mantra': 'wg::principledshader::2.0',
+    }
+
+    """
+    RENDER2GLASSMAT = {
+        'redshift': 'redshift::principledshader::1.0',
+        'mantra': 'wg::principledshader::2.0',
+    }
+    """
+
+    MATPARMS = {
+        'principledshader': {
+            'color': {'basecolor': [1.0], 'basecolor_useTexture': True, 'basecolor_texture': '{0}'},
+            'emitcolor': {'emitcolor': [1.0], 'emitcolor_useTexture': True, 'emitcolor_texture': '{0}'},
+            'spec': {'reflect': [1.0], 'reflect_useTexture': True, 'reflect_texture': '{0}'},
+            'rough': {'rough': [1.0], 'rough_useTexture': True, 'rough_texture': '{0}'},
+            'metal': {'metallic': [1.0], 'metallic_useTexture': True, 'metallic_texture': '{0}'},
+            'bump': {'bump': [0.1], 'bump_enable': True, 'bump_texture': '{0}'},
+            'normal': {'bump': [1.0], 'bump_enable': True, 'bump_type': 'normal', 'bump_texture': '{0}'},
+            'opac': {'opac': [1.0], 'opac_useTexture': True, 'opac_texture': '{0}'},
+            'disp': {'disp': [0.1], 'disp_enable': True, 'disp_texture': '{0}'},
+        },
+
+    }
+
+    DEFAULT_MATPARMS = MATPARMS['principledshader']
+
+    en = sgtk.platform.current_engine()
+    ctx = en.context
+    sg = en.shotgun
+
+    RENDERNAME = sg.find_one(
+        "Project", [["id", "is", ctx.project['id']]], ['sg_render'])
+    if RENDERNAME:
+        RENDERNAME = RENDERNAME.get('sg_render', 'mantra').lower()
+    else:
+        RENDERNAME = 'mantra'
+
+    def set_comment(node, comment):
+        node.setComment(comment)
+        node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
+
+    def set_mat_chan(node, chan, tex):
+        nodetype = node.type()
+        _, _, typename, _ = nodetype.nameComponents()
+
+        parms = MATPARMS.get(typename, DEFAULT_MATPARMS)
+        fulltype_parms = MATPARMS.get(nodetype.name(), None)
+        if fulltype_parms:
+            parms.update(fulltype_parms)
+
+        tex = tex.replace('\\', '/')
+        for k, v in parms.get(chan, {}).iteritems():
+            if type(v) == str:
+                v = v.format(tex)
+                p = node.parm(k)
+            elif type(v) == bool:
+                p = node.parm(k)
+            else:
+                p = node.parmTuple(k)
+                if p and len(p) > 1 and len(v) == 1:
+                    v = v * len(p)
+            if p:
+                p.set(v)
+
+    _prog = re.compile('.v[0-9]{3}.')
+
+    def get_publish_name(path):
+        name = os.path.basename(path)
+        return _prog.sub('.', name)
+
+    def work_textures():
+        work_template = en.get_template_by_name("work_asset_texture")
+        asset_root_template = en.get_template_by_name("asset_root")
+        fields = ctx.as_template_fields(asset_root_template)
+
+        return ctx.sgtk.abstract_paths_from_template(work_template, fields)
+
+    def published_textures():
+        filters = [
+            #['project.Project.id', 'is', ctx.project['id']],
+            ['entity.Asset.id', 'is', ctx.entity['id']],
+            ['task.Task.step.Step.code', 'is', 'Texture'],
+            ['published_file_type.PublishedFileType.code', 'is', 'Texture'],
+        ]
+
+        summary_fields = [{'field': 'version_number', 'type': 'maximum'}]
+
+        order = [{'field_name': 'version_number', 'direction': 'asc'}]
+        grouping = [{'field': 'name', 'type': 'exact', 'direction': 'asc'}]
+
+        data = sg.summarize('PublishedFile', filters,
+                            summary_fields, grouping=grouping)
+        if not data:
+            return []
+
+        data = data['groups']
+
+        asset_root_template = en.get_template_by_name("asset_root")
+        fields = ctx.as_template_fields(asset_root_template)
+        fields['Step'] = 'TXT'
+        root_path = ctx.sgtk.paths_from_template(asset_root_template, fields)
+        if not root_path:
+            return []
+        root_path = root_path[0]
+        tex_publish_path = os.path.join(root_path, 'publish', 'caches')
+        # print tex_publish_path
+        result = [
+            os.path.join(
+                tex_publish_path,
+                d['group_name']
+                .replace('.####.', '.v%03d.<UDIM>.' % d['summaries'].get('version_number', 0))
+            )
+            for d in data
+        ]
+
+        return result
+
+    def generate_matnet_from_geo(matnet, mattype, sop):
+        matnet_name = matnet.name()
+        geo = sop.geometry()
+        try:
+            mats = set(geo.primStringAttribValues('shop_materialpath'))
+        except:
+            return
+
+        new_nodes_count = 0
+        for mat in mats:
+            s = mat.split('/')
+            if len(s) < 4:
+                continue
+
+            asset = s[2]
+            if asset != matnet_name:
+                continue
+            mat_name = s[3]
+            mat_node = matnet.node(mat_name)
+            if not mat_node:
+                mat_node = matnet.createNode(mattype, mat_name)
+                new_nodes_count += 1
+                # mat_node.moveToGoodPosition()
+            mat_node.setMaterialFlag(True)
+        if new_nodes_count:
+            matnet.layoutChildren()
+
+    def generate_matnet(matnet, mattype, textures, template):
+
+        new_nodes_count = 0
+        for file in textures:
+            fields = template.validate_and_get_fields(file)
+            if fields is None:
+                continue
+            mat_name = fields['mat.name']
+            mat_channel = fields['mat.channel']
+            mat_node = matnet.node(mat_name)
+            if not mat_node:
+                mat_node = matnet.createNode(mattype, mat_name)
+                new_nodes_count += 1
+                # mat_node.moveToGoodPosition()
+            mat_node.setMaterialFlag(True)
+            set_mat_chan(mat_node, mat_channel, file)
+
+        if new_nodes_count:
+            matnet.layoutChildren()
+
+        #matnet.setSelected(True, clear_all_selected=True, show_asset_if_selected=True)
+
+    def update_matnet(matnet, textures):
+        textures = dict(
+            (get_publish_name(t), t)
+            for t in textures
+        )
+
+        def _tex_upver(node):
+            for p in node.parms():
+                if not isinstance(p.parmTemplate(), hou.StringParmTemplate):
+                    continue
+                try:
+                    p.expression()
+                    continue
+                except:
+                    pass
+                texpath = p.eval()
+                #texpath = _texpath.replace('%(UDIM)d', '<UDIM>')
+
+                texname = get_publish_name(texpath)
+
+                new_texpath = textures.get(texname, None)
+                if new_texpath:
+                    # if _texpath != texpath:
+                    #    new_texpath = new_texpath.replace('<UDIM>', '%(UDIM)d')
+                    p.set(new_texpath.replace('\\', '/'))
+
+        for node in matnet.children():
+            _tex_upver(node)
+            ntc = node.childTypeCategory()
+            if (not node.isLockedHDA()) and ntc and ntc.name() == 'Vop':
+                for n in node.children():
+                    _tex_upver(n)
+
+    def matnet_node(assetname, readable=False):
+        matnet = hou.node('/shop/%s' % assetname)
+        if matnet and matnet.type().name() != 'matnet':
+            matnet.destroy()
+            matnet = None
+        if not matnet:
+            matnet = hou.node('/shop').createNode('matnet', assetname)
+
+        if readable and not matnet.comment().strip().startswith('#'):
+            network_io.add_network_reader_parms(matnet, pattern="*.matnet")
+
+        return matnet
+
+    def update_asset_matnet(asset, shot=None, stepname='Surface'):
+
+        filters = [
+            ['entity.Shot.id', 'is', shot['id']] if shot else [
+                'entity.Asset.id', 'is', asset['id']],
+            ['published_file_type.PublishedFileType.code', 'is', 'Material Network'],
+            ['name', 'is', asset['name'] + '.matnet']
+        ]
+        if stepname:
+            filters.append(['task.Task.step.Step.code', 'is', stepname])
+
+        path = sg.find_one("PublishedFile",
+                           filters,
+                           fields=["path"],
+                           order=[
+                               {'field_name': 'version_number', 'direction': 'desc'}],
+                           )
+        if not path:
+            return
+
+        path = path['path']
+        path = path['local_path_' + platform.system().lower()
+                    ].replace('\\', '/')
+
+        matnet = matnet_node(asset['name'], readable=True)
+        if matnet.comment().strip().startswith('#'):
+            return
+
+        matnet.parm('network_filename').set(path)
+        matnet.parm('network_reload').pressButton()
+
+        return True
+
+    entity_type = ctx.entity['type']
+
+    if entity_type == 'Asset':
+        assetname = ctx.entity['name']
+        matnet = matnet_node(assetname)
+        """
+        if ctx.step['name'] == 'Texture':
+            work_template = en.get_template_by_name("work_asset_texture")
+            textures = work_textures()
+            generate_matnet(matnet, textures, work_template)
+        """
+        if ctx.step['name'] in ('Surface', 'Texture'):
+            mattype = RENDER2MAT.get(RENDERNAME, None)
+            if not mattype:
+                raise Exception(
+                    "Invalid 'RENDER' field in SG. Please set valid render string in SG project 'RENDER' field")
+
+            for n in hou.node('/obj').children():
+                if n.childTypeCategory().name() != 'Sop':
+                    continue
+                sop = n.renderNode()
+                if not sop:
+                    continue
+                generate_matnet_from_geo(matnet, mattype, sop)
+
+            textures = published_textures()
+            generate_matnet(matnet, mattype, textures,
+                            en.get_template_by_name("publish_asset_texture"))
+            update_matnet(matnet, textures)
+            matnet.setSelected(True, True)
+
+        else:
+            subassets = sg.find_one(
+                "Asset", [["id", "is", ctx.entity['id']]], ['assets'])
+            assets = subassets.get('assets', []) if subassets else []
+            assets.append(ctx.entity)
+
+            for asset in assets:
+                update_asset_matnet(asset, stepname='Surface')
+
+    elif entity_type == 'Shot':
+        assets = sg.find_one(
+            "Shot", [["id", "is", ctx.entity['id']]], ['assets'])
+        if assets:
+            assets = assets.get('assets', [])
+
+        for asset in assets:
+            if not update_asset_matnet(asset, shot=ctx.entity, stepname=None):
+                update_asset_matnet(asset, stepname='Surface')
+
+            subassets = sg.find_one(
+                "Asset", [["id", "is", asset['id']]], ['assets'])
+            subassets = subassets.get('assets', []) if subassets else []
+
+            for subasset in subassets:
+                if not update_asset_matnet(subasset, shot=ctx.entity, stepname=None):
+                    update_asset_matnet(subasset, stepname='Surface')
+
+    hou.node('/shop').layoutChildren()
+
+
+def update_rops():
+    import hou
+    import sgtk
+
+    main_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_acescg.${VER}.\$F4.exr"
+    cryptoobj_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptoobj.${VER}.\$F4.exr"
+    cryptomat_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptomat.${VER}.\$F4.exr"
+
+    en = sgtk.platform.current_engine()
+    ctx = en.context
+    sg = en.shotgun
+
+    ROPTYPEMAP = {
+        'mantra': 'ifd',
+        'redshift': 'Redshift_ROP',
+    }
+
+    RENDERNAME = sg.find_one(
+        "Project", [["id", "is", ctx.project['id']]], ['sg_render'])
+    if RENDERNAME:
+        RENDERNAME = RENDERNAME.get('sg_render', 'mantra').lower()
+    else:
+        RENDERNAME = 'mantra'
+
+    ROPTYPE = ROPTYPEMAP[RENDERNAME]
+
+    def create_beauty_rop():
+        outnet = hou.node("/out")
+        beauty_node = outnet.node('beauty')
+        if beauty_node and beauty_node.type().name() != ROPTYPE:
+            beauty_node.destroy()
+            beauty_node = None
+
+        if not beauty_node:
+            beauty_node = outnet.createNode(ROPTYPE, 'beauty')
+            beauty_node.moveToGoodPosition()
+
+    if RENDERNAME == 'mantra':
+        outnet = hou.node("/out")
+        create_beauty_rop()
+
+        for node in outnet.children():
+            if node.type().name() != ROPTYPE:
+                continue
+            main_p = node.parm('vm_picture')
+            if not main_p:
+                continue
+            main_p.deleteAllKeyframes()
+            main_p.set(hou.text.expandString(main_template))
+            for i in range(1, node.evalParm('vm_cryptolayers') + 1):
+                cryptolayeroutput_p = node.parm('vm_cryptolayeroutput%s' % i)
+                cryptolayeroutput_p.deleteAllKeyframes()
+                if node.evalParm('vm_cryptolayerprop%s' % i) == 'name':
+                    cryptolayeroutput_p.set(
+                        hou.text.expandString(cryptoobj_template))
+                else:
+                    cryptolayeroutput_p.set(
+                        hou.text.expandString(cryptomat_template))
+
+    elif RENDERNAME == 'redshift':
+        outnet = hou.node("/out")
+        create_beauty_rop()
+
+        for node in outnet.children():
+            if node.type().name() != ROPTYPE:
+                continue
+            main_p = node.parm('RS_outputFileNamePrefix')
+            if not main_p:
+                continue
+            main_p.deleteAllKeyframes()
+            main_p.set(hou.text.expandString(main_template))
+            for i in range(1, node.evalParm('RS_aov') + 1):
+                if node.parm('RS_aovID_%s' % i).evalAsString() != 'CRYPTOMATTE':
+                    continue
+                cryptolayeroutput_p = node.parm('RS_aovCustomPrefix_%s' % i)
+                cryptolayeroutput_p.deleteAllKeyframes()
+                cryptotype = node.parm(
+                    'RS_aovCryptomatteType_%s' % i).evalAsString()
+                if cryptotype == 'RS_BLOCKSINKCRYPTOMATTETYPE_MESHID':
+                    cryptolayeroutput_p.set(
+                        hou.text.expandString(cryptoobj_template))
+                elif cryptotype == 'RS_BLOCKSINKCRYPTOMATTETYPE_MATERIALID':
+                    cryptolayeroutput_p.set(
+                        hou.text.expandString(cryptomat_template))
 
 
 def ver_from_path(filepath):
@@ -38,16 +437,22 @@ def set_ver():
     if ver:
         hou.hscript('setenv VER = %s' % ver)
         hou.hscript('varchange')
-    update_rops_parms()
+    update_rops()
 
 
-def set_env(ctx, filepath):
+def set_env(ctx=None, filepath=None):
     import sgtk
+
+    if ctx is None:
+        en = sgtk.platform.current_engine()
+        ctx = en.context
+        sg = en.shotgun
+        if filepath is None:
+            filepath = hou.hipFile.name()
+
     hou.hscript('setenv -u JOB')
     hou.hscript('setenv -u SHOTPATH')
     hou.hscript('setenv -u ASSETPATH')
-    hou.hscript('setenv -u ITEMPATH')
-    hou.hscript('setenv -u ITEM')
     hou.hscript('setenv -u ENTITYPATH')
     hou.hscript('setenv -u ENTITY')
     hou.hscript('setenv -u STEPPATH')
@@ -60,7 +465,7 @@ def set_env(ctx, filepath):
 
     if not filepath:
         hou.hscript('varchange')
-        update_rops_parms()
+        update_rops()
         return
 
     ver = ver_from_path(filepath)
@@ -86,8 +491,8 @@ def set_env(ctx, filepath):
 
     root_path = root_path[0].replace("\\", "/")
     entity_root_path, stepcode = os.path.split(root_path)
-    hou.hscript('setenv ITEMPATH = %s' % entity_root_path)
-    hou.hscript('setenv ITEM = %s' % ctx.entity['name'])
+    hou.hscript('setenv ENTITYPATH = %s' % entity_root_path)
+    hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
 
     if ctx.step:
         hou.hscript('setenv STEPPATH = %s' % root_path)
@@ -107,7 +512,7 @@ def set_env(ctx, filepath):
         hou.hscript('setenv ASSETPATH = %s' % entity_root_path)
         hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
     hou.hscript('varchange')
-    update_rops_parms()
+    update_rops()
 
 
 def set_comment(node, comment):

@@ -55,9 +55,11 @@ def update_materials():
     RENDERNAME = sg.find_one(
         "Project", [["id", "is", ctx.project['id']]], ['sg_render'])
     if RENDERNAME:
-        RENDERNAME = RENDERNAME.get('sg_render', 'mantra').lower()
-    else:
+        RENDERNAME = RENDERNAME.get('sg_render', 'mantra')
+    if not RENDERNAME:
         RENDERNAME = 'mantra'
+
+    RENDERNAME = RENDERNAME.lower()
 
     def set_comment(node, comment):
         node.setComment(comment)
@@ -348,9 +350,11 @@ def update_rops():
     RENDERNAME = sg.find_one(
         "Project", [["id", "is", ctx.project['id']]], ['sg_render'])
     if RENDERNAME:
-        RENDERNAME = RENDERNAME.get('sg_render', 'mantra').lower()
-    else:
+        RENDERNAME = RENDERNAME.get('sg_render', 'mantra')
+    if not RENDERNAME:
         RENDERNAME = 'mantra'
+
+    RENDERNAME = RENDERNAME.lower()
 
     ROPTYPE = ROPTYPEMAP[RENDERNAME]
 

@@ -418,11 +418,11 @@ class HoudiniActions(HookBaseClass):
             'wg::assign_material')
         assign_material_sop.parm('asset_name').set(name)
 
-        cache_sop = assign_material_sop.createOutputNode(
-            'cache')
+        # cache_sop = assign_material_sop.createOutputNode(
+        #     'cache')
 
-        cache_sop.setDisplayFlag(True)
-        cache_sop.setRenderFlag(True)
+        assign_material_sop.setDisplayFlag(True)
+        assign_material_sop.setRenderFlag(True)
 
         set_comment(geo_node, datetime_str())
         _show_node(alembic_sop)

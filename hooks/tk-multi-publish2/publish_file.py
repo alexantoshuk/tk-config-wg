@@ -301,9 +301,10 @@ class BasicFilePublishPlugin(HookBaseClass):
             raise Exception(error_msg)
 
         # TEXTURING
-        ctx = item.context
-        if ctx.step and ctx.step['name'] == 'Texture':
+        if ctx.step['name'] == 'Texture':
             self._set_tex_publish_data(settings, item)
+        else:
+            self._set_abc_publish_data(settings, item)
 
         publish_path = self.get_publish_path(settings, item)
         publish_name = self.get_publish_name(settings, item)
@@ -564,6 +565,56 @@ class BasicFilePublishPlugin(HookBaseClass):
             publish_type = "Folder"
 
         return publish_type
+
+    def _set_abc_publish_data(self, settings, item):
+        path = item.properties.get("path")
+        publisher = self.parent
+
+        ctx = item.context
+        ctx.sgtk.create_filesystem_structure(
+            ctx.entity['type'], ctx.entity['id'])
+        if ctx.entity['type'] == 'Asset':
+            template = publisher.get_template_by_name("asset_alembic_cache")
+            entity_id = 'entity.Asset.id'
+        elif ctx.entity['type'] == 'Shot':
+            template = publisher.get_template_by_name("shot_alembic_cache")
+            entity_id = 'entity.Shot.id'
+        else:
+            return
+
+        name = os.path.basename(path)
+
+        filters = [
+            ['project.Project.id', 'is', ctx.project['id']],
+            [entity_id, 'is', ctx.entity['id']],
+            ['task.Task.step.Step.id', 'is', ctx.step['id']],
+            ['published_file_type.PublishedFileType.code', 'is', "Alembic Cache"],
+            ['name', 'is', name]
+        ]
+
+        fields = ['version_number']
+        order = [{'field_name': 'version_number', 'direction': 'desc'}]
+
+        sg = sgtk.platform.current_engine().shotgun
+        version_number_dict = sg.find_one(
+            'PublishedFile', filters, fields, order)
+
+        version_number = 1
+        if version_number_dict:
+            version_number = version_number_dict.get('version_number', None)
+            if version_number is not None:
+                version_number += 1
+            else:
+                version_number = 1
+
+        template_fields = ctx.as_template_fields(template)
+        template_fields['version'] = version_number
+        template_fields['node'], _ = os.path.splitext(name)
+        publish_path = template.apply_fields(template_fields)
+
+        item.properties["publish_version"] = version_number
+        item.properties["publish_path"] = publish_path
+        return publish_path
 
     def _set_tex_publish_data(self, settings, item):
         path = item.properties.get("path")
@@ -847,10 +898,9 @@ class BasicFilePublishPlugin(HookBaseClass):
         """
         publish_file = None
 
-        #! TEXTURING
-        #! FIX THIS UGLY SHIT
+        #! FIXIT
         ctx = item.context
-        if ctx.step and ctx.step['name'] == 'Texture':
+        if ctx.step:
             # by default, the path that was collected for publishing
             work_files = [item.properties.path]
 
@@ -887,7 +937,7 @@ class BasicFilePublishPlugin(HookBaseClass):
                     % (work_file, publish_file)
                 )
             return
-
+        #! END
         # ---- ensure templates are available
         work_template = item.properties.get("work_template")
         if not work_template:

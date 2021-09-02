@@ -201,10 +201,13 @@ class BasicSceneCollector(HookBaseClass):
             return None
         else:
             dirname = os.path.dirname(path)
+            seq = self.parent.util.get_frame_sequence_path(path)
+            if not seq:
+                return self._collect_file(parent_item, path)
             self._collect_folder(
-                parent_item, dirname, filter=[self.parent.util.get_frame_sequence_path(path)])
+                parent_item, dirname, filter=[seq])
+
             return None
-            # return self._collect_file(parent_item, path)
 
     def _collect_file(self, parent_item, path, frame_sequence=False):
         """
@@ -276,11 +279,8 @@ class BasicSceneCollector(HookBaseClass):
         _, folder_name = os.path.split(folder)
 
         publisher = self.parent
-        img_sequences = publisher.util.get_frame_sequences(
-            folder, self._get_image_extensions()
-        )
 
-        # # Append non-sequence texture in folder
+        # Append non-sequence files in folder
         # for f in os.listdir(folder):
         #     f = os.path.join(folder, f)
         #     if not os.path.isfile(f):
@@ -288,8 +288,15 @@ class BasicSceneCollector(HookBaseClass):
 
         #     f = sgtk.util.ShotgunPath.normalize(f)
         #     seq_path = publisher.util.get_frame_sequence_path(f)
-        #     if not seq_path:
-        #         img_sequences.append((f, [f]))
+        #     if seq_path:
+        #         continue
+
+        #     file_items.append(self._collect_file(parent_item, f))
+
+        # Append image sequences in folder
+        img_sequences = publisher.util.get_frame_sequences(
+            folder, self._get_image_extensions()
+        )
 
         for (image_seq_path, img_seq_files) in img_sequences:
             if image_seq_path in (item.properties['path'] for item in parent_item.children):
@@ -318,7 +325,7 @@ class BasicSceneCollector(HookBaseClass):
             first_frame_file = img_seq_files[0]
 
             display_name = publisher.util.get_publish_name(
-                first_frame_file, sequence=True#is_sequence
+                first_frame_file, sequence=True  # is_sequence
             )
 
             # create and populate the item
@@ -352,7 +359,7 @@ class BasicSceneCollector(HookBaseClass):
             file_items.append(file_item)
 
         if not file_items:
-            self.logger.warn("No image sequences found in: %s" % (folder,))
+            self.logger.warn("No files found in: %s" % (folder,))
 
         return file_items
 

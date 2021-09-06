@@ -34,7 +34,7 @@ def sync_frame_range_and_fps():
             "END_FRAME:  {0} -> {1}".format(int(cur_cut_out), cut_out))
 
     if out:
-        ok = hou.ui.displayConfirmation('\n'.join(out), title="Frame range and FPS change detected.",
+        ok = not hou.ui.displayMessage('\n'.join(out), buttons=('Ok', 'Cancel'),  title="Frame range and FPS change detected.",
                                         help="Update with the latest frame ranges and FPS from Shotgrid?")
         if ok:
             hou.setFps(fps)
@@ -476,8 +476,6 @@ def set_env(ctx=None, filepath=None):
         if filepath is None:
             filepath = hou.hipFile.name()
 
-    sync_frame_range_and_fps()
-
     hou.hscript('setenv -u JOB')
     hou.hscript('setenv -u SHOTPATH')
     hou.hscript('setenv -u ASSETPATH')
@@ -540,6 +538,7 @@ def set_env(ctx=None, filepath=None):
         hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
     hou.hscript('varchange')
     update_rops()
+    sync_frame_range_and_fps()
 
 
 def set_comment(node, comment):

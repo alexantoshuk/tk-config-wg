@@ -24,26 +24,22 @@ def sync_frame_range_and_fps():
     out = []
     if cur_fps != fps:
         out.append("FPS:  {0} -> {1}".format(int(cur_fps), fps))
-        hou.setFps(fps)
 
-    if cur_cut_in != cut_in or cur_cut_out != cut_out:
-        if cur_cut_in != cut_in:
-            out.append(
-                "START_FRAME:  {0} -> {1}".format(int(cur_cut_in), cut_in))
+    if cur_cut_in != cut_in:
+        out.append(
+            "START_FRAME:  {0} -> {1}".format(int(cur_cut_in), cut_in))
 
-        if cur_cut_out != cut_out:
-            out.append(
-                "END_FRAME:  {0} -> {1}".format(int(cur_cut_out), cut_out))
-
-        hou.playbar.setFrameRange(cut_in, cut_out)
-        hou.playbar.setPlaybackRange(cut_in, cut_out)
+    if cur_cut_out != cut_out:
+        out.append(
+            "END_FRAME:  {0} -> {1}".format(int(cur_cut_out), cut_out))
 
     if out:
-        try:
-            hou.ui.displayMessage('\n'.join(out), buttons=('OK',), severity=hou.severityType.Message, title="Sync frame range and FPS",
-                                  help="You scene has been updated with the latest frame ranges and FPS from Shotgrid.")
-        except:
-            pass
+        ok = hou.ui.displayConfirmation('\n'.join(out), title="Frame range and FPS change detected.",
+                                        help="Update with the latest frame ranges and FPS from Shotgrid?")
+        if ok:
+            hou.setFps(fps)
+            hou.playbar.setFrameRange(cut_in, cut_out)
+            hou.playbar.setPlaybackRange(cut_in, cut_out)
 
 
 def get_tempfile_name():

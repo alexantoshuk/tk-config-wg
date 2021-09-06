@@ -51,6 +51,10 @@ class BeforeAppLaunch(tank.Hook):
         # you can set environment variables like this:
         # os.environ["MY_SETTING"] = "foo bar"
         ctx = self.parent.context
+        projects = os.path.dirname(ctx.sgtk.roots.get('primary'))
+        root = os.path.dirname(projects)
+        tkroot = os.path.join(root, 'tk')
+
         cur_proj_path = None
         cur_proj_path = ctx.sgtk.paths_from_entity(
             ctx.project['type'], ctx.project['id'])[0]
@@ -69,12 +73,9 @@ class BeforeAppLaunch(tank.Hook):
                 "Fail to load project environment from '%s/proj_env.py'" % cur_proj_path)
 
         if platform.system() == "Windows":
-            tkroot = "W:/tk"
             app_path = tkroot + '/app/' + platform.system()
             os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
             os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
-        else:
-            tkroot = "/home/ali/tk"
 
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.0.3/config.ocio'

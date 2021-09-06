@@ -21,6 +21,37 @@ def datetime_str():
     return now.strftime("%b-%d-%Y %H:%M:%S")
 
 
+def project_field_value(name, default=None):
+    import sgtk
+    en = sgtk.platform.current_engine()
+    ctx = en.context
+    sg = en.shotgun
+
+    field_val = sg.find_one(
+        "Project", [["id", "is", ctx.project['id']]], [name])
+    if field_val:
+        return field_val.get(name, default)
+
+    return default
+
+
+def entity_field_value(name, default=None):
+    import sgtk
+    en = sgtk.platform.current_engine()
+    ctx = en.context
+    sg = en.shotgun
+
+    entity_type = ctx.entity['type']
+    entity_id = ctx.entity['id']
+
+    field_val = sg.find_one(
+        entity_type, [["id", "is", entity_id]], [name])
+    if field_val:
+        return field_val.get(name, default)
+
+    return default
+
+
 # def cleanup_seq_versions(path, seq_paths, max_versions=10, logger=None):
 #     if max_versions <= 0:
 #         return False

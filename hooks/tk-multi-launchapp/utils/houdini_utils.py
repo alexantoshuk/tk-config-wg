@@ -3,6 +3,7 @@ import hou
 import sys
 import os
 import tempfile
+from common_utils import project_field_value
 
 
 def get_tempfile_name():
@@ -52,14 +53,7 @@ def update_materials():
     ctx = en.context
     sg = en.shotgun
 
-    RENDERNAME = sg.find_one(
-        "Project", [["id", "is", ctx.project['id']]], ['sg_render'])
-    if RENDERNAME:
-        RENDERNAME = RENDERNAME.get('sg_render', 'mantra')
-    if not RENDERNAME:
-        RENDERNAME = 'mantra'
-
-    RENDERNAME = RENDERNAME.lower()
+    RENDERNAME = project_field_value('sg_render', 'mantra').lower()
 
     def set_comment(node, comment):
         node.setComment(comment)
@@ -347,15 +341,7 @@ def update_rops():
         'redshift': 'Redshift_ROP',
     }
 
-    RENDERNAME = sg.find_one(
-        "Project", [["id", "is", ctx.project['id']]], ['sg_render'])
-    if RENDERNAME:
-        RENDERNAME = RENDERNAME.get('sg_render', 'mantra')
-    if not RENDERNAME:
-        RENDERNAME = 'mantra'
-
-    RENDERNAME = RENDERNAME.lower()
-
+    RENDERNAME = project_field_value('sg_render', 'mantra').lower()
     ROPTYPE = ROPTYPEMAP[RENDERNAME]
 
     def create_beauty_rop():
@@ -500,7 +486,6 @@ def set_env(ctx=None, filepath=None):
 
     if ctx.step:
         hou.hscript('setenv STEPPATH = %s' % root_path)
-        hou.hscript('setenv RELSTEPPATH = %s' % root_path[len(job) + 1:])
         hou.hscript('setenv STEP = %s' % stepcode)
 
     if ctx.task:

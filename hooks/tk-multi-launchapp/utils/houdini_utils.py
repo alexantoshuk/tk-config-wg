@@ -3,7 +3,47 @@ import hou
 import sys
 import os
 import tempfile
-from common_utils import project_field_value
+from common_utils import project_field_value, entity_field_value
+
+
+def sync_frame_range_and_fps():
+    import sgtk
+    en = sgtk.platform.current_engine()
+    ctx = en.context
+    sg = en.shotgun
+
+    fps = project_field_value('sg_fps', 25)
+    try:
+        cut_in = entity_field_value('sg_cut_in', 1001)
+        cut_out = entity_field_value('sg_cut_out', 1001)
+    except:
+        return
+
+    cur_fps = hou.fps()
+    cur_cut_in, cur_cut_out = hou.playbar.frameRange()
+    out = []
+    if cur_fps != fps:
+        out.append("FPS:  {0} -> {1}".format(int(cur_fps), fps))
+        hou.setFps(fps)
+
+    if cur_cut_in != cut_in or cur_cut_out != cut_out:
+        if cur_cut_in != cut_in:
+            out.append(
+                "START_FRAME:  {0} -> {1}".format(int(cur_cut_in), cut_in))
+
+        if cur_cut_out != cut_out:
+            out.append(
+                "END_FRAME:  {0} -> {1}".format(int(cur_cut_out), cut_out))
+
+        hou.playbar.setFrameRange(cut_in, cut_out)
+        hou.playbar.setPlaybackRange(cut_in, cut_out)
+
+    if out:
+        try:
+            hou.ui.displayMessage('\n'.join(out), buttons=('OK',), severity=hou.severityType.Message, title="Sync frame range and FPS",
+                                  help="You scene has been updated with the latest frame ranges and FPS from Shotgrid.")
+        except:
+            pass
 
 
 def get_tempfile_name():
@@ -11,7 +51,6 @@ def get_tempfile_name():
 
 
 def update_materials():
-    import hou
     import sgtk
     import glob
     import re
@@ -428,6 +467,7 @@ def set_ver():
         hou.hscript('setenv VER = %s' % ver)
         hou.hscript('varchange')
     update_rops()
+    sync_frame_range_and_fps()
 
 
 def set_env(ctx=None, filepath=None):
@@ -439,6 +479,8 @@ def set_env(ctx=None, filepath=None):
         sg = en.shotgun
         if filepath is None:
             filepath = hou.hipFile.name()
+
+    sync_frame_range_and_fps()
 
     hou.hscript('setenv -u JOB')
     hou.hscript('setenv -u SHOTPATH')

@@ -18,7 +18,7 @@ import re
 import sgtk
 import houdini_utils
 from houdini_utils import set_comment
-from common_utils import datetime_str
+from common_utils import datetime_str, project_field_value, entity_field_value
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -363,6 +363,13 @@ class HoudiniActions(HookBaseClass):
         alembic_camera_node.parm("fileName").set(path)
 
         alembic_camera_node.parm("reload").pressButton()
+        resx = project_field_value('sg_width', 1920)
+        resy = project_field_value('sg_height', 1080)
+        # set resolution
+        res_p = alembic_camera_node.parmTuple('res')
+        res_p.deleteAllKeyframes()
+        res_p.set((resx, resy))
+        #
         set_comment(alembic_camera_node, datetime_str())
 
         _show_node(alembic_camera_node)

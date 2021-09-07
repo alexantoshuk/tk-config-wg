@@ -235,6 +235,7 @@ settings.tk-multi-publish2.maya.asset_step:
     hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
     settings:
         Publish Template: asset_alembic_cache
+  post_phase: "{self}/post_phase.py:{config}/tk-maya/tk-multi-publish2/post_phase.py"
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -265,6 +266,7 @@ settings.tk-multi-publish2.maya.shot_step:
     hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
     settings:
         Publish Template: shot_alembic_cache
+  post_phase: "{self}/post_phase.py:{config}/tk-maya/tk-multi-publish2/post_phase.py"
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 

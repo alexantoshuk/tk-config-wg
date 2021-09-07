@@ -52,6 +52,35 @@ def entity_field_value(name, default=None):
     return default
 
 
+def task_field_value(name, default=None):
+    import sgtk
+    en = sgtk.platform.current_engine()
+    ctx = en.context
+    sg = en.shotgun
+
+    field_val = sg.find_one(
+        "Task", [["id", "is", ctx.task['id']]], [name])
+    if field_val:
+        return field_val.get(name, default)
+
+    return default
+
+
+def update_status():
+    import sgtk
+    en = sgtk.platform.current_engine()
+    ctx = en.context
+    sg = en.shotgun
+
+    current_status = sg.find_one(
+        "Task", [["id", "is", ctx.task['id']]], ['sg_status_list'])
+
+    if current_status in ('fin', 'clsd'):
+        return
+    new_status = 'rev'
+    sg.update("Task", ctx.task['id'], {'sg_status_list': new_status})
+
+
 # def cleanup_seq_versions(path, seq_paths, max_versions=10, logger=None):
 #     if max_versions <= 0:
 #         return False

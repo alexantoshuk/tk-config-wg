@@ -10,6 +10,7 @@
 
 import sgtk
 import houdini_utils
+import common_utils
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -123,6 +124,7 @@ class PostPhaseHook(HookBaseClass):
         :param publish_tree: The :ref:`publish-api-tree` instance representing
             the items to be published.
         """
-        houdini_utils.set_ver()
 
         self.logger.debug("Executing post finalize hook method...")
+        houdini_utils.set_ver()
+        common_utils.update_status()

@@ -30,9 +30,10 @@ def project_field_value(name, default=None):
     field_val = sg.find_one(
         "Project", [["id", "is", ctx.project['id']]], [name])
     if field_val:
-        return field_val.get(name, default)
-
-    return default
+        field_val = field_val.get(name, default)
+    if field_val is None:
+        return default
+    return field_val
 
 
 def entity_field_value(name, default=None):
@@ -47,9 +48,10 @@ def entity_field_value(name, default=None):
     field_val = sg.find_one(
         entity_type, [["id", "is", entity_id]], [name])
     if field_val:
-        return field_val.get(name, default)
-
-    return default
+        field_val = field_val.get(name, default)
+    if field_val is None:
+        return default
+    return field_val
 
 
 def task_field_value(name, default=None):
@@ -61,9 +63,10 @@ def task_field_value(name, default=None):
     field_val = sg.find_one(
         "Task", [["id", "is", ctx.task['id']]], [name])
     if field_val:
-        return field_val.get(name, default)
-
-    return default
+        field_val = field_val.get(name, default)
+    if field_val is None:
+        return default
+    return field_val
 
 
 def update_status():
@@ -74,6 +77,8 @@ def update_status():
 
     current_status = sg.find_one(
         "Task", [["id", "is", ctx.task['id']]], ['sg_status_list'])
+    if current_status:
+        current_status = current_status.get('sg_status_list')
 
     if current_status in ('fin', 'clsd'):
         return

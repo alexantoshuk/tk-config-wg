@@ -12,12 +12,9 @@ def sync_frame_range_and_fps():
     ctx = en.context
     sg = en.shotgun
 
-    fps = project_field_value('sg_fps', 25)
-    try:
-        cut_in = entity_field_value('sg_cut_in', 1001)
-        cut_out = entity_field_value('sg_cut_out', 1001)
-    except:
-        return
+    fps = int(project_field_value('sg_fps', 25))
+    cut_in = int(entity_field_value('sg_cut_in', 1001))
+    cut_out = int(entity_field_value('sg_cut_out', 1001))
 
     cur_fps = hou.fps()
     cur_cut_in, cur_cut_out = hou.playbar.frameRange()
@@ -34,8 +31,8 @@ def sync_frame_range_and_fps():
             "END_FRAME:  {0} -> {1}".format(int(cur_cut_out), cut_out))
 
     if out:
-        ok = not hou.ui.displayMessage('\n'.join(out), buttons=('Ok', 'Cancel'),  title="Frame range and FPS change detected.",
-                                        help="Update with the latest frame ranges and FPS from Shotgrid?")
+        ok = not hou.ui.displayMessage('\n'.join(out), buttons=('Ok', 'Cancel'), title="Frame range and FPS change detected.",
+                                       help="Update with the latest frame ranges and FPS from Shotgrid?")
         if ok:
             hou.setFps(fps)
             hou.playbar.setFrameRange(cut_in, cut_out)
@@ -400,6 +397,12 @@ def update_rops():
             main_p = node.parm('vm_picture')
             if not main_p:
                 continue
+
+            checkpoint_p = node.parm('vm_writecheckpoint')
+            if checkpoint_p:
+                checkpoint_p.deleteAllKeyframes()
+                checkpoint_p.set(False)
+
             main_p.deleteAllKeyframes()
             main_p.set(hou.text.expandString(main_template))
             for i in range(1, node.evalParm('vm_cryptolayers') + 1):
@@ -463,7 +466,6 @@ def set_ver():
         hou.hscript('setenv VER = %s' % ver)
         hou.hscript('varchange')
     update_rops()
-    sync_frame_range_and_fps()
 
 
 def set_env(ctx=None, filepath=None):

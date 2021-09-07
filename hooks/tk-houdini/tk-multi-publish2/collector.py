@@ -87,6 +87,7 @@ class HoudiniSessionCollector(HookBaseClass):
         :param dict settings: Configured settings for this collector
         :param parent_item: Root item instance
         """
+        common_utils.sync_frame_range_and_fps()
 
         # create an item representing the current houdini session
         item = self.collect_current_houdini_session(settings, parent_item)

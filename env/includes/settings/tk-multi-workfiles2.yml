@@ -49,6 +49,20 @@ settings.tk-multi-workfiles2: &settings_tk-multi-workfiles2
       filters:
       link_field: entity
       hierarchy: [step]
+
+  my_tasks_filters:
+    [
+      [sg_status_list, not_in, [clsd, fin]],
+      {
+        filter_operator: any,
+        filters:
+          [
+            [task_assignees.Group.users, is, '{context.user}'],
+            [task_assignees, is, '{context.user}']
+          ]
+      }
+    ]
+        
   location: "@apps.tk-multi-workfiles2.location"
 
 # launches at startup.
@@ -193,6 +207,7 @@ settings.tk-multi-workfiles2.houdini.asset_step:
       filters:
       link_field: entity
       hierarchy: [step]
+
   hook_scene_operation: "{config}/tk-houdini/tk-multi-workfiles2/scene_operation.py"
   location: "@apps.tk-multi-workfiles2.location"
 
@@ -252,7 +267,7 @@ settings.tk-multi-workfiles2.maya.asset_step:
       entity_type: Task
       filters:
       link_field: entity
-      hierarchy: [step]
+      hierarchy: [step]  
   hook_scene_operation: "{config}/tk-maya/tk-multi-workfiles2/scene_operation.py"
   location: "@apps.tk-multi-workfiles2.location"
 
@@ -269,7 +284,7 @@ settings.tk-multi-workfiles2.maya.shot_step:
     filters:
     sub_hierarchy:
       entity_type: Task
-      filters:
+      filters: 
       link_field: entity
       hierarchy: [step]
   - caption: Shots

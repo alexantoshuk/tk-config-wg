@@ -14,7 +14,7 @@ def sync_frame_range_and_fps():
 
     fps = int(project_field_value('sg_fps', 25))
     cut_in = int(entity_field_value('sg_cut_in', 1001))
-    cut_out = int(entity_field_value('sg_cut_out', 1002))
+    cut_out = int(entity_field_value('sg_cut_out', 1100))
 
     cur_fps = hou.fps()
     cur_cut_in, cur_cut_out = hou.playbar.frameRange()

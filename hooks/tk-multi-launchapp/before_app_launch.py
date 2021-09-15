@@ -80,8 +80,6 @@ class BeforeAppLaunch(tank.Hook):
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
 
-        os.environ['HSITE'] = tkroot
-
         os.environ['PYTHONPATH'] = os.environ.get(
             'PYTHONPATH', '') + os.pathsep + os.path.join(os.path.dirname(__file__), 'utils')
 
@@ -96,4 +94,4 @@ class BeforeAppLaunch(tank.Hook):
                 'PYTHONPATH', '') + os.pathsep + os.path.normpath(tkroot + '/maya/scripts')
 
         elif engine_name == "tk-houdini":
-            pass
+            os.environ['HSITE'] = tkroot

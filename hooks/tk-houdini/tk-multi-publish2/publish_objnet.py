@@ -277,11 +277,12 @@ class HoudiniObjnetPublishPlugin(HookBaseClass):
         """
 
         # * limit number of versions to VER_LIMIT
-        common_utils.cleanup_versions(
-            item.properties["publish_path"], pattern=".v???.objnet", max_versions=VER_LIMIT, logger=self.logger)
+        # common_utils.cleanup_versions(
+        #     item.properties["publish_path"], pattern=".v???.objnet", max_versions=VER_LIMIT, logger=self.logger)
 
-        super(HoudiniObjnetPublishPlugin,
-              self).finalize(settings, item)
+        # super(HoudiniObjnetPublishPlugin,
+        #       self).finalize(settings, item)
+        return
 
 
 def _get_save_as_action():

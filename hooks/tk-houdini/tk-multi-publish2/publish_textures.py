@@ -255,8 +255,9 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
         # common_utils.cleanup_versions(
         #     item.properties["publish_path"], pattern=".v???.matnet", max_versions=VER_LIMIT, logger=self.logger)
 
-        super(HoudiniTexturesPublishPlugin,
-              self).finalize(settings, item)
+        # super(HoudiniTexturesPublishPlugin,
+        #       self).finalize(settings, item)
+        return
 
     def _copy_work_to_publish(self, settings, item):
         """

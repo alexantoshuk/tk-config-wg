@@ -73,9 +73,13 @@ class BeforeAppLaunch(tank.Hook):
                 "Fail to load project environment from '%s/proj_env.py'" % cur_proj_path)
 
         if platform.system() == "Windows":
-            app_path = tkroot + '/app/' + platform.system()
-            os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
-            os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
+            tk_app_path = tkroot + '/app/' + platform.system()
+            os.environ['PATH'] += os.pathsep + tk_app_path + '/ffmpeg/bin'
+            os.environ['PATH'] += os.pathsep + tk_app_path + '/ImageMagick'
+            home = (os.environ['USERPROFILE'] +
+                    "/Documents").replace('\\', '/')
+        else:
+            home = os.environ['HOME']
 
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
@@ -95,3 +99,20 @@ class BeforeAppLaunch(tank.Hook):
 
         elif engine_name == "tk-houdini":
             os.environ['HSITE'] = tkroot
+            hver = None
+            for i, ch in enumerate(app_path):
+                try:
+                    int(ch)
+                    hver = app_path[i:]
+                    hver = '.'.join(hver.split('.')[:2])
+                    break
+                except:
+                    pass
+
+            try:
+                os.remove(home + '/houdini%s/flipbook.pref' % hver)
+            except:
+                try:
+                    os.remove(home + '/Houdini%s/flipbook.pref' % hver)
+                except:
+                    pass

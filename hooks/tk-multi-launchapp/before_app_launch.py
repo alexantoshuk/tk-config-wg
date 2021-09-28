@@ -53,7 +53,7 @@ class BeforeAppLaunch(tank.Hook):
         ctx = self.parent.context
         projects = os.path.dirname(ctx.sgtk.roots.get('primary'))
         root = os.path.dirname(projects)
-        tkroot = os.path.join(root, 'tk')
+        tkroot = os.path.join(root, 'tk').replace('\\', '/')
 
         cur_proj_path = None
         cur_proj_path = ctx.sgtk.paths_from_entity(

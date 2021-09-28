@@ -81,6 +81,7 @@ class BeforeAppLaunch(tank.Hook):
         else:
             home = os.environ['HOME']
 
+        os.environ["redshift_LICENSE"] = "5053@10.150.73.5"
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
 

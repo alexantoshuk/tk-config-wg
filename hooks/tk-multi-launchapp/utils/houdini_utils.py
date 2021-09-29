@@ -356,7 +356,7 @@ def update_materials():
     hou.node('/shop').layoutChildren()
 
 
-def update_rops():
+def update_rops(create_if_not_exists=False):
     import hou
     import sgtk
 
@@ -387,9 +387,11 @@ def update_rops():
             beauty_node = outnet.createNode(ROPTYPE, 'beauty')
             beauty_node.moveToGoodPosition()
 
+    if create_if_not_exists:
+        create_beauty_rop()
+
     if RENDERNAME == 'mantra':
         outnet = hou.node("/out")
-        create_beauty_rop()
 
         for node in outnet.children():
             if node.type().name() != ROPTYPE:
@@ -417,7 +419,6 @@ def update_rops():
 
     elif RENDERNAME == 'redshift':
         outnet = hou.node("/out")
-        create_beauty_rop()
 
         for node in outnet.children():
             if node.type().name() != ROPTYPE:

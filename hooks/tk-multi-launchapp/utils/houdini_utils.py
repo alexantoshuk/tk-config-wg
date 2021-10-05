@@ -506,6 +506,8 @@ def set_env(ctx=None, filepath=None):
 
     root_template_name = ctx.entity.get('type', '').lower() + '_root'
     root_template = en.get_template_by_name(root_template_name)
+    if not root_template:
+        return 
 
     root_path = None
     entity_root_path = None

@@ -518,6 +518,9 @@ def set_env(ctx=None, filepath=None):
     root_path = ctx.sgtk.paths_from_template(
         root_template, fields)
 
+    if not root_path:
+        return
+
     root_path = root_path[0].replace("\\", "/")
     entity_root_path, stepcode = os.path.split(root_path)
     hou.hscript('setenv ENTITYPATH = %s' % entity_root_path)

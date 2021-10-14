@@ -1,16 +1,16 @@
-
 # the type of dynamic content
-type: "shotgun_entity"
+type: shotgun_task
 
 # the shotgun field to use for the folder name
-name: "content"
-
+name: content
+create with parent: true
+associated entity type: Shot
 # the shotgun entity type to connect to
-entity_type: "Task"
+# entity_type: "Task"
 
 # shotgun filters to apply when getting the list of items
 # this should be a list of dicts, each dict containing
 # three fields: path, relation and values
 # (this is std shotgun API syntax)
 # any values starting with $ are resolved into path objects
-filters: [ { "path": "entity", "relation": "is", "values": [ "$shot" ] } ]
+# filters: [{ "path": "entity", "relation": "is", "values": ["$shot"] }]

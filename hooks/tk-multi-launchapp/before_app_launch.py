@@ -113,7 +113,4 @@ class BeforeAppLaunch(tank.Hook):
             try:
                 os.remove(home + '/houdini%s/flipbook.pref' % hver)
             except:
-                try:
-                    os.remove(home + '/Houdini%s/flipbook.pref' % hver)
-                except:
-                    pass
+                pass

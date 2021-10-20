@@ -219,8 +219,12 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
         # properties. This is the path we'll create and then publish in the base
         # publish plugin. Also set the publish_path to be explicit.
         item.properties["publish_version"] = version
-        item.properties["publish_path"] = publish_template.apply_fields(
+        publish_path = publish_template.apply_fields(
             work_fields)
+
+        if 'UDIM' not in work_fields:
+            publish_path = publish_path.replace('.<UDIM>', '')
+        item.properties["publish_path"] = publish_path
         item.properties["publish_type"] = "Texture"
 
         # * return grand parent validate method
@@ -334,7 +338,6 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
         # ---- copy the work files to the publish location
 
         for work_file in work_files:
-
             if not work_template.validate(work_file):
                 self.logger.warning(
                     "Work file '%s' did not match work template '%s'. "
@@ -343,6 +346,7 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
                 return
 
             work_fields = work_template.get_fields(work_file)
+
             work_fields['version'] = version
             missing_keys = publish_template.missing_keys(work_fields)
 
@@ -353,7 +357,8 @@ class HoudiniTexturesPublishPlugin(HookBaseClass):
                 )
                 return
 
-            publish_file = publish_template.apply_fields(work_fields)
+            publish_file = publish_template.apply_fields(
+                work_fields).replace('.<UDIM>', '')
 
             # copy the file
             try:

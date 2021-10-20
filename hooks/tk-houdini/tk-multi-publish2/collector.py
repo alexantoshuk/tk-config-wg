@@ -344,18 +344,19 @@ class HoudiniSessionCollector(HookBaseClass):
                 for n in node.children():
                     _add_tex(n)
 
-        for tex in textures:
+        for tex in list(textures):
             item = parent_item.create_item(
                 "Texture", "Texture", tex)
             item.properties["path"] = tex
 
             item.properties["work_template"] = work_template
 
-            seq_files = common_utils.seq_files(tex)
-
-            item.properties["sequence_paths"] = seq_files
-
-            first = seq_files[0]
+            seq_files = common_utils.seq_files(tex, seq_pattern='<UDIM>')
+            if seq_files:
+                item.properties["sequence_paths"] = seq_files
+                first = seq_files[0]
+            else:
+                first = tex
 
             if (not first) or tex.endswith('.exr'):
                 icon_path = self._icons_dir() + "/texture.png"

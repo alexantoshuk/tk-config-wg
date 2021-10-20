@@ -6,6 +6,87 @@ import tempfile
 from common_utils import project_field_value, entity_field_value
 
 
+def abstract_paths_from_template(self, template, fields):
+    """
+    Override to deal with optional template fields
+    https://developer.shotgridsoftware.com/tk-core/_modules/tank/api.html#Sgtk.abstract_paths_from_template
+    """
+    search_template = template
+
+    # the logic is as follows:
+    # do a glob and collapse abstract fields down into their abstract patterns
+    # unless they are specified with values in the fields dictionary
+    #
+    # if the leaf level can be avoided, do so.
+    # the leaf level can be avoided if it contains
+    # a combination of non-abstract templates with values in the fields dict
+    # and abstract templates.
+
+    # can we avoid the leaf level?
+    leaf_keys = set(template.keys.keys()) - set(template.parent.keys.keys())
+
+    abstract_key_names = [
+        k.name for k in template.keys.values() if k.is_abstract]
+
+    skip_leaf_level = True
+    for k in leaf_keys:
+        if k not in abstract_key_names:
+            # a non-abstract key
+            if k not in fields:
+                # with no value
+                skip_leaf_level = False
+                break
+
+    if skip_leaf_level:
+        search_template = template.parent
+
+    # now carry out a regular search based on the template
+    found_files = self.paths_from_template(search_template, fields)
+
+    st_abstract_key_names = [
+        k.name for k in search_template.keys.values() if k.is_abstract
+    ]
+
+    # now collapse down the search matches for any abstract fields,
+    # and add the leaf level if necessary
+    abstract_paths = set()
+    for found_file in found_files:
+
+        cur_fields = search_template.get_fields(found_file)
+
+        # pass 1 - go through the fields for this file and
+        # zero out the abstract fields - this way, apply
+        # fields will pick up defaults for those fields
+        #
+        # if the system found matches for eye=left and eye=right,
+        # by deleting all eye values they will be replaced by %V
+        # as the template is applied.
+        #
+
+        # this is the fix..
+        try:
+            for abstract_key_name in st_abstract_key_names:
+                del cur_fields[abstract_key_name]
+        except:
+            abstract_paths.add(found_file)
+            continue
+
+        # pass 2 - if we ignored the leaf level, add those fields back
+        # note that there is no risk that we add abstract fields at this point
+        # since the fields dictionary should only ever contain "real" values.
+        # also, we may have deleted actual fields in the pass above and now we
+        # want to put them back again.
+        for f in fields:
+            if f not in cur_fields:
+                cur_fields[f] = fields[f]
+
+        # now we have all the fields we need to compose the full template
+        abstract_path = template.apply_fields(cur_fields)
+        abstract_paths.add(abstract_path)
+
+    return list(abstract_paths)
+
+
 def sync_frame_range_and_fps():
     import sgtk
     en = sgtk.platform.current_engine()
@@ -122,10 +203,10 @@ def update_materials():
 
     def work_textures():
         work_template = en.get_template_by_name("work_asset_texture")
-        asset_root_template = en.get_template_by_name("asset_root")
-        fields = ctx.as_template_fields(asset_root_template)
 
-        return ctx.sgtk.abstract_paths_from_template(work_template, fields)
+        fields = ctx.as_template_fields(work_template)
+
+        return abstract_paths_from_template(ctx.sgtk, work_template, fields)
 
     def published_textures():
         filters = [
@@ -156,15 +237,16 @@ def update_materials():
         root_path = root_path[0]
         tex_publish_path = os.path.join(root_path, 'publish', 'caches')
         # print tex_publish_path
-        result = [
-            os.path.join(
-                tex_publish_path,
-                d['group_name']
-                .replace('.####.', '.v%03d.<UDIM>.' % d['summaries'].get('version_number', 0))
-            )
-            for d in data
-        ]
 
+        def path_from_name(name, ver):
+            basename, ext = os.path.splitext(name)
+            if basename.endswith('.####'):
+                basename, _ = os.path.splitext(basename)
+                return os.path.join(tex_publish_path, '{0}.v{1:03}.<UDIM>{2}'.format(basename, ver, ext))
+            return os.path.join(tex_publish_path, '{0}.v{1:03}{2}'.format(basename, ver, ext))
+
+        result = [path_from_name(d['group_name'], d['summaries'].get('version_number', 0)) for d in data ]
+       
         return result
 
     def generate_matnet_from_geo(matnet, mattype, sop):
@@ -216,7 +298,7 @@ def update_materials():
 
         #matnet.setSelected(True, clear_all_selected=True, show_asset_if_selected=True)
 
-    def update_matnet(matnet, textures):
+    def update_textures(matnet, textures):
         textures = dict(
             (get_publish_name(t), t)
             for t in textures
@@ -262,7 +344,7 @@ def update_materials():
 
         return matnet
 
-    def update_asset_matnet(asset, shot=None, stepname='Surface'):
+    def update_matnet(asset, shot=None, stepname='Surface'):
 
         filters = [
             ['entity.Shot.id', 'is', shot['id']] if shot else [
@@ -300,12 +382,7 @@ def update_materials():
     if entity_type == 'Asset':
         assetname = ctx.entity['name']
         matnet = matnet_node(assetname)
-        """
-        if ctx.step['name'] == 'Texture':
-            work_template = en.get_template_by_name("work_asset_texture")
-            textures = work_textures()
-            generate_matnet(matnet, textures, work_template)
-        """
+
         if ctx.step['name'] in ('Surface', 'Texture'):
             mattype = RENDER2MAT.get(RENDERNAME, None)
             if not mattype:
@@ -320,10 +397,16 @@ def update_materials():
                     continue
                 generate_matnet_from_geo(matnet, mattype, sop)
 
-            textures = published_textures()
-            generate_matnet(matnet, mattype, textures,
-                            en.get_template_by_name("publish_asset_texture"))
-            update_matnet(matnet, textures)
+            if ctx.step['name'] == 'Texture':
+                textures = work_textures()
+                generate_matnet(matnet, mattype, textures,
+                                en.get_template_by_name("work_asset_texture"))
+            else:
+                textures = published_textures()
+                generate_matnet(matnet, mattype, textures,
+                                en.get_template_by_name("publish_asset_texture"))
+                update_textures(matnet, textures)
+
             matnet.setSelected(True, True)
 
         else:
@@ -333,7 +416,7 @@ def update_materials():
             assets.append(ctx.entity)
 
             for asset in assets:
-                update_asset_matnet(asset, stepname='Surface')
+                update_matnet(asset, stepname='Surface')
 
     elif entity_type == 'Shot':
         assets = sg.find_one(
@@ -342,16 +425,16 @@ def update_materials():
             assets = assets.get('assets', [])
 
         for asset in assets:
-            if not update_asset_matnet(asset, shot=ctx.entity, stepname=None):
-                update_asset_matnet(asset, stepname='Surface')
+            if not update_matnet(asset, shot=ctx.entity, stepname=None):
+                update_matnet(asset, stepname='Surface')
 
             subassets = sg.find_one(
                 "Asset", [["id", "is", asset['id']]], ['assets'])
             subassets = subassets.get('assets', []) if subassets else []
 
             for subasset in subassets:
-                if not update_asset_matnet(subasset, shot=ctx.entity, stepname=None):
-                    update_asset_matnet(subasset, stepname='Surface')
+                if not update_matnet(subasset, shot=ctx.entity, stepname=None):
+                    update_matnet(subasset, stepname='Surface')
 
     hou.node('/shop').layoutChildren()
 
@@ -507,7 +590,7 @@ def set_env(ctx=None, filepath=None):
     root_template_name = ctx.entity.get('type', '').lower() + '_root'
     root_template = en.get_template_by_name(root_template_name)
     if not root_template:
-        return 
+        return
 
     root_path = None
     entity_root_path = None

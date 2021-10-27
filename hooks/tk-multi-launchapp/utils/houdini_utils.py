@@ -245,8 +245,9 @@ def update_materials():
                 return os.path.join(tex_publish_path, '{0}.v{1:03}.<UDIM>{2}'.format(basename, ver, ext))
             return os.path.join(tex_publish_path, '{0}.v{1:03}{2}'.format(basename, ver, ext))
 
-        result = [path_from_name(d['group_name'], d['summaries'].get('version_number', 0)) for d in data ]
-       
+        result = [path_from_name(d['group_name'], d['summaries'].get(
+            'version_number', 0)) for d in data]
+
         return result
 
     def generate_matnet_from_geo(matnet, mattype, sop):
@@ -442,10 +443,11 @@ def update_materials():
 def update_rops(create_if_not_exists=False):
     import hou
     import sgtk
-
-    main_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_acescg.${VER}.\$F4.exr"
-    cryptoobj_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptoobj.${VER}.\$F4.exr"
-    cryptomat_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptomat.${VER}.\$F4.exr"
+    if not hou.getenv("VER"):
+        hou.putenv(hou.getenv("VER"))
+    main_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_acescg.${VER}.\$F4.exr"
+    cryptoobj_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptoobj.${VER}.\$F4.exr"
+    cryptomat_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptomat.${VER}.\$F4.exr"
 
     en = sgtk.platform.current_engine()
     ctx = en.context
@@ -581,7 +583,9 @@ def set_env(ctx=None, filepath=None):
         return
 
     ver = ver_from_path(filepath)
-    if ver is not None:
+    if not ver:
+        hou.hscript('setenv VER = v000')
+    else:
         hou.hscript('setenv VER = %s' % ver)
 
     en = sgtk.platform.current_engine()

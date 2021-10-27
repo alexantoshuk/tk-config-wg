@@ -443,12 +443,6 @@ def update_materials():
 def update_rops(create_if_not_exists=False):
     import hou
     import sgtk
-<<<<<<< HEAD
-
-=======
-    if not hou.getenv("VER"):
-        hou.putenv(hou.getenv("VER"))
->>>>>>> d0c87300d05f0931ef6232cdcb9013f23d4a8c08
     main_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_acescg.${VER}.\$F4.exr"
     cryptoobj_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptoobj.${VER}.\$F4.exr"
     cryptomat_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptomat.${VER}.\$F4.exr"

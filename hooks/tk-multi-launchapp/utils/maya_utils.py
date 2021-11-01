@@ -111,6 +111,8 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
         # do not export vertex normals
         # "-noNormals",
         "-eulerFilter",
+        "-attrPrefix 'mix_'",
+        "-attrPrefix 'abc_'",
     ]
 
     if is_animated:

@@ -555,8 +555,8 @@ def set_ver():
 def set_env(ctx=None, filepath=None):
     import sgtk
 
+    en = sgtk.platform.current_engine()
     if ctx is None:
-        en = sgtk.platform.current_engine()
         ctx = en.context
         sg = en.shotgun
         if filepath is None:
@@ -586,7 +586,6 @@ def set_env(ctx=None, filepath=None):
     else:
         hou.hscript('setenv VER = %s' % ver)
 
-    en = sgtk.platform.current_engine()
     ctx.sgtk.create_filesystem_structure(ctx.entity['type'], ctx.entity['id'])
 
     root_template_name = ctx.entity.get('type', '').lower() + '_root'
@@ -844,3 +843,33 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
             os.remove(tmp_filename)
         except:
             pass
+
+
+def is_hipvar_in_subnet(subnet):
+    for n in subnet.allSubChildren():
+        for p in n.parms():
+            if (not isinstance(p.parmTemplate(), hou.StringParmTemplate)) or p.keyframes():
+                continue
+
+            s = p.unexpandedString()
+            if s.startswith("$HIP"):
+                return True
+    return False
+
+
+def expand_hipvar_in_subnet(subnet):
+    hip = hou.getenv("HIP")
+    parms = []
+    for n in subnet.allSubChildren():
+        for p in n.parms():
+            if (not isinstance(p.parmTemplate(), hou.StringParmTemplate)) or p.keyframes():
+                continue
+
+            s = p.unexpandedString()
+            if s.startswith("$HIP"):
+                try:                    
+                    p.set(hip + s[4:])
+                    parms.append((p,True))
+                except:
+                    parms.append((p,False))
+    return parms

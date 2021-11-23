@@ -252,6 +252,9 @@ class HoudiniObjnetPublishPlugin(HookBaseClass):
 
             objnet_path = item.properties["node"]
             objnet_node = hou.node(objnet_path)
+
+            houdini_utils.expand_hipvar_in_subnet(objnet_node)
+
             items = objnet_node.allItems()
             objnet_node.saveItemsToFile(
                 items, publish_path, save_hda_fallbacks=True)

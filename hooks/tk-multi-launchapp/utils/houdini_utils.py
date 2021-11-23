@@ -2,6 +2,7 @@
 import hou
 import sys
 import os
+import shutil
 import tempfile
 from common_utils import project_field_value, entity_field_value
 
@@ -674,6 +675,8 @@ def is_time_dependent(node):
     td = [False]
 
     def _walk(node):
+        if node.type().category().name() not in ('Object', 'Sop'):
+            return
         if node.isTimeDependent():
             td[0] = True
             return True
@@ -682,7 +685,7 @@ def is_time_dependent(node):
             for n in node.children():
                 if _walk(n):
                     return True
-        else:
+        elif child_cat_name == 'Sop':
             r = node.renderNode()
             if r and r.isTimeDependent():
                 td[0] = True
@@ -772,26 +775,18 @@ def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=
 
 def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, samples=2, scale=1.0):
     node = hou.node(subnetpath)
-    scale_p = node.parm('scale')
-    old_scale = scale_p.eval()
-    is_locked = scale_p.isLocked()
-
-    scale_p.lock(0)
-    scale_p.set(old_scale * scale)
 
     is_display = node.isDisplayFlagSet()
     node.setDisplayFlag(1)
     try:
         alembic_export('/obj', subnetpath, filename,
-                       start, end, preroll, samples, build_from_path=True)
+                       start, end, preroll, samples, build_from_path=True, scale=scale)
 
     finally:
         node.setDisplayFlag(is_display)
-        scale_p.set(old_scale)
-        scale_p.lock(is_locked)
 
 
-def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2, build_from_path=False):
+def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2, build_from_path=False, scale=1.0):
     is_animated = end > start
     if is_animated:
         is_animated = False
@@ -807,40 +802,60 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
     start_frame = max(0, start - 2 - preroll)
     end_frame = end + 2
 
-    tmp_alembic_node = hou.node('/out/__tmp__alembic__')
-    if tmp_alembic_node:
-        tmp_alembic_node.destroy()
     tmp_alembic_node = hou.node(
         '/out').createNode('alembic', '__tmp__alembic__')
-    tmp_filename = get_tempfile_name() + '.abc'
+    tmp_filename_base = get_tempfile_name()
+    tmp_filename = tmp_filename_base + '.abc'
+
+    tmp_alembic_node.setParms({
+        'trange': int(is_animated),
+        'filename': tmp_filename,
+        'root': root,
+        'objects': objects,
+        'packed_transform': 1,
+        'motionBlur': is_animated,
+        'samples': samples,
+        'build_from_path': build_from_path,
+    })
+
+    if is_animated:
+        frange_p = tmp_alembic_node.parmTuple("f")
+        frange_p.deleteAllKeyframes()
+        frange_p.set((start_frame, end_frame, 1))
+
     try:
-        tmp_alembic_node.setParms({
-            'trange': int(is_animated),
-            'filename': tmp_filename,
-            'root': root,
-            'objects': objects,
-            'packed_transform': 1,
-            'motionBlur': is_animated,
-            'samples': samples,
-            'build_from_path': build_from_path,
-        })
-
-        if is_animated:
-            frange_p = tmp_alembic_node.parmTuple("f")
-            frange_p.deleteAllKeyframes()
-            frange_p.set((start_frame, end_frame, 1))
-
         tmp_alembic_node.render()
-        try:
-            os.rename(tmp_filename, filename)
-        except:
-            os.remove(filename)
-            os.rename(tmp_filename, filename)
+
+        if scale != 1.0:
+            tmp_filename_scaled = tmp_filename_base + '_scaled.abc'
+            read_tmp_alembic_obj_node = hou.node(
+                '/obj').createNode('geo', '__tmp__alembic__')
+            read_tmp_alembic_node = read_tmp_alembic_obj_node.createNode(
+                'alembic')
+            read_tmp_alembic_node.parm('fileName').set(tmp_filename)
+            xform_node = read_tmp_alembic_node.createOutputNode('xform')
+            xform_node.setDisplayFlag(True)
+            xform_node.setRenderFlag(True)
+            xform_node.parm('scale').set(scale)
+
+            tmp_alembic_node.setParms({
+                'filename': tmp_filename_scaled,
+                'root': '/obj',
+                'objects': read_tmp_alembic_obj_node.path(),
+            })
+            tmp_alembic_node.render()
+
+            shutil.move(tmp_filename_scaled, filename)
+
+        else:
+            shutil.move(tmp_filename, filename)
 
     finally:
         tmp_alembic_node.destroy()
         try:
             os.remove(tmp_filename)
+            read_tmp_alembic_obj_node.destroy()
+            os.remove(tmp_filename_scaled)
         except:
             pass
 
@@ -867,9 +882,9 @@ def expand_hipvar_in_subnet(subnet):
 
             s = p.unexpandedString()
             if s.startswith("$HIP"):
-                try:                    
+                try:
                     p.set(hip + s[4:])
-                    parms.append((p,True))
+                    parms.append((p, True))
                 except:
-                    parms.append((p,False))
+                    parms.append((p, False))
     return parms

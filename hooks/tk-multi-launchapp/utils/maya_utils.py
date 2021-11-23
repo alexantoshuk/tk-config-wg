@@ -2,6 +2,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 import os
 import sys
+import shutil
 import tempfile
 
 
@@ -135,11 +136,8 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
     try:
         # ...and execute it:
         mel.eval(abc_export_cmd)
-        try:
-            os.rename(tmp_filename, filename)
-        except:
-            os.remove(filename)
-            os.rename(tmp_filename, filename)
+        shutil.move(tmp_filename, filename)
+
     finally:
         try:
             os.remove(tmp_filename)

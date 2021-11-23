@@ -169,10 +169,6 @@ def update_materials():
 
     RENDERNAME = project_field_value('sg_render', 'mantra').lower()
 
-    def set_comment(node, comment):
-        node.setComment(comment)
-        node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
-
     def set_mat_chan(node, chan, tex):
         nodetype = node.type()
         _, _, typename, _ = nodetype.nameComponents()
@@ -656,19 +652,19 @@ def node_type_instances(node_type_category, pattern):
 
 
 def is_publish_matnet(node):
-    return node.comment().strip() == "# Publish Material Network"
+    return "# Publish Material Network" in get_flags(node)
 
 
 def is_publish_objnet(node):
-    return node.comment().strip() == "# Publish Network"
+    return "# Publish Network" in get_flags(node)
 
 
 def is_publish_alembic(node):
-    return node.comment().strip() == "# Publish Alembic"
+    return "# Publish Alembic" in get_flags(node)
 
 
 def is_publish_camera(node):
-    return node.comment().strip() == "# Publish Camera"
+    return "# Publish Camera" in get_flags(node)
 
 
 def is_time_dependent(node):
@@ -888,3 +884,73 @@ def expand_hipvar_in_subnet(subnet):
                 except:
                     parms.append((p, False))
     return parms
+
+
+FLAG_COLOR = {
+    '# Publish Alembic': hou.Color((0.04, 0.7, 0.04)),
+    '# Publish Camera': hou.Color((0.7, 0.2, 0.25)),
+    '# Publish Network': hou.Color((0.2, 0.4, 0.7)),
+    '# Publish Material Network': hou.Color((0.2, 0.4, 0.7)),
+}
+
+
+def mix_colors(colors):
+    sum_l = 0.0
+    sum_a = 0.0
+    sum_b = 0.0
+    n = len(colors)
+    for c in colors:
+        l, a, b = c.lab()
+        sum_l += l
+        sum_a += a
+        sum_b += b
+    result = hou.Color()
+    result.setLAB((sum_l / n, sum_a / n, sum_b / n))
+    return result
+
+
+def set_flag(node, flag):
+    valid_flags = FLAG_COLOR.keys()
+    if flag not in valid_flags:
+        return
+
+    node.setColor(FLAG_COLOR[flag])
+    node.setComment(flag)
+    node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
+
+
+def add_flag(node, flag):
+    comment = node.comment()
+    valid_flags = FLAG_COLOR.keys()
+
+    flags = set(line.strip() for line in comment.split(
+        "\n") if line.strip() in valid_flags)
+    flag = flag.strip()
+    if flag in valid_flags:
+        flags.add(flag)
+
+    flags = list(flags)
+    clr = mix_colors([FLAG_COLOR[flag] for flag in flags])
+    node.setColor(clr)
+    node.setComment('\n'.join(flags))
+    node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
+
+
+def remove_flags(node):
+    comment = node.comment()
+    if not comment:
+        return
+
+    node.setColor(node.type().defaultColor())
+    node.setComment("")
+
+
+def get_flags(node):
+    comment = node.comment()
+    if not comment:
+        return []
+    valid_flags = FLAG_COLOR.keys()
+    flags = set(line.strip() for line in comment.split(
+        "\n") if line.strip() in valid_flags)
+
+    return list(flags)

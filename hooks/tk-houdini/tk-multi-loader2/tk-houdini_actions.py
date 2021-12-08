@@ -271,7 +271,8 @@ class HoudiniActions(HookBaseClass):
             raise Exception(error_msg)
 
         try:
-            objnet_node.parm("network_filename").set(path)
+            objnet_node.parm("network_filename").set(
+                houdini_utils.injectJOB(path))
             objnet_node.parm("network_reload").pressButton()
 
         except:
@@ -318,7 +319,8 @@ class HoudiniActions(HookBaseClass):
             raise Exception(error_msg)
 
         try:
-            matnet_node.parm("network_filename").set(path)
+            matnet_node.parm("network_filename").set(
+                houdini_utils.injectJOB(path))
             matnet_node.parm("network_reload").pressButton()
 
         except:
@@ -360,7 +362,7 @@ class HoudiniActions(HookBaseClass):
         app.log_debug("Created alembic_camera: %s  path: '%s' " %
                       (alembic_camera_node.path(), path))
 
-        alembic_camera_node.parm("fileName").set(path)
+        alembic_camera_node.parm("fileName").set(houdini_utils.injectJOB(path))
 
         alembic_camera_node.parm("reload").pressButton()
         resx = project_field_value('sg_width', 1920)
@@ -410,7 +412,7 @@ class HoudiniActions(HookBaseClass):
             child.destroy()
 
         alembic_sop = geo_node.createNode("alembic", name)
-        alembic_sop.parm("fileName").set(path)
+        alembic_sop.parm("fileName").set(houdini_utils.injectJOB(path))
         app.log_debug(
             "Creating alembic sop: %s\n  path: '%s' " % (
                 alembic_sop.path(), path)
@@ -491,7 +493,7 @@ class HoudiniActions(HookBaseClass):
             padding = frame_match.group(2)
             path = path.replace(full_frame_spec, "$F%s" % (padding,))
 
-        file_cop.parm("filename1").set(path)
+        file_cop.parm("filename1").set(houdini_utils.injectJOB(path))
         app.log_debug("Created file COP: %s\n  path: '%s' " %
                       (file_cop.path(), path))
         file_cop.parm("reload").pressButton()

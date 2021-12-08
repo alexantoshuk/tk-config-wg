@@ -7,6 +7,18 @@ import tempfile
 from common_utils import project_field_value, entity_field_value
 
 
+def injectJOB(path):
+    def expand_var(path, var):
+        if path.startswith(var + '/'):
+            return "/".join((hou.getenv(var[1:]), path[len(var) + 1:]))
+        return path
+
+    path = expand_var(path, "$HIP")
+    path = expand_var(path, "$JOB")
+
+    return hou.text.collapseCommonVars(path, vars=['$LIB', '$JOB'])
+
+
 def abstract_paths_from_template(self, template, fields):
     """
     Override to deal with optional template fields
@@ -440,6 +452,7 @@ def update_materials():
 def update_rops(create_if_not_exists=False):
     import hou
     import sgtk
+
     main_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_acescg.${VER}.\$F4.exr"
     cryptoobj_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptoobj.${VER}.\$F4.exr"
     cryptomat_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptomat.${VER}.\$F4.exr"
@@ -486,16 +499,16 @@ def update_rops(create_if_not_exists=False):
                 checkpoint_p.set(False)
 
             main_p.deleteAllKeyframes()
-            main_p.set(hou.text.expandString(main_template))
+            main_p.set(injectJOB(hou.text.expandString(main_template)))
             for i in range(1, node.evalParm('vm_cryptolayers') + 1):
                 cryptolayeroutput_p = node.parm('vm_cryptolayeroutput%s' % i)
                 cryptolayeroutput_p.deleteAllKeyframes()
                 if node.evalParm('vm_cryptolayerprop%s' % i) == 'name':
                     cryptolayeroutput_p.set(
-                        hou.text.expandString(cryptoobj_template))
+                        injectJOB(hou.text.expandString(cryptoobj_template)))
                 else:
                     cryptolayeroutput_p.set(
-                        hou.text.expandString(cryptomat_template))
+                        injectJOB(hou.text.expandString(cryptomat_template)))
 
     elif RENDERNAME == 'redshift':
         outnet = hou.node("/out")
@@ -507,7 +520,7 @@ def update_rops(create_if_not_exists=False):
             if not main_p:
                 continue
             main_p.deleteAllKeyframes()
-            main_p.set(hou.text.expandString(main_template))
+            main_p.set(injectJOB(hou.text.expandString(main_template)))
             for i in range(1, node.evalParm('RS_aov') + 1):
                 if node.parm('RS_aovID_%s' % i).evalAsString() != 'CRYPTOMATTE':
                     continue
@@ -517,10 +530,10 @@ def update_rops(create_if_not_exists=False):
                     'RS_aovCryptomatteType_%s' % i).evalAsString()
                 if cryptotype == 'RS_BLOCKSINKCRYPTOMATTETYPE_MESHID':
                     cryptolayeroutput_p.set(
-                        hou.text.expandString(cryptoobj_template))
+                        injectJOB(hou.text.expandString(cryptoobj_template)))
                 elif cryptotype == 'RS_BLOCKSINKCRYPTOMATTETYPE_MATERIALID':
                     cryptolayeroutput_p.set(
-                        hou.text.expandString(cryptomat_template))
+                        injectJOB(hou.text.expandString(cryptomat_template)))
 
 
 def ver_from_path(filepath):
@@ -559,13 +572,12 @@ def set_env(ctx=None, filepath=None):
         if filepath is None:
             filepath = hou.hipFile.name()
 
-    hou.hscript('setenv -u JOB')
+    # hou.hscript('setenv -u JOB')
     hou.hscript('setenv -u SHOTPATH')
     hou.hscript('setenv -u ASSETPATH')
     hou.hscript('setenv -u ENTITYPATH')
     hou.hscript('setenv -u ENTITY')
     hou.hscript('setenv -u STEPPATH')
-    hou.hscript('setenv -u RELSTEPPATH')
     hou.hscript('setenv -u SHOT')
     hou.hscript('setenv -u ASSET')
     hou.hscript('setenv -u STEP')
@@ -593,9 +605,9 @@ def set_env(ctx=None, filepath=None):
     root_path = None
     entity_root_path = None
 
-    job = ctx.sgtk.roots.get('primary')
-    if job:
-        hou.hscript('setenv JOB = %s' % job.replace('\\', '/'))
+    # job = ctx.sgtk.roots.get('primary')
+    # if job:
+    #     hou.hscript('setenv JOB = %s' % job.replace('\\', '/'))
 
     fields = ctx.as_template_fields(root_template)
     root_path = ctx.sgtk.paths_from_template(
@@ -649,22 +661,6 @@ def node_type_instances(node_type_category, pattern):
     '''Return a list of nodes in a particular node type category
        whose names match a pattern.'''
     return [n for ty in node_types(node_type_category, pattern) for n in ty.instances()]
-
-
-def is_publish_matnet(node):
-    return "# Publish Material Network" in get_flags(node)
-
-
-def is_publish_objnet(node):
-    return "# Publish Network" in get_flags(node)
-
-
-def is_publish_alembic(node):
-    return "# Publish Alembic" in get_flags(node)
-
-
-def is_publish_camera(node):
-    return "# Publish Camera" in get_flags(node)
 
 
 def is_time_dependent(node):
@@ -856,34 +852,18 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
             pass
 
 
-def is_hipvar_in_subnet(subnet):
+def inject_JOB_in_subnet(subnet):
     for n in subnet.allSubChildren():
         for p in n.parms():
             if (not isinstance(p.parmTemplate(), hou.StringParmTemplate)) or p.keyframes():
                 continue
 
-            s = p.unexpandedString()
-            if s.startswith("$HIP"):
-                return True
-    return False
-
-
-def expand_hipvar_in_subnet(subnet):
-    hip = hou.getenv("HIP")
-    parms = []
-    for n in subnet.allSubChildren():
-        for p in n.parms():
-            if (not isinstance(p.parmTemplate(), hou.StringParmTemplate)) or p.keyframes():
+            s = injectJOB(p.unexpandedString())
+            try:
+                p.set(s)
+            except:
                 continue
-
-            s = p.unexpandedString()
-            if s.startswith("$HIP"):
-                try:
-                    p.set(hip + s[4:])
-                    parms.append((p, True))
-                except:
-                    parms.append((p, False))
-    return parms
+    return
 
 
 FLAG_COLOR = {
@@ -954,3 +934,19 @@ def get_flags(node):
         "\n") if line.strip() in valid_flags)
 
     return list(flags)
+
+
+def is_publish_matnet(node):
+    return "# Publish Material Network" in get_flags(node)
+
+
+def is_publish_objnet(node):
+    return "# Publish Network" in get_flags(node)
+
+
+def is_publish_alembic(node):
+    return "# Publish Alembic" in get_flags(node)
+
+
+def is_publish_camera(node):
+    return "# Publish Camera" in get_flags(node)

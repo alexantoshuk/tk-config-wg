@@ -253,6 +253,9 @@ class HoudiniMatnetPublishPlugin(HookBaseClass):
 
             matnet_path = item.properties["node"]
             matnet_node = hou.node(matnet_path)
+
+            houdini_utils.inject_JOB_in_subnet(matnet_node)
+
             items = matnet_node.allItems()
             matnet_node.saveItemsToFile(
                 items, publish_path, save_hda_fallbacks=True)

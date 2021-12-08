@@ -147,7 +147,7 @@ class BreakdownSceneOperations(Hook):
                     "Updating alembic node '%s' to: %s" % (
                         node_path, file_path)
                 )
-                node.parm("fileName").set(file_path)
+                node.parm("fileName").set(houdini_utils.injectJOB(file_path))
                 set_comment(node, datetime_str())
 
             elif node_type == "alembic_camera":
@@ -157,7 +157,7 @@ class BreakdownSceneOperations(Hook):
                     "Updating alembic_camera node '%s' to: %s" % (
                         node_path, file_path)
                 )
-                node.parm("fileName").set(file_path)
+                node.parm("fileName").set(houdini_utils.injectJOB(file_path))
                 set_comment(node, datetime_str())
 
             elif node_type == "matnet":
@@ -167,7 +167,8 @@ class BreakdownSceneOperations(Hook):
                     "Updating matnet node '%s' to: %s" % (
                         node_path, file_path)
                 )
-                node.parm("network_filename").set(file_path)
+                node.parm("network_filename").set(
+                    houdini_utils.injectJOB(file_path))
                 node.parm("network_reload").pressButton()
 
             elif node_type == "objnet":
@@ -176,7 +177,8 @@ class BreakdownSceneOperations(Hook):
                     "Updating objnet node '%s' to: %s" % (
                         node_path, file_path)
                 )
-                node.parm("network_filename").set(file_path)
+                node.parm("network_filename").set(
+                    houdini_utils.injectJOB(file_path))
                 node.parm("network_reload").pressButton()
             else:
                 continue

@@ -59,8 +59,14 @@ class BeforeAppLaunch(tank.Hook):
         cur_proj_path = ctx.sgtk.paths_from_entity(
             ctx.project['type'], ctx.project['id'])[0]
 
+        os.environ['JOB'] = cur_proj_path.replace('\\', '/')
+        os.environ['LIB'] = os.path.dirname(
+            cur_proj_path.replace('\\', '/')) + '/lib'
+
         cur_proj_path = os.path.normpath(cur_proj_path)
+
         sys.path.append(cur_proj_path)
+
         self.logger.debug(
             "Try to load project environment from '%s/proj_env.py'" % cur_proj_path)
         try:
@@ -99,6 +105,7 @@ class BeforeAppLaunch(tank.Hook):
                 'PYTHONPATH', '') + os.pathsep + os.path.normpath(tkroot + '/maya/scripts')
 
         elif engine_name == "tk-houdini":
+            os.environ['LD_PRELOAD'] = '/lib64/libc_malloc_debug.so.0'
             os.environ['HSITE'] = tkroot
             hver = None
             for i, ch in enumerate(app_path):

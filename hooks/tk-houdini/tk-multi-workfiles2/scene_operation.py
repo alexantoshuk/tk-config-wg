@@ -68,9 +68,7 @@ class SceneOperation(HookClass):
                                                  state, otherwise False
                                 all others     - None
         """
-        # with open('/home/ali/sg.txt', 'a') as f:
-        #     f.write('{0} {1} {2} {3} {4}\n'.format(parent_action,
-        #             operation, file_path, hou.hipFile.name(), file_version))
+
         if file_path:
             file_path = file_path.replace(os.path.sep, "/")
 

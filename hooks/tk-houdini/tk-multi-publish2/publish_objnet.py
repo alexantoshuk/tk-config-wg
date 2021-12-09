@@ -252,6 +252,9 @@ class HoudiniObjnetPublishPlugin(HookBaseClass):
 
             objnet_path = item.properties["node"]
             objnet_node = hou.node(objnet_path)
+
+            houdini_utils.inject_JOB_in_subnet(objnet_node)
+
             items = objnet_node.allItems()
             objnet_node.saveItemsToFile(
                 items, publish_path, save_hda_fallbacks=True)
@@ -277,11 +280,12 @@ class HoudiniObjnetPublishPlugin(HookBaseClass):
         """
 
         # * limit number of versions to VER_LIMIT
-        common_utils.cleanup_versions(
-            item.properties["publish_path"], pattern=".v???.objnet", max_versions=VER_LIMIT, logger=self.logger)
+        # common_utils.cleanup_versions(
+        #     item.properties["publish_path"], pattern=".v???.objnet", max_versions=VER_LIMIT, logger=self.logger)
 
-        super(HoudiniObjnetPublishPlugin,
-              self).finalize(settings, item)
+        # super(HoudiniObjnetPublishPlugin,
+        #       self).finalize(settings, item)
+        return
 
 
 def _get_save_as_action():

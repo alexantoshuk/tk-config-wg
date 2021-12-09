@@ -53,14 +53,20 @@ class BeforeAppLaunch(tank.Hook):
         ctx = self.parent.context
         projects = os.path.dirname(ctx.sgtk.roots.get('primary'))
         root = os.path.dirname(projects)
-        tkroot = os.path.join(root, 'tk')
+        tkroot = os.path.join(root, 'tk').replace('\\', '/')
 
         cur_proj_path = None
         cur_proj_path = ctx.sgtk.paths_from_entity(
             ctx.project['type'], ctx.project['id'])[0]
 
+        os.environ['JOB'] = cur_proj_path.replace('\\', '/')
+        os.environ['LIB'] = os.path.dirname(
+            cur_proj_path.replace('\\', '/')) + '/lib'
+
         cur_proj_path = os.path.normpath(cur_proj_path)
+
         sys.path.append(cur_proj_path)
+
         self.logger.debug(
             "Try to load project environment from '%s/proj_env.py'" % cur_proj_path)
         try:
@@ -73,17 +79,20 @@ class BeforeAppLaunch(tank.Hook):
                 "Fail to load project environment from '%s/proj_env.py'" % cur_proj_path)
 
         if platform.system() == "Windows":
-            app_path = tkroot + '/app/' + platform.system()
-            os.environ['PATH'] += os.pathsep + app_path + '/ffmpeg/bin'
-            os.environ['PATH'] += os.pathsep + app_path + '/ImageMagick'
+            tk_app_path = tkroot + '/app/' + platform.system()
+            os.environ['PATH'] += os.pathsep + tk_app_path + '/ffmpeg/bin'
+            os.environ['PATH'] += os.pathsep + tk_app_path + '/ImageMagick'
+            home = (os.environ['USERPROFILE'] +
+                    "/Documents").replace('\\', '/')
+        else:
+            home = os.environ['HOME']
 
+        os.environ["redshift_LICENSE"] = "5053@10.150.73.5"
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
 
-        os.environ['HSITE'] = tkroot
-
         os.environ['PYTHONPATH'] = os.environ.get(
-            'PYTHONPATH', '') + os.pathsep + os.path.join(os.path.dirname(__file__), 'utils')
+            'PYTHONPATH', '') + os.pathsep + os.path.join(os.path.dirname(__file__), 'utils').replace('\\', '/')
 
         if engine_name in ("tk-nuke", "tk-nukestudio"):
             os.environ['NUKE_PATH'] = os.environ.get(
@@ -96,4 +105,19 @@ class BeforeAppLaunch(tank.Hook):
                 'PYTHONPATH', '') + os.pathsep + os.path.normpath(tkroot + '/maya/scripts')
 
         elif engine_name == "tk-houdini":
-            pass
+            os.environ['LD_PRELOAD'] = '/lib64/libc_malloc_debug.so.0'
+            os.environ['HSITE'] = tkroot
+            hver = None
+            for i, ch in enumerate(app_path):
+                try:
+                    int(ch)
+                    hver = app_path[i:]
+                    hver = '.'.join(hver.split('.')[:2])
+                    break
+                except:
+                    pass
+
+            try:
+                os.remove(home + '/houdini%s/flipbook.pref' % hver)
+            except:
+                pass

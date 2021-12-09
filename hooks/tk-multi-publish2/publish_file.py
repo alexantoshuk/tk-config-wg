@@ -652,9 +652,17 @@ class BasicFilePublishPlugin(HookBaseClass):
                 version_number += 1
             else:
                 version_number = 1
+        
+        tex_publish_path = os.path.join(root_path, 'publish', 'caches')
+        def path_from_name(name, ver):
+            basename, ext = os.path.splitext(name)
+            if basename.endswith('.####'):
+                basename, _ = os.path.splitext(basename)
+                return os.path.join(tex_publish_path, '{0}.v{1:03}.<UDIM>{2}'.format(basename, ver, ext))
+            return os.path.join(tex_publish_path, '{0}.v{1:03}{2}'.format(basename, ver, ext))
 
-        publish_path = os.path.join(root_path, 'publish', 'caches', name.replace(
-            '.####.', '.v%03d.<UDIM>.' % version_number))
+        publish_path = path_from_name(name, version_number)
+        
         item.properties["publish_version"] = version_number
         item.properties["publish_path"] = publish_path
         return publish_path

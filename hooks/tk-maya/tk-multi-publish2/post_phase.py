@@ -125,4 +125,9 @@ class PostPhaseHook(HookBaseClass):
         """
 
         self.logger.debug("Executing post finalize hook method...")
-        common_utils.update_status()
+        try:
+            self.logger.debug("Update task status...")
+            common_utils.update_status()
+        except:
+            self.logger.error(
+                "You don't have permissions to update status on this task")

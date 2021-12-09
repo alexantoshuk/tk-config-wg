@@ -2,8 +2,102 @@
 import hou
 import sys
 import os
+import shutil
 import tempfile
 from common_utils import project_field_value, entity_field_value
+
+
+def injectJOB(path):
+    def expand_var(path, var):
+        if path.startswith(var + '/'):
+            return "/".join((hou.getenv(var[1:]), path[len(var) + 1:]))
+        return path
+
+    path = expand_var(path, "$HIP")
+    path = expand_var(path, "$JOB")
+
+    return hou.text.collapseCommonVars(path, vars=['$LIB', '$JOB'])
+
+
+def abstract_paths_from_template(self, template, fields):
+    """
+    Override to deal with optional template fields
+    https://developer.shotgridsoftware.com/tk-core/_modules/tank/api.html#Sgtk.abstract_paths_from_template
+    """
+    search_template = template
+
+    # the logic is as follows:
+    # do a glob and collapse abstract fields down into their abstract patterns
+    # unless they are specified with values in the fields dictionary
+    #
+    # if the leaf level can be avoided, do so.
+    # the leaf level can be avoided if it contains
+    # a combination of non-abstract templates with values in the fields dict
+    # and abstract templates.
+
+    # can we avoid the leaf level?
+    leaf_keys = set(template.keys.keys()) - set(template.parent.keys.keys())
+
+    abstract_key_names = [
+        k.name for k in template.keys.values() if k.is_abstract]
+
+    skip_leaf_level = True
+    for k in leaf_keys:
+        if k not in abstract_key_names:
+            # a non-abstract key
+            if k not in fields:
+                # with no value
+                skip_leaf_level = False
+                break
+
+    if skip_leaf_level:
+        search_template = template.parent
+
+    # now carry out a regular search based on the template
+    found_files = self.paths_from_template(search_template, fields)
+
+    st_abstract_key_names = [
+        k.name for k in search_template.keys.values() if k.is_abstract
+    ]
+
+    # now collapse down the search matches for any abstract fields,
+    # and add the leaf level if necessary
+    abstract_paths = set()
+    for found_file in found_files:
+
+        cur_fields = search_template.get_fields(found_file)
+
+        # pass 1 - go through the fields for this file and
+        # zero out the abstract fields - this way, apply
+        # fields will pick up defaults for those fields
+        #
+        # if the system found matches for eye=left and eye=right,
+        # by deleting all eye values they will be replaced by %V
+        # as the template is applied.
+        #
+
+        # this is the fix..
+        try:
+            for abstract_key_name in st_abstract_key_names:
+                del cur_fields[abstract_key_name]
+        except:
+            abstract_paths.add(found_file)
+            continue
+
+        # pass 2 - if we ignored the leaf level, add those fields back
+        # note that there is no risk that we add abstract fields at this point
+        # since the fields dictionary should only ever contain "real" values.
+        # also, we may have deleted actual fields in the pass above and now we
+        # want to put them back again.
+        for f in fields:
+            if f not in cur_fields:
+                cur_fields[f] = fields[f]
+
+        # now we have all the fields we need to compose the full template
+        abstract_path = template.apply_fields(cur_fields)
+        abstract_paths.add(abstract_path)
+
+    return list(abstract_paths)
 
 
 def sync_frame_range_and_fps():
@@ -87,10 +181,6 @@ def update_materials():
 
     RENDERNAME = project_field_value('sg_render', 'mantra').lower()
 
-    def set_comment(node, comment):
-        node.setComment(comment)
-        node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
-
     def set_mat_chan(node, chan, tex):
         nodetype = node.type()
         _, _, typename, _ = nodetype.nameComponents()
@@ -122,10 +212,10 @@ def update_materials():
 
     def work_textures():
         work_template = en.get_template_by_name("work_asset_texture")
-        asset_root_template = en.get_template_by_name("asset_root")
-        fields = ctx.as_template_fields(asset_root_template)
 
-        return ctx.sgtk.abstract_paths_from_template(work_template, fields)
+        fields = ctx.as_template_fields(work_template)
+
+        return abstract_paths_from_template(ctx.sgtk, work_template, fields)
 
     def published_textures():
         filters = [
@@ -156,14 +246,16 @@ def update_materials():
         root_path = root_path[0]
         tex_publish_path = os.path.join(root_path, 'publish', 'caches')
         # print tex_publish_path
-        result = [
-            os.path.join(
-                tex_publish_path,
-                d['group_name']
-                .replace('.####.', '.v%03d.<UDIM>.' % d['summaries'].get('version_number', 0))
-            )
-            for d in data
-        ]
+
+        def path_from_name(name, ver):
+            basename, ext = os.path.splitext(name)
+            if basename.endswith('.####'):
+                basename, _ = os.path.splitext(basename)
+                return os.path.join(tex_publish_path, '{0}.v{1:03}.<UDIM>{2}'.format(basename, ver, ext))
+            return os.path.join(tex_publish_path, '{0}.v{1:03}{2}'.format(basename, ver, ext))
+
+        result = [path_from_name(d['group_name'], d['summaries'].get(
+            'version_number', 0)) for d in data]
 
         return result
 
@@ -216,7 +308,7 @@ def update_materials():
 
         #matnet.setSelected(True, clear_all_selected=True, show_asset_if_selected=True)
 
-    def update_matnet(matnet, textures):
+    def update_textures(matnet, textures):
         textures = dict(
             (get_publish_name(t), t)
             for t in textures
@@ -262,7 +354,7 @@ def update_materials():
 
         return matnet
 
-    def update_asset_matnet(asset, shot=None, stepname='Surface'):
+    def update_matnet(asset, shot=None, stepname='Surface'):
 
         filters = [
             ['entity.Shot.id', 'is', shot['id']] if shot else [
@@ -300,12 +392,7 @@ def update_materials():
     if entity_type == 'Asset':
         assetname = ctx.entity['name']
         matnet = matnet_node(assetname)
-        """
-        if ctx.step['name'] == 'Texture':
-            work_template = en.get_template_by_name("work_asset_texture")
-            textures = work_textures()
-            generate_matnet(matnet, textures, work_template)
-        """
+
         if ctx.step['name'] in ('Surface', 'Texture'):
             mattype = RENDER2MAT.get(RENDERNAME, None)
             if not mattype:
@@ -320,10 +407,16 @@ def update_materials():
                     continue
                 generate_matnet_from_geo(matnet, mattype, sop)
 
-            textures = published_textures()
-            generate_matnet(matnet, mattype, textures,
-                            en.get_template_by_name("publish_asset_texture"))
-            update_matnet(matnet, textures)
+            if ctx.step['name'] == 'Texture':
+                textures = work_textures()
+                generate_matnet(matnet, mattype, textures,
+                                en.get_template_by_name("work_asset_texture"))
+            else:
+                textures = published_textures()
+                generate_matnet(matnet, mattype, textures,
+                                en.get_template_by_name("publish_asset_texture"))
+                update_textures(matnet, textures)
+
             matnet.setSelected(True, True)
 
         else:
@@ -333,7 +426,7 @@ def update_materials():
             assets.append(ctx.entity)
 
             for asset in assets:
-                update_asset_matnet(asset, stepname='Surface')
+                update_matnet(asset, stepname='Surface')
 
     elif entity_type == 'Shot':
         assets = sg.find_one(
@@ -342,27 +435,27 @@ def update_materials():
             assets = assets.get('assets', [])
 
         for asset in assets:
-            if not update_asset_matnet(asset, shot=ctx.entity, stepname=None):
-                update_asset_matnet(asset, stepname='Surface')
+            if not update_matnet(asset, shot=ctx.entity, stepname=None):
+                update_matnet(asset, stepname='Surface')
 
             subassets = sg.find_one(
                 "Asset", [["id", "is", asset['id']]], ['assets'])
             subassets = subassets.get('assets', []) if subassets else []
 
             for subasset in subassets:
-                if not update_asset_matnet(subasset, shot=ctx.entity, stepname=None):
-                    update_asset_matnet(subasset, stepname='Surface')
+                if not update_matnet(subasset, shot=ctx.entity, stepname=None):
+                    update_matnet(subasset, stepname='Surface')
 
     hou.node('/shop').layoutChildren()
 
 
-def update_rops():
+def update_rops(create_if_not_exists=False):
     import hou
     import sgtk
 
-    main_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_acescg.${VER}.\$F4.exr"
-    cryptoobj_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptoobj.${VER}.\$F4.exr"
-    cryptomat_template = "${STEPPATH}/publish/render/${TASK}/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptomat.${VER}.\$F4.exr"
+    main_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_acescg.${VER}.\$F4.exr"
+    cryptoobj_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptoobj.${VER}.\$F4.exr"
+    cryptomat_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptomat.${VER}.\$F4.exr"
 
     en = sgtk.platform.current_engine()
     ctx = en.context
@@ -387,9 +480,11 @@ def update_rops():
             beauty_node = outnet.createNode(ROPTYPE, 'beauty')
             beauty_node.moveToGoodPosition()
 
+    if create_if_not_exists:
+        create_beauty_rop()
+
     if RENDERNAME == 'mantra':
         outnet = hou.node("/out")
-        create_beauty_rop()
 
         for node in outnet.children():
             if node.type().name() != ROPTYPE:
@@ -404,20 +499,19 @@ def update_rops():
                 checkpoint_p.set(False)
 
             main_p.deleteAllKeyframes()
-            main_p.set(hou.text.expandString(main_template))
+            main_p.set(injectJOB(hou.text.expandString(main_template)))
             for i in range(1, node.evalParm('vm_cryptolayers') + 1):
                 cryptolayeroutput_p = node.parm('vm_cryptolayeroutput%s' % i)
                 cryptolayeroutput_p.deleteAllKeyframes()
                 if node.evalParm('vm_cryptolayerprop%s' % i) == 'name':
                     cryptolayeroutput_p.set(
-                        hou.text.expandString(cryptoobj_template))
+                        injectJOB(hou.text.expandString(cryptoobj_template)))
                 else:
                     cryptolayeroutput_p.set(
-                        hou.text.expandString(cryptomat_template))
+                        injectJOB(hou.text.expandString(cryptomat_template)))
 
     elif RENDERNAME == 'redshift':
         outnet = hou.node("/out")
-        create_beauty_rop()
 
         for node in outnet.children():
             if node.type().name() != ROPTYPE:
@@ -426,7 +520,7 @@ def update_rops():
             if not main_p:
                 continue
             main_p.deleteAllKeyframes()
-            main_p.set(hou.text.expandString(main_template))
+            main_p.set(injectJOB(hou.text.expandString(main_template)))
             for i in range(1, node.evalParm('RS_aov') + 1):
                 if node.parm('RS_aovID_%s' % i).evalAsString() != 'CRYPTOMATTE':
                     continue
@@ -436,10 +530,10 @@ def update_rops():
                     'RS_aovCryptomatteType_%s' % i).evalAsString()
                 if cryptotype == 'RS_BLOCKSINKCRYPTOMATTETYPE_MESHID':
                     cryptolayeroutput_p.set(
-                        hou.text.expandString(cryptoobj_template))
+                        injectJOB(hou.text.expandString(cryptoobj_template)))
                 elif cryptotype == 'RS_BLOCKSINKCRYPTOMATTETYPE_MATERIALID':
                     cryptolayeroutput_p.set(
-                        hou.text.expandString(cryptomat_template))
+                        injectJOB(hou.text.expandString(cryptomat_template)))
 
 
 def ver_from_path(filepath):
@@ -471,20 +565,19 @@ def set_ver():
 def set_env(ctx=None, filepath=None):
     import sgtk
 
+    en = sgtk.platform.current_engine()
     if ctx is None:
-        en = sgtk.platform.current_engine()
         ctx = en.context
         sg = en.shotgun
         if filepath is None:
             filepath = hou.hipFile.name()
 
-    hou.hscript('setenv -u JOB')
+    # hou.hscript('setenv -u JOB')
     hou.hscript('setenv -u SHOTPATH')
     hou.hscript('setenv -u ASSETPATH')
     hou.hscript('setenv -u ENTITYPATH')
     hou.hscript('setenv -u ENTITY')
     hou.hscript('setenv -u STEPPATH')
-    hou.hscript('setenv -u RELSTEPPATH')
     hou.hscript('setenv -u SHOT')
     hou.hscript('setenv -u ASSET')
     hou.hscript('setenv -u STEP')
@@ -497,25 +590,31 @@ def set_env(ctx=None, filepath=None):
         return
 
     ver = ver_from_path(filepath)
-    if ver is not None:
+    if not ver:
+        hou.hscript('setenv VER = v000')
+    else:
         hou.hscript('setenv VER = %s' % ver)
 
-    en = sgtk.platform.current_engine()
     ctx.sgtk.create_filesystem_structure(ctx.entity['type'], ctx.entity['id'])
 
     root_template_name = ctx.entity.get('type', '').lower() + '_root'
     root_template = en.get_template_by_name(root_template_name)
+    if not root_template:
+        return
 
     root_path = None
     entity_root_path = None
 
-    job = ctx.sgtk.roots.get('primary')
-    if job:
-        hou.hscript('setenv JOB = %s' % job.replace('\\', '/'))
+    # job = ctx.sgtk.roots.get('primary')
+    # if job:
+    #     hou.hscript('setenv JOB = %s' % job.replace('\\', '/'))
 
     fields = ctx.as_template_fields(root_template)
     root_path = ctx.sgtk.paths_from_template(
         root_template, fields)
+
+    if not root_path:
+        return
 
     root_path = root_path[0].replace("\\", "/")
     entity_root_path, stepcode = os.path.split(root_path)
@@ -564,26 +663,12 @@ def node_type_instances(node_type_category, pattern):
     return [n for ty in node_types(node_type_category, pattern) for n in ty.instances()]
 
 
-def is_publish_matnet(node):
-    return node.comment().strip() == "# Publish Material Network"
-
-
-def is_publish_objnet(node):
-    return node.comment().strip() == "# Publish Network"
-
-
-def is_publish_alembic(node):
-    return node.comment().strip() == "# Publish Alembic"
-
-
-def is_publish_camera(node):
-    return node.comment().strip() == "# Publish Camera"
-
-
 def is_time_dependent(node):
     td = [False]
 
     def _walk(node):
+        if node.type().category().name() not in ('Object', 'Sop'):
+            return
         if node.isTimeDependent():
             td[0] = True
             return True
@@ -592,7 +677,7 @@ def is_time_dependent(node):
             for n in node.children():
                 if _walk(n):
                     return True
-        else:
+        elif child_cat_name == 'Sop':
             r = node.renderNode()
             if r and r.isTimeDependent():
                 td[0] = True
@@ -682,26 +767,18 @@ def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=
 
 def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, samples=2, scale=1.0):
     node = hou.node(subnetpath)
-    scale_p = node.parm('scale')
-    old_scale = scale_p.eval()
-    is_locked = scale_p.isLocked()
-
-    scale_p.lock(0)
-    scale_p.set(old_scale * scale)
 
     is_display = node.isDisplayFlagSet()
     node.setDisplayFlag(1)
     try:
         alembic_export('/obj', subnetpath, filename,
-                       start, end, preroll, samples, build_from_path=True)
+                       start, end, preroll, samples, build_from_path=True, scale=scale)
 
     finally:
         node.setDisplayFlag(is_display)
-        scale_p.set(old_scale)
-        scale_p.lock(is_locked)
 
 
-def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2, build_from_path=False):
+def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2, build_from_path=False, scale=1.0):
     is_animated = end > start
     if is_animated:
         is_animated = False
@@ -717,39 +794,159 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
     start_frame = max(0, start - 2 - preroll)
     end_frame = end + 2
 
-    tmp_alembic_node = hou.node('/out/__tmp__alembic__')
-    if tmp_alembic_node:
-        tmp_alembic_node.destroy()
     tmp_alembic_node = hou.node(
         '/out').createNode('alembic', '__tmp__alembic__')
-    tmp_filename = get_tempfile_name() + '.abc'
+    tmp_filename_base = get_tempfile_name()
+    tmp_filename = tmp_filename_base + '.abc'
+
+    tmp_alembic_node.setParms({
+        'trange': int(is_animated),
+        'filename': tmp_filename,
+        'root': root,
+        'objects': objects,
+        'packed_transform': 1,
+        'motionBlur': is_animated,
+        'samples': samples,
+        'build_from_path': build_from_path,
+    })
+
+    if is_animated:
+        frange_p = tmp_alembic_node.parmTuple("f")
+        frange_p.deleteAllKeyframes()
+        frange_p.set((start_frame, end_frame, 1))
+
     try:
-        tmp_alembic_node.setParms({
-            'trange': int(is_animated),
-            'filename': tmp_filename,
-            'root': root,
-            'objects': objects,
-            'packed_transform': 1,
-            'motionBlur': is_animated,
-            'samples': samples,
-            'build_from_path': build_from_path,
-        })
-
-        if is_animated:
-            frange_p = tmp_alembic_node.parmTuple("f")
-            frange_p.deleteAllKeyframes()
-            frange_p.set((start_frame, end_frame, 1))
-
         tmp_alembic_node.render()
-        try:
-            os.rename(tmp_filename, filename)
-        except:
-            os.remove(filename)
-            os.rename(tmp_filename, filename)
+
+        if scale != 1.0:
+            tmp_filename_scaled = tmp_filename_base + '_scaled.abc'
+            read_tmp_alembic_obj_node = hou.node(
+                '/obj').createNode('geo', '__tmp__alembic__')
+            read_tmp_alembic_node = read_tmp_alembic_obj_node.createNode(
+                'alembic')
+            read_tmp_alembic_node.parm('fileName').set(tmp_filename)
+            xform_node = read_tmp_alembic_node.createOutputNode('xform')
+            xform_node.setDisplayFlag(True)
+            xform_node.setRenderFlag(True)
+            xform_node.parm('scale').set(scale)
+
+            tmp_alembic_node.setParms({
+                'filename': tmp_filename_scaled,
+                'root': '/obj',
+                'objects': read_tmp_alembic_obj_node.path(),
+            })
+            tmp_alembic_node.render()
+
+            shutil.move(tmp_filename_scaled, filename)
+
+        else:
+            shutil.move(tmp_filename, filename)
 
     finally:
         tmp_alembic_node.destroy()
         try:
             os.remove(tmp_filename)
+            read_tmp_alembic_obj_node.destroy()
+            os.remove(tmp_filename_scaled)
         except:
             pass
+
+
+def inject_JOB_in_subnet(subnet):
+    for n in subnet.allSubChildren():
+        for p in n.parms():
+            if (not isinstance(p.parmTemplate(), hou.StringParmTemplate)) or p.keyframes():
+                continue
+
+            s = injectJOB(p.unexpandedString())
+            try:
+                p.set(s)
+            except:
+                continue
+    return
+
+
+FLAG_COLOR = {
+    '# Publish Alembic': hou.Color((0.04, 0.7, 0.04)),
+    '# Publish Camera': hou.Color((0.7, 0.2, 0.25)),
+    '# Publish Network': hou.Color((0.2, 0.4, 0.7)),
+    '# Publish Material Network': hou.Color((0.2, 0.4, 0.7)),
+}
+
+
+def mix_colors(colors):
+    sum_l = 0.0
+    sum_a = 0.0
+    sum_b = 0.0
+    n = len(colors)
+    for c in colors:
+        l, a, b = c.lab()
+        sum_l += l
+        sum_a += a
+        sum_b += b
+    result = hou.Color()
+    result.setLAB((sum_l / n, sum_a / n, sum_b / n))
+    return result
+
+
+def set_flag(node, flag):
+    valid_flags = FLAG_COLOR.keys()
+    if flag not in valid_flags:
+        return
+
+    node.setColor(FLAG_COLOR[flag])
+    node.setComment(flag)
+    node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
+
+
+def add_flag(node, flag):
+    comment = node.comment()
+    valid_flags = FLAG_COLOR.keys()
+
+    flags = set(line.strip() for line in comment.split(
+        "\n") if line.strip() in valid_flags)
+    flag = flag.strip()
+    if flag in valid_flags:
+        flags.add(flag)
+
+    flags = list(flags)
+    clr = mix_colors([FLAG_COLOR[flag] for flag in flags])
+    node.setColor(clr)
+    node.setComment('\n'.join(flags))
+    node.setGenericFlag(hou.nodeFlag.DisplayComment, True)
+
+
+def remove_flags(node):
+    comment = node.comment()
+    if not comment:
+        return
+
+    node.setColor(node.type().defaultColor())
+    node.setComment("")
+
+
+def get_flags(node):
+    comment = node.comment()
+    if not comment:
+        return []
+    valid_flags = FLAG_COLOR.keys()
+    flags = set(line.strip() for line in comment.split(
+        "\n") if line.strip() in valid_flags)
+
+    return list(flags)
+
+
+def is_publish_matnet(node):
+    return "# Publish Material Network" in get_flags(node)
+
+
+def is_publish_objnet(node):
+    return "# Publish Network" in get_flags(node)
+
+
+def is_publish_alembic(node):
+    return "# Publish Alembic" in get_flags(node)
+
+
+def is_publish_camera(node):
+    return "# Publish Camera" in get_flags(node)

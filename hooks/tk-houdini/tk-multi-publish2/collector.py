@@ -15,6 +15,7 @@ import os
 import sys
 import houdini_utils
 import common_utils
+import glob
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -102,6 +103,7 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # collect other, non-toolkit outputs to present for publishing
         self.collect_node_outputs(item)
+        self.collect_flipbooks(item)
         self._collect_textures(item)
         self._collect_matnet(item)
         self._collect_objnet(item)
@@ -213,6 +215,46 @@ class HoudiniSessionCollector(HookBaseClass):
                     # was collected within the current session.
                     item.name = "%s (%s)" % (item.name, node.path())
 
+    def collect_flipbooks(self, parent_item):
+        """
+        Creates items for ffmpeg flipbook.
+
+        :param parent_item: Parent Item instance
+        """
+
+        en = sgtk.platform.current_engine()
+        ctx = en.context
+
+        entity_type = ctx.entity['type'].lower()
+        entity_name = ctx.entity['name']
+        task_name = ctx.task['name']
+
+        name = "{}: {}    task: {}".format(entity_type, entity_name, task_name)
+        out_movie_pat = hou.expandString(
+            "$HIP/data/{0}_{1}*.mp4".format(entity_name, task_name))
+
+        # ensure the movies dir exists
+        movies_dir = os.path.dirname(out_movie_pat)
+        if not os.path.exists(movies_dir):
+            return
+
+        self.logger.info(
+            "Processing movies folder: %s" % (movies_dir,),
+            extra={"action_show_folder": {"path": movies_dir}},
+        )
+
+        for out_movie in glob.iglob(out_movie_pat):
+            # allow the base class to collect and create the item. it knows how
+            # to handle movie files
+            item = super(HoudiniSessionCollector, self)._collect_file(
+                parent_item, out_movie
+            )
+
+            # the item has been created. update the display name to include
+            # the an indication of what it is and why it was collected
+
+            item.name = "%s (%s)" % (item.name, "flipbook")
+
     def _collect_matnet(self, parent_item):
         """
         """
@@ -302,18 +344,19 @@ class HoudiniSessionCollector(HookBaseClass):
                 for n in node.children():
                     _add_tex(n)
 
-        for tex in textures:
+        for tex in list(textures):
             item = parent_item.create_item(
                 "Texture", "Texture", tex)
             item.properties["path"] = tex
 
             item.properties["work_template"] = work_template
 
-            seq_files = common_utils.seq_files(tex)
-
-            item.properties["sequence_paths"] = seq_files
-
-            first = seq_files[0]
+            seq_files = common_utils.seq_files(tex, seq_pattern='<UDIM>')
+            if seq_files:
+                item.properties["sequence_paths"] = seq_files
+                first = seq_files[0]
+            else:
+                first = tex
 
             if (not first) or tex.endswith('.exr'):
                 icon_path = self._icons_dir() + "/texture.png"

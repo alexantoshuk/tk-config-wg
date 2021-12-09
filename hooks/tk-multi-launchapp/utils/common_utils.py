@@ -3,13 +3,11 @@ import os
 from datetime import datetime
 
 
-def seq_files(seqpath):
-    s = seqpath.rsplit('.', 2)
-    if len(s) < 3:
+def seq_files(seqpath, seq_pattern='<UDIM>'):
+    pattern = seqpath.replace(seq_pattern, '*')
+    if pattern == seqpath:
         return None
 
-    s[-2] = '*'
-    pattern = '.'.join(s)
     l = sorted(os.path.normpath(f) for f in glob.iglob(pattern))
     if l:
         return l

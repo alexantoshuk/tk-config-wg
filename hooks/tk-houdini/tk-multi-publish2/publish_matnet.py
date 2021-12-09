@@ -253,6 +253,9 @@ class HoudiniMatnetPublishPlugin(HookBaseClass):
 
             matnet_path = item.properties["node"]
             matnet_node = hou.node(matnet_path)
+
+            houdini_utils.inject_JOB_in_subnet(matnet_node)
+
             items = matnet_node.allItems()
             matnet_node.saveItemsToFile(
                 items, publish_path, save_hda_fallbacks=True)
@@ -278,11 +281,12 @@ class HoudiniMatnetPublishPlugin(HookBaseClass):
         """
 
         # * limit number of versions to VER_LIMIT
-        common_utils.cleanup_versions(
-            item.properties["publish_path"], pattern=".v???.matnet", max_versions=VER_LIMIT, logger=self.logger)
+        # common_utils.cleanup_versions(
+        #     item.properties["publish_path"], pattern=".v???.matnet", max_versions=VER_LIMIT, logger=self.logger)
 
-        super(HoudiniMatnetPublishPlugin,
-              self).finalize(settings, item)
+        # super(HoudiniMatnetPublishPlugin,
+        #       self).finalize(settings, item)
+        return
 
 
 def _get_save_as_action():

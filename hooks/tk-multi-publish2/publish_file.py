@@ -583,14 +583,15 @@ class BasicFilePublishPlugin(HookBaseClass):
             return
 
         name = os.path.basename(path)
+        publish_type = "Alembic Cache"
         if name.lower().startswith("camera"):
-            item.properties["publish_type"] = "Alembic Camera"
+            item.properties["publish_type"] = publish_type = "Alembic Camera"
 
         filters = [
             ['project.Project.id', 'is', ctx.project['id']],
             [entity_id, 'is', ctx.entity['id']],
             ['task.Task.step.Step.id', 'is', ctx.step['id']],
-            ['published_file_type.PublishedFileType.code', 'is', "Alembic Cache"],
+            ['published_file_type.PublishedFileType.code', 'is', publish_type],
             ['name', 'is', name]
         ]
 

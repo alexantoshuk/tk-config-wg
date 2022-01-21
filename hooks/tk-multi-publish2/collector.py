@@ -416,6 +416,11 @@ class BasicSceneCollector(HookBaseClass):
                 item_type = type_info["item_type"]
                 icon_path = type_info["icon"]
                 common_type_found = True
+
+                if item_type == "file.alembic":
+                    basename = os.path.basename(filename)
+                    if basename.lower().startswith("camera"):
+                        type_display = "Alembic Camera"
                 break
 
         if not common_type_found:

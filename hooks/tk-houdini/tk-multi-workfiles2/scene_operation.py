@@ -77,18 +77,20 @@ class SceneOperation(HookClass):
 
         elif operation == "open":
             hou.hipFile.load(six.ensure_str(file_path))
-            houdini_utils.set_env(context, file_path)
+            houdini_utils.sync_frame_range_and_fps()
 
         elif operation == "save":
-            houdini_utils.set_env(context, hou.hipFile.name())
+            houdini_utils.sync_frame_range_and_fps()
             hou.hipFile.save()
 
         elif operation == "save_as":
-            houdini_utils.set_env(context, file_path)
+            houdini_utils.sync_frame_range_and_fps()
+            env = houdini_utils.env(context, file_path)
+            houdini_utils.update_rops(env)
+
             hou.hipFile.save(six.ensure_str(file_path))
 
         elif operation == "reset":
             hou.hipFile.clear()
-            houdini_utils.set_env(context, None)
 
             return True

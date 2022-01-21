@@ -127,7 +127,11 @@ class PostPhaseHook(HookBaseClass):
 
         self.logger.debug("Executing post finalize hook method...")
         self.logger.debug("Update environment...")
-        houdini_utils.set_ver()
+
+        houdini_utils.sync_frame_range_and_fps()
+        env = houdini_utils.env()
+        houdini_utils.update_rops(env)
+
         try:
             self.logger.debug("Update task status...")
             common_utils.update_status()

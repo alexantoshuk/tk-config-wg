@@ -583,12 +583,15 @@ class BasicFilePublishPlugin(HookBaseClass):
             return
 
         name = os.path.basename(path)
+        publish_type = "Alembic Cache"
+        if name.lower().startswith("camera"):
+            item.properties["publish_type"] = publish_type = "Alembic Camera"
 
         filters = [
             ['project.Project.id', 'is', ctx.project['id']],
             [entity_id, 'is', ctx.entity['id']],
             ['task.Task.step.Step.id', 'is', ctx.step['id']],
-            ['published_file_type.PublishedFileType.code', 'is', "Alembic Cache"],
+            ['published_file_type.PublishedFileType.code', 'is', publish_type],
             ['name', 'is', name]
         ]
 
@@ -652,8 +655,9 @@ class BasicFilePublishPlugin(HookBaseClass):
                 version_number += 1
             else:
                 version_number = 1
-        
+
         tex_publish_path = os.path.join(root_path, 'publish', 'caches')
+
         def path_from_name(name, ver):
             basename, ext = os.path.splitext(name)
             if basename.endswith('.####'):
@@ -662,7 +666,7 @@ class BasicFilePublishPlugin(HookBaseClass):
             return os.path.join(tex_publish_path, '{0}.v{1:03}{2}'.format(basename, ver, ext))
 
         publish_path = path_from_name(name, version_number)
-        
+
         item.properties["publish_version"] = version_number
         item.properties["publish_path"] = publish_path
         return publish_path

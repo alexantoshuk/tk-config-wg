@@ -9,14 +9,23 @@ from common_utils import project_field_value, entity_field_value
 
 def injectJOB(path):
     def expand_var(path, var):
-        if path.startswith(var + '/'):
+        if var and path.startswith(var + '/'):
             return "/".join((hou.getenv(var[1:]), path[len(var) + 1:]))
+        return path
+
+    def collapse_var(path, var):
+        varval = hou.getenv(var[1:])
+        if varval and path.startswith(varval):
+            return var + path[len(varval):]
         return path
 
     path = expand_var(path, "$HIP")
     path = expand_var(path, "$JOB")
 
-    return hou.text.collapseCommonVars(path, vars=['$LIB', '$JOB'])
+    path = collapse_var(path, "$LIB")
+    path = collapse_var(path, "$JOB")
+
+    return path
 
 
 def abstract_paths_from_template(self, template, fields):

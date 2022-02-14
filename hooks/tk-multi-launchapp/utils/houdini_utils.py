@@ -109,15 +109,17 @@ def abstract_paths_from_template(self, template, fields):
     return list(abstract_paths)
 
 
-def sync_frame_range_and_fps():
-    import sgtk
-    en = sgtk.platform.current_engine()
-    ctx = en.context
-    sg = en.shotgun
-
+def sync_fps():
     fps = int(project_field_value('sg_fps', 25))
-    cut_in = int(entity_field_value('sg_cut_in', 1001))
-    cut_out = int(entity_field_value('sg_cut_out', 1100))
+    cur_fps = hou.fps()
+    hou.setFps(fps)
+
+
+def sync_frame_range_and_fps():
+    fps = int(project_field_value('sg_fps', 25))
+    edit_handles = int(entity_field_value('sg_edit_handles', 0))
+    cut_in = int(entity_field_value('sg_cut_in', 1001)) - edit_handles
+    cut_out = int(entity_field_value('sg_cut_out', 1100)) + edit_handles
 
     cur_fps = hou.fps()
     cur_cut_in, cur_cut_out = hou.playbar.frameRange()
@@ -458,17 +460,15 @@ def update_materials():
     hou.node('/shop').layoutChildren()
 
 
-def update_rops(create_if_not_exists=False):
+def update_rops(env, create_if_not_exists=False):
     import hou
-    import sgtk
 
-    main_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_acescg.${VER}.\$F4.exr"
-    cryptoobj_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptoobj.${VER}.\$F4.exr"
-    cryptomat_template = "${STEPPATH}/publish/render/\${OS}/${VER}/${ENTITY}_${TASK}_\${OS}_cryptomat.${VER}.\$F4.exr"
-
-    en = sgtk.platform.current_engine()
-    ctx = en.context
-    sg = en.shotgun
+    main_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_acescg.{VER}.$F4.exr".format(
+        **env))
+    cryptoobj_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_cryptoobj.{VER}.$F4.exr".format(
+        **env))
+    cryptomat_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_cryptomat.{VER}.$F4.exr".format(
+        **env))
 
     ROPTYPEMAP = {
         'mantra': 'ifd',
@@ -508,16 +508,14 @@ def update_rops(create_if_not_exists=False):
                 checkpoint_p.set(False)
 
             main_p.deleteAllKeyframes()
-            main_p.set(injectJOB(hou.text.expandString(main_template)))
+            main_p.set(main_path)
             for i in range(1, node.evalParm('vm_cryptolayers') + 1):
                 cryptolayeroutput_p = node.parm('vm_cryptolayeroutput%s' % i)
                 cryptolayeroutput_p.deleteAllKeyframes()
                 if node.evalParm('vm_cryptolayerprop%s' % i) == 'name':
-                    cryptolayeroutput_p.set(
-                        injectJOB(hou.text.expandString(cryptoobj_template)))
+                    cryptolayeroutput_p.set(cryptoobj_path)
                 else:
-                    cryptolayeroutput_p.set(
-                        injectJOB(hou.text.expandString(cryptomat_template)))
+                    cryptolayeroutput_p.set(cryptomat_path)
 
     elif RENDERNAME == 'redshift':
         outnet = hou.node("/out")
@@ -529,7 +527,7 @@ def update_rops(create_if_not_exists=False):
             if not main_p:
                 continue
             main_p.deleteAllKeyframes()
-            main_p.set(injectJOB(hou.text.expandString(main_template)))
+            main_p.set(main_path)
             for i in range(1, node.evalParm('RS_aov') + 1):
                 if node.parm('RS_aovID_%s' % i).evalAsString() != 'CRYPTOMATTE':
                     continue
@@ -538,11 +536,9 @@ def update_rops(create_if_not_exists=False):
                 cryptotype = node.parm(
                     'RS_aovCryptomatteType_%s' % i).evalAsString()
                 if cryptotype == 'RS_BLOCKSINKCRYPTOMATTETYPE_MESHID':
-                    cryptolayeroutput_p.set(
-                        injectJOB(hou.text.expandString(cryptoobj_template)))
+                    cryptolayeroutput_p.set(cryptoobj_path)
                 elif cryptotype == 'RS_BLOCKSINKCRYPTOMATTETYPE_MATERIALID':
-                    cryptolayeroutput_p.set(
-                        injectJOB(hou.text.expandString(cryptomat_template)))
+                    cryptolayeroutput_p.set(cryptomat_path)
 
 
 def ver_from_path(filepath):
@@ -563,92 +559,59 @@ def ver_from_path(filepath):
         return
 
 
-def set_ver():
-    ver = ver_from_path(hou.hipFile.name())
-    if ver:
-        hou.hscript('setenv VER = %s' % ver)
-        hou.hscript('varchange')
-    update_rops()
-
-
-def set_env(ctx=None, filepath=None):
+def env(ctx=None, hip_filepath=None):
     import sgtk
 
     en = sgtk.platform.current_engine()
     if ctx is None:
         ctx = en.context
         sg = en.shotgun
-        if filepath is None:
-            filepath = hou.hipFile.name()
 
-    # hou.hscript('setenv -u JOB')
-    hou.hscript('setenv -u SHOTPATH')
-    hou.hscript('setenv -u ASSETPATH')
-    hou.hscript('setenv -u ENTITYPATH')
-    hou.hscript('setenv -u ENTITY')
-    hou.hscript('setenv -u STEPPATH')
-    hou.hscript('setenv -u SHOT')
-    hou.hscript('setenv -u ASSET')
-    hou.hscript('setenv -u STEP')
-    hou.hscript('setenv -u TASK')
-    hou.hscript('setenv -u VER')
+    if hip_filepath is None:
+        hip_filepath = hou.hipFile.name()
 
-    if not filepath:
-        hou.hscript('varchange')
-        update_rops()
-        return
-
-    ver = ver_from_path(filepath)
-    if not ver:
-        hou.hscript('setenv VER = v000')
-    else:
-        hou.hscript('setenv VER = %s' % ver)
+    env_dict = {}
 
     ctx.sgtk.create_filesystem_structure(ctx.entity['type'], ctx.entity['id'])
-
     root_template_name = ctx.entity.get('type', '').lower() + '_root'
     root_template = en.get_template_by_name(root_template_name)
     if not root_template:
-        return
-
-    root_path = None
-    entity_root_path = None
-
-    # job = ctx.sgtk.roots.get('primary')
-    # if job:
-    #     hou.hscript('setenv JOB = %s' % job.replace('\\', '/'))
+        return env_dict
 
     fields = ctx.as_template_fields(root_template)
     root_path = ctx.sgtk.paths_from_template(
         root_template, fields)
 
     if not root_path:
-        return
+        return env_dict
+
+    ver = ver_from_path(hip_filepath)
+    if not ver:
+        ver = 'v000'
+
+    env_dict['VER'] = ver
 
     root_path = root_path[0].replace("\\", "/")
     entity_root_path, stepcode = os.path.split(root_path)
-    hou.hscript('setenv ENTITYPATH = %s' % entity_root_path)
-    hou.hscript('setenv ENTITY = %s' % ctx.entity['name'])
+    env_dict['ENTITYPATH'] = entity_root_path
+    env_dict['ENTITY'] = ctx.entity['name']
 
     if ctx.step:
-        hou.hscript('setenv STEPPATH = %s' % root_path)
-        hou.hscript('setenv STEP = %s' % stepcode)
+        env_dict['STEPPATH'] = root_path
+        env_dict['STEP'] = stepcode
 
     if ctx.task:
-        task_name = ctx.task.get('name', None)
-        if task_name:
-            hou.hscript('setenv TASK = %s' % task_name)
+        env_dict['TASK'] = ctx.task['name']
 
     if ctx.entity.get('type', None) == 'Shot':
-        hou.hscript('setenv SHOTPATH = %s' % entity_root_path)
-        hou.hscript('setenv SHOT = %s' % ctx.entity['name'])
+        env_dict['SHOTPATH'] = entity_root_path
+        env_dict['SHOT'] = ctx.entity['name']
 
     elif ctx.entity.get('type', None) == 'Asset':
-        hou.hscript('setenv ASSETPATH = %s' % entity_root_path)
-        hou.hscript('setenv ASSET = %s' % ctx.entity['name'])
-    hou.hscript('varchange')
-    update_rops()
-    sync_frame_range_and_fps()
+        env_dict['ASSETPATH'] = entity_root_path
+        env_dict['ASSET'] = ctx.entity['name']
+
+    return env_dict
 
 
 def set_comment(node, comment):

@@ -825,7 +825,7 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
 
 
 def inject_JOB_in_subnet(subnet):
-    for n in subnet.allSubChildren():
+    def _walk(n):
         for p in n.parms():
             if (not isinstance(p.parmTemplate(), hou.StringParmTemplate)) or p.keyframes():
                 continue
@@ -835,7 +835,12 @@ def inject_JOB_in_subnet(subnet):
                 p.set(s)
             except:
                 continue
-    return
+        if n.isLockedHDA():
+            return
+        for n in n.children():
+            _walk(n)
+
+    _walk(subnet)
 
 
 FLAG_COLOR = {

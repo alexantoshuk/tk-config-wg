@@ -474,6 +474,8 @@ def update_rops(env, create_if_not_exists=False):
         'mantra': 'ifd',
         'redshift': 'Redshift_ROP',
     }
+    mantra_rop_type = ROPTYPEMAP['mantra']
+    redshift_rop_type = ROPTYPEMAP['redshift']
 
     RENDERNAME = project_field_value('sg_render', 'mantra').lower()
     ROPTYPE = ROPTYPEMAP[RENDERNAME]
@@ -492,12 +494,9 @@ def update_rops(env, create_if_not_exists=False):
     if create_if_not_exists:
         create_beauty_rop()
 
-    if RENDERNAME == 'mantra':
-        outnet = hou.node("/out")
-
-        for node in outnet.children():
-            if node.type().name() != ROPTYPE:
-                continue
+    outnet = hou.node("/out")
+    for node in outnet.children():
+        if node.type().name() == mantra_rop_type:
             main_p = node.parm('vm_picture')
             if not main_p:
                 continue
@@ -517,12 +516,7 @@ def update_rops(env, create_if_not_exists=False):
                 else:
                     cryptolayeroutput_p.set(cryptomat_path)
 
-    elif RENDERNAME == 'redshift':
-        outnet = hou.node("/out")
-
-        for node in outnet.children():
-            if node.type().name() != ROPTYPE:
-                continue
+        elif node.type().name() == redshift_rop_type:
             main_p = node.parm('RS_outputFileNamePrefix')
             if not main_p:
                 continue

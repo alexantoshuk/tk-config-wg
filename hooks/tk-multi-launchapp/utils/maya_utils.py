@@ -48,7 +48,7 @@ def alembic_camera_export(camera, filename, start=1, end=1, preroll=0, samples=8
     #     camera, filename, start, end, preroll, samples))
     camera = cmds.ls(camera, long=True)[0]
     camera_name = camera.rsplit("|", 1)[-1]
-    camera_shape = cmds.listRelatives(camera, shapes=True)[0]
+    camera_shape = cmds.listRelatives(camera, shapes=True, f=True)[0]
 
     # create temp fetch camera
     try:
@@ -60,7 +60,7 @@ def alembic_camera_export(camera, filename, start=1, end=1, preroll=0, samples=8
     fetched_cam = cmds.camera()[0]
     fetched_cam = cmds.parent(fetched_cam, tmp_group, relative=True)
     fetched_cam = cmds.rename(fetched_cam, camera_name)
-    fetched_cam_shape = cmds.listRelatives(fetched_cam, shapes=True)[0]
+    fetched_cam_shape = cmds.listRelatives(fetched_cam, shapes=True, f=True)[0]
 
     decompose_matrix = cmds.createNode(
         'decomposeMatrix', n='__tmp__decomposeMatrix')

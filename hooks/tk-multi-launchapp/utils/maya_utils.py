@@ -56,13 +56,11 @@ def alembic_camera_export(camera, filename, start=1, end=1, preroll=0, samples=8
     except:
         pass
     tmp_group = cmds.group(em=True, name='__tmp__camera__group__')
-    try:
-        fetched_cam = cmds.camera()[0]
-        fetched_cam = cmds.parent(fetched_cam, tmp_group, relative=True)
-        fetched_cam = cmds.rename(fetched_cam, camera_name)
-        fetched_cam_shape = cmds.listRelatives(fetched_cam, shapes=True)[0]
-    finally:
-        cmds.delete(tmp_group)
+
+    fetched_cam = cmds.camera()[0]
+    fetched_cam = cmds.parent(fetched_cam, tmp_group, relative=True)
+    fetched_cam = cmds.rename(fetched_cam, camera_name)
+    fetched_cam_shape = cmds.listRelatives(fetched_cam, shapes=True)[0]
 
     decompose_matrix = cmds.createNode(
         'decomposeMatrix', n='__tmp__decomposeMatrix')
@@ -85,7 +83,6 @@ def alembic_camera_export(camera, filename, start=1, end=1, preroll=0, samples=8
 
         alembic_export(fetched_cam, filename, start,
                        end, preroll, samples)
-
     finally:
         cmds.delete(decompose_matrix)
         cmds.delete(tmp_group)

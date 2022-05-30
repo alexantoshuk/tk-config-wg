@@ -503,12 +503,12 @@ def update_materials():
             if matnet:
                 continue
 
-            matnet = mat.createNode("matnet", assetname)
-            generate_matnet_from_geo(matnet, mattype, sop)
             texpath = dirname + "/tex"
             if not os.path.isdir(texpath):
                 continue
 
+            matnet = mat.createNode("matnet", assetname)
+            generate_matnet_from_geo(matnet, mattype, sop)
             generate_matnet_old(matnet, mattype, texpath)
 
         # Matnets update from published data

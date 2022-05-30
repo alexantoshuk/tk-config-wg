@@ -271,6 +271,8 @@ def update_materials():
         return result
 
     def generate_matnet_from_geo(matnet, mattype, sop):
+        if not matnet:
+            return
         matnet_name = matnet.name()
         geo = sop.geometry()
         try:
@@ -284,11 +286,12 @@ def update_materials():
             if len(s) < 4:
                 continue
 
-            asset = s[2]
+            asset = s[-2]
             if asset != matnet_name:
                 continue
-            mat_name = s[3]
+            mat_name = s[-1]
             mat_node = matnet.node(mat_name)
+
             if not mat_node:
                 mat_node = matnet.createNode(mattype, mat_name)
                 new_nodes_count += 1
@@ -298,10 +301,56 @@ def update_materials():
             matnet.layoutChildren()
 
     def generate_matnet(matnet, mattype, textures, template):
+        """
+        Generation of materials from published textures
+        """
 
         new_nodes_count = 0
         for file in textures:
             fields = template.validate_and_get_fields(file)
+            if fields is None:
+                continue
+            mat_name = fields['mat.name']
+            mat_channel = fields['mat.channel']
+            mat_node = matnet.node(mat_name)
+            if not mat_node:
+                mat_node = matnet.createNode(mattype, mat_name)
+                new_nodes_count += 1
+                # mat_node.moveToGoodPosition()
+            mat_node.setMaterialFlag(True)
+            set_mat_chan(mat_node, mat_channel, file)
+
+        if new_nodes_count:
+            matnet.layoutChildren()
+
+        #matnet.setSelected(True, clear_all_selected=True, show_asset_if_selected=True)
+
+    def generate_matnet_old(matnet, mattype, texpath):
+
+        def validate_and_get_fields(file):
+            dirname, basename = os.path.split(file)
+            mat_name = os.path.basename(dirname)
+            if mat_name == "tex":
+                mat_name = "default"
+            basename = basename.split(".", 1)[0]
+            mat_channel, _, colorspace = basename.partition("_")
+            if not colorspace:
+                return None
+            return {"mat.name": mat_name, "mat.channel": mat_channel}
+
+        def textures(texpath):
+            texs = set()
+            for tex in glob.iglob(texpath.replace("\\", "/") + "/*/*.exr"):
+                _tex, ext = os.path.splitext(tex)
+                before, _, udim = _tex.partition(".")
+                if udim and udim.startswith("10"):
+                    tex = "{}.<UDIM>{}".format(before, ext)
+                texs.add(injectJOB(tex))
+            return list(texs)
+
+        new_nodes_count = 0
+        for file in textures(texpath):
+            fields = validate_and_get_fields(file)
             if fields is None:
                 continue
             mat_name = fields['mat.name']
@@ -400,15 +449,16 @@ def update_materials():
 
     entity_type = ctx.entity['type']
 
+    mattype = RENDER2MAT.get(RENDERNAME, None)
+    if not mattype:
+        raise Exception(
+            "Invalid 'RENDER' field in SG. Please set valid render string in SG project 'RENDER' field")
+
     if entity_type == 'Asset':
         assetname = ctx.entity['name']
         matnet = matnet_node(assetname)
 
         if ctx.step['name'] in ('Surface', 'Texture'):
-            mattype = RENDER2MAT.get(RENDERNAME, None)
-            if not mattype:
-                raise Exception(
-                    "Invalid 'RENDER' field in SG. Please set valid render string in SG project 'RENDER' field")
 
             for n in hou.node('/obj').children():
                 if n.childTypeCategory().name() != 'Sop':
@@ -456,6 +506,27 @@ def update_materials():
             for subasset in subassets:
                 if not update_matnet(subasset, shot=ctx.entity, stepname=None):
                     update_matnet(subasset, stepname='Surface')
+
+        #! FIXME: update old type assets
+        mat = hou.node("/obj").node("mat")
+        if not mat:
+            mat = hou.node("/obj").createNode("subnet", "mat")
+        for sop in hou.nodeType("Sop/file").instances():
+            file = sop.evalParm("file")
+            dirname, basename = os.path.split(file)
+            assetname = os.path.basename(dirname)
+            matnet_path = "/obj/mat/" + assetname
+            matnet = hou.node(matnet_path)
+            if matnet:
+                continue
+
+            matnet = mat.createNode("matnet", assetname)
+            generate_matnet_from_geo(matnet, mattype, sop)
+            texpath = dirname + "/tex"
+            if not os.path.isdir(texpath):
+                continue
+
+            generate_matnet_old(matnet, mattype, texpath)
 
     hou.node('/shop').layoutChildren()
 

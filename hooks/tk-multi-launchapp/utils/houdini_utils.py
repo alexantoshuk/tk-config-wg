@@ -490,23 +490,6 @@ def update_materials():
                 update_matnet(asset, stepname='Surface')
 
     elif entity_type == 'Shot':
-        assets = sg.find_one(
-            "Shot", [["id", "is", ctx.entity['id']]], ['assets'])
-        if assets:
-            assets = assets.get('assets', [])
-
-        for asset in assets:
-            if not update_matnet(asset, shot=ctx.entity, stepname=None):
-                update_matnet(asset, stepname='Surface')
-
-            subassets = sg.find_one(
-                "Asset", [["id", "is", asset['id']]], ['assets'])
-            subassets = subassets.get('assets', []) if subassets else []
-
-            for subasset in subassets:
-                if not update_matnet(subasset, shot=ctx.entity, stepname=None):
-                    update_matnet(subasset, stepname='Surface')
-
         #! FIXME: update old type assets
         mat = hou.node("/obj").node("mat")
         if not mat:
@@ -527,6 +510,24 @@ def update_materials():
                 continue
 
             generate_matnet_old(matnet, mattype, texpath)
+
+        # Matnets update from published data
+        assets = sg.find_one(
+            "Shot", [["id", "is", ctx.entity['id']]], ['assets'])
+        if assets:
+            assets = assets.get('assets', [])
+
+        for asset in assets:
+            if not update_matnet(asset, shot=ctx.entity, stepname=None):
+                update_matnet(asset, stepname='Surface')
+
+            subassets = sg.find_one(
+                "Asset", [["id", "is", asset['id']]], ['assets'])
+            subassets = subassets.get('assets', []) if subassets else []
+
+            for subasset in subassets:
+                if not update_matnet(subasset, shot=ctx.entity, stepname=None):
+                    update_matnet(subasset, stepname='Surface')
 
     hou.node('/shop').layoutChildren()
 

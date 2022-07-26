@@ -87,9 +87,9 @@ class BeforeAppLaunch(tank.Hook):
         else:
             home = os.environ['HOME']
 
-        os.environ["redshift_LICENSE"] = "5053@10.150.73.5"
+        # os.environ["redshift_LICENSE"] = "5053@10.150.73.5"
         os.environ['OCIO'] = tkroot + \
-            '/OpenColorIO-Configs/aces_1.0.3/config.ocio'
+            '/OpenColorIO-Configs/aces_1.2/config.ocio'
 
         os.environ['PYTHONPATH'] = os.environ.get(
             'PYTHONPATH', '') + os.pathsep + os.path.join(os.path.dirname(__file__), 'utils').replace('\\', '/')
@@ -105,7 +105,6 @@ class BeforeAppLaunch(tank.Hook):
                 'PYTHONPATH', '') + os.pathsep + os.path.normpath(tkroot + '/maya/scripts')
 
         elif engine_name == "tk-houdini":
-            os.environ['LD_PRELOAD'] = '/lib64/libc_malloc_debug.so.0'
             os.environ['HSITE'] = tkroot
             hver = None
             for i, ch in enumerate(app_path):

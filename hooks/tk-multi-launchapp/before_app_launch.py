@@ -59,9 +59,10 @@ class BeforeAppLaunch(tank.Hook):
         cur_proj_path = ctx.sgtk.paths_from_entity(
             ctx.project['type'], ctx.project['id'])[0]
 
-        os.environ['JOB'] = cur_proj_path.replace('\\', '/')
-        os.environ['LIB'] = os.path.dirname(
-            cur_proj_path.replace('\\', '/')) + '/lib'
+        JOB = cur_proj_path.replace('\\', '/')
+        os.environ['JOB'] = JOB
+        # os.environ['LIB'] = os.path.dirname(
+        #     cur_proj_path.replace('\\', '/')) + '/lib'
 
         cur_proj_path = os.path.normpath(cur_proj_path)
 
@@ -105,6 +106,7 @@ class BeforeAppLaunch(tank.Hook):
                 'PYTHONPATH', '') + os.pathsep + os.path.normpath(tkroot + '/maya/scripts')
 
         elif engine_name == "tk-houdini":
+            os.environ['HOUDINI_PACKAGE_DIR'] = JOB
             os.environ['HSITE'] = tkroot
             hver = None
             for i, ch in enumerate(app_path):

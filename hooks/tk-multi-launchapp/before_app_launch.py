@@ -88,7 +88,6 @@ class BeforeAppLaunch(tank.Hook):
         else:
             home = os.environ['HOME']
 
-        # os.environ["redshift_LICENSE"] = "5053@10.150.73.5"
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.2/config.ocio'
 
@@ -108,6 +107,12 @@ class BeforeAppLaunch(tank.Hook):
         elif engine_name == "tk-houdini":
             os.environ['HOUDINI_PACKAGE_DIR'] = JOB
             os.environ['HSITE'] = tkroot
+
+            if platform.system() == "Windows":
+                os.environ['HOUDINI_PATHMAP'] = "{'/mnt/data':'W:/playsense'}"
+            else:
+                os.environ['HOUDINI_PATHMAP'] = "{'W:/playsense':'/mnt/data'}"
+
             hver = None
             for i, ch in enumerate(app_path):
                 try:

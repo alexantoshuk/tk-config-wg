@@ -1,6 +1,7 @@
 import glob
 import os
 from datetime import datetime
+import sys
 
 
 def seq_files(seqpath, seq_pattern='<UDIM>'):
@@ -81,7 +82,11 @@ def update_status():
     if current_status in ('fin', 'clsd'):
         return
     new_status = 'rev'
-    sg.update("Task", ctx.task['id'], {'sg_status_list': new_status})
+    try:
+        sg.update("Task", ctx.task['id'], {'sg_status_list': new_status})
+    except:
+        sys.stderr.write(
+            "WARNING: Can't update task status to '{0}' from this user.\n".format(new_status))
 
 
 # def cleanup_seq_versions(path, seq_paths, max_versions=10, logger=None):

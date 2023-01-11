@@ -447,7 +447,7 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # * collect all checked objects in scene for publishing
         for node in hou.node("/obj").children():
-            if not houdini_utils.is_publish_alembic(node):
+            if not houdini_utils.is_publish_geometry(node):
                 continue
             # sys.stderr.write("{0}\n".format(node.path()))
             geo_item = parent_item.create_item(

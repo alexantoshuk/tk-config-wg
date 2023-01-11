@@ -78,6 +78,21 @@ class BreakdownSceneOperations(Hook):
                  "path": file_path}
             )
 
+        # FBX Character
+        fbxcharacterimport_nodes = set(hou.nodeType(hou.sopNodeTypeCategory(), "kinefx::fbxcharacterimport").instances(
+        ) + hou.nodeType(hou.sopNodeTypeCategory(), "kinefx::fbxcharacterimport").instances())
+
+        fbxcharacterimport_nodes = tuple(fbxcharacterimport_nodes)
+        for fbxcharacterimport_node in fbxcharacterimport_nodes:
+
+            file_parm = fbxcharacterimport_node.parm("fbxfile")
+            file_path = os.path.normpath(file_parm.eval())
+
+            items.append(
+                {"node": fbxcharacterimport_node.path(), "type": "fbx_character",
+                 "path": file_path}
+            )
+
         # Material Network
         for matnet_node in hou.node('/shop').children():
             if matnet_node.type().name() != 'matnet':
@@ -158,6 +173,16 @@ class BreakdownSceneOperations(Hook):
                         node_path, file_path)
                 )
                 node.parm("fileName").set(houdini_utils.injectJOB(file_path))
+                set_comment(node, datetime_str())
+
+            elif node_type == "fbx_character":
+
+                node = hou.node(node_path)
+                engine.log_debug(
+                    "Updating fbxcharacterimport node '%s' to: %s" % (
+                        node_path, file_path)
+                )
+                node.parm("fbxfile").set(houdini_utils.injectJOB(file_path))
                 set_comment(node, datetime_str())
 
             elif node_type == "matnet":

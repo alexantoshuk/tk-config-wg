@@ -233,6 +233,10 @@ settings.tk-multi-publish2.maya.asset_step:
       settings:
         Publish Template: asset_alembic_cache
     - name: Publish to Shotgun
+      hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx.py"
+      settings:
+        Publish Template: asset_fbx
+    - name: Publish to Shotgun
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
       settings:
         Publish Template: asset_alembic_cache
@@ -263,6 +267,10 @@ settings.tk-multi-publish2.maya.shot_step:
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
       settings:
         Publish Template: shot_alembic_cache
+    - name: Publish to Shotgun
+      hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx.py"
+      settings:
+        Publish Template: shot_fbx
     - name: Publish to Shotgun
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
       settings:

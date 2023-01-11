@@ -480,6 +480,14 @@ paths:
   shot_alembic_cache:
     definition: "@shot_root/publish/caches/{node}.v{version}.abc"
 
+  #
+  # FBX
+  #
+  asset_fbx:
+    definition: "@asset_root/publish/caches/{node}.v{version}.fbx"
+  shot_fbx:
+    definition: "@shot_root/publish/caches/{node}.v{version}.fbx"
+
   # Textures
   work_asset_texture:
     definition: "@asset_root/work/images/{mat.name}_{mat.channel}_{colorspace}[.{UDIM}].{tex.ext}"

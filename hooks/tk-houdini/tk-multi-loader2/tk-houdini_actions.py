@@ -103,6 +103,16 @@ class HoudiniActions(HookBaseClass):
                 }
             )
 
+        if "import_fbx_character" in actions:
+            action_instances.append(
+                {
+                    "name": "import_fbx_character",
+                    "params": None,
+                    "caption": "Import",
+                    "description": "Import FBX Character file",
+                }
+            )
+
         if "import_matnet" in actions:
             action_instances.append(
                 {
@@ -194,6 +204,9 @@ class HoudiniActions(HookBaseClass):
 
         if name == "import_alembic_camera":
             self._import_alembic_camera(path, sg_publish_data)
+
+        if name == "import_fbx_character":
+            self._import_fbx_character(path, sg_publish_data)
 
         if name == "import_matnet":
             self._import_matnet(path, sg_publish_data)
@@ -437,6 +450,73 @@ class HoudiniActions(HookBaseClass):
         _show_node(alembic_sop)
 
     ##############################################################################################################
+
+    def _import_fbx_character(self, path, sg_publish_data):
+        """Import the supplied path as a geo/fbxcharacterimport sop.
+
+        :param str path: The path to the file to import.
+        :param dict sg_publish_data: The publish data for the supplied path.
+
+        """
+
+        app = self.parent
+
+        name = sg_publish_data.get("name", "fbx_character")
+        name, _ = os.path.splitext(name)
+        path = self.get_publish_path(sg_publish_data)
+
+        # houdini doesn't like UNC paths.
+        path = path.replace("\\", "/")
+
+        obj_context = _get_current_context("/obj")
+
+        try:
+            geo_node = obj_context.createNode("geo", name)
+        except hou.OperationFailed:
+            # failed to create the node in this context, create at top-level
+            obj_context = hou.node("/obj")
+            geo_node = obj_context.createNode("geo", name)
+        geo_node.moveToGoodPosition()
+
+        app.log_debug("Created geo node: %s" % (geo_node.path(),))
+
+        # delete the default nodes created in the geo
+        for child in geo_node.children():
+            child.destroy()
+
+        fbxcharacterimport_sop = geo_node.createNode(
+            "fbxcharacterimport", name)
+        fbxcharacterimport_sop.parm("fbxfile").set(
+            houdini_utils.injectJOB(path))
+        app.log_debug(
+            "Creating fbxcharacterimport sop: %s\n  path: '%s' " % (
+                fbxcharacterimport_sop.path(), path)
+        )
+        fbxcharacterimport_sop.parm("reload").pressButton()
+
+        # assign_material_sop = xform_node.createOutputNode(
+        #     'wg::assign_material')
+        # assign_material_sop.parm('asset_name').set(name)
+
+        bonedeform_sop = fbxcharacterimport_sop.createOutputNode('bonedeform')
+        bonedeform_sop.setInput(1, fbxcharacterimport_sop, 1)
+        bonedeform_sop.setInput(2, fbxcharacterimport_sop, 2)
+
+        # xform_node = bonedeform_sop.createOutputNode(
+        #     'xform', 'scale')
+        # xform_node.parm("scale").set(0.01)
+
+        # cache_sop = xform_node.createOutputNode(
+        #     'cache')
+
+        bonedeform_sop.setDisplayFlag(True)
+        bonedeform_sop.setRenderFlag(True)
+
+        set_comment(geo_node, datetime_str())
+        _show_node(bonedeform_sop)
+
+    ##############################################################################################################
+
     def _file_cop(self, path, sg_publish_data):
         """Read the supplied path as a file COP.
 
@@ -502,6 +582,7 @@ class HoudiniActions(HookBaseClass):
 
 
 ##############################################################################################################
+
 def _get_current_context(context_type):
     """Attempts to return the current node context.
 
@@ -524,6 +605,7 @@ def _get_current_context(context_type):
 
 
 ##############################################################################################################
+
 def _get_current_network_panetab(context_type):
     """Attempt to retrieve the current network pane tab.
 
@@ -552,6 +634,7 @@ def _get_current_network_panetab(context_type):
 
 
 ##############################################################################################################
+
 def _show_node(node):
     """Frame the supplied node in the current network pane.
 

@@ -987,7 +987,7 @@ def is_publish_objnet(node):
     return "# Publish Network" in get_flags(node)
 
 
-def is_publish_alembic(node):
+def is_publish_geometry(node):
     return "# Publish Alembic" in get_flags(node)
 
 

@@ -10,7 +10,7 @@ def get_tempfile_name():
     return os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names())).replace("\\", "/")
 
 
-def is_publish_alembic(node):
+def is_publish_geometry(node):
     if not cmds.getAttr(node + ".useOutlinerColor"):
         return False
     color = cmds.getAttr(node + ".outlinerColor")[0]
@@ -135,6 +135,31 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
         mel.eval(abc_export_cmd)
         shutil.move(tmp_filename, filename)
 
+    finally:
+        try:
+            os.remove(tmp_filename)
+        except:
+            pass
+
+
+def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2):
+    start_frame = start - 2 - preroll
+    end_frame = end + 2
+    filename = filename.replace("\\", "/")
+    tmp_filename = get_tempfile_name() + '.fbx'
+
+    cmds.select(root, replace=True)
+    # This ensures the user's settings are ignored so that you can just set values which differ from the default
+    mel.eval('FBXResetExport')
+    mel.eval('FBXExportBakeComplexAnimation -v 1')
+    # mel.eval('FBXExportBakeResampleAll -v 1')
+    mel.eval('FBXExportBakeComplexStart -v %i' % start_frame)
+    mel.eval('FBXExportBakeComplexEnd -v %i' % end_frame)
+    mel.eval('FBXExportBakeComplexStep -v %i' % samples)
+    mel.eval('FBXExport -f "%s" -s' % tmp_filename)
+    # cmds.file(tmp_filename, force=True, options="v=0;", typ="FBX export", es=True)
+    try:
+        shutil.move(tmp_filename, filename)
     finally:
         try:
             os.remove(tmp_filename)

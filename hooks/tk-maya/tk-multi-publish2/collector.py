@@ -232,16 +232,28 @@ class MayaSessionCollector(HookBaseClass):
             )
             geo_item.properties["node"] = g
             geo_item.properties["camera"] = cam_path
+
             try:
                 geo_item.properties["preroll"] = cmds.getAttr(
                     g + ".preroll")
             except:
-                pass
+                # legacy support
+                try:
+                    geo_item.properties["preroll"] = cmds.getAttr(
+                        g + ".abcPreroll")
+                except:
+                    pass
             try:
                 geo_item.properties["samples"] = cmds.getAttr(
                     g + ".samples")
             except:
-                pass
+                # legacy support
+                try:
+                    geo_item.properties["samples"] = cmds.getAttr(
+                        g + ".abcSamples")
+                except:
+                    pass
+
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/camera.png"
 
@@ -262,16 +274,27 @@ class MayaSessionCollector(HookBaseClass):
                 "maya.session.geometry", "Geometry ABC", g
             )
             geo_item.properties["node"] = g
+
             try:
                 geo_item.properties["preroll"] = cmds.getAttr(
                     g + ".preroll")
             except:
-                pass
+                # legacy support
+                try:
+                    geo_item.properties["preroll"] = cmds.getAttr(
+                        g + ".abcPreroll")
+                except:
+                    pass
             try:
                 geo_item.properties["samples"] = cmds.getAttr(
                     g + ".samples")
             except:
-                pass
+                # legacy support
+                try:
+                    geo_item.properties["samples"] = cmds.getAttr(
+                        g + ".abcSamples")
+                except:
+                    pass
 
             try:
                 geo_item.properties["checked"] = cmds.getAttr(
@@ -297,16 +320,27 @@ class MayaSessionCollector(HookBaseClass):
                 "maya.session.geometry.fbx", "Geometry FBX", g
             )
             geo_item.properties["node"] = g
+
             try:
                 geo_item.properties["preroll"] = cmds.getAttr(
                     g + ".preroll")
             except:
-                pass
+                # legacy support
+                try:
+                    geo_item.properties["preroll"] = cmds.getAttr(
+                        g + ".abcPreroll")
+                except:
+                    pass
             try:
                 geo_item.properties["samples"] = cmds.getAttr(
                     g + ".samples")
             except:
-                pass
+                # legacy support
+                try:
+                    geo_item.properties["samples"] = cmds.getAttr(
+                        g + ".abcSamples")
+                except:
+                    pass
 
             try:
                 geo_item.properties["checked"] = cmds.getAttr(

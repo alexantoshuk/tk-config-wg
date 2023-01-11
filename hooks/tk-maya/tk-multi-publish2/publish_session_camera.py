@@ -228,14 +228,14 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # * append node from collected camera and replace ':' to '__' in node name to work for windows
         work_fields["node"] = maya_node.rsplit('|', 1)[-1].replace(':', '__')
 
-        if "abc_preroll" not in item.properties:
+        if "preroll" not in item.properties:
             self.logger.warning(
-                "'abcPreroll' attribute is not founded. Use 0 by default.")
-            item.properties["abc_preroll"] = 0
-        if "abc_samples" not in item.properties:
+                "'preroll' attribute is not founded. Use 0 by default.")
+            item.properties["preroll"] = 0
+        if "samples" not in item.properties:
             self.logger.warning(
-                "'abcSamples' attribute is not founded. Use 8 by default.")
-            item.properties["abc_samples"] = 8
+                "'samples' attribute is not founded. Use 8 by default.")
+            item.properties["samples"] = 8
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
@@ -276,8 +276,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         cam_path = item.properties["camera"]
         maya_node = item.properties["node"]
-        abc_preroll = item.properties["abc_preroll"]
-        abc_samples = item.properties["abc_samples"]
+        preroll = item.properties["preroll"]
+        samples = item.properties["samples"]
         # get the path to create and publish
         publish_path = item.properties["path"]
 
@@ -293,7 +293,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
             self.parent.log_debug(
                 "Export camera alembic file: %s" % publish_path)
             maya_utils.alembic_camera_export(cam_path, publish_path, start=start_frame,
-                                             end=end_frame, preroll=abc_preroll, samples=abc_samples)
+                                             end=end_frame, preroll=preroll, samples=samples)
         except Exception as e:
             self.logger.error("Failed to export Camera: %s" % e)
             return

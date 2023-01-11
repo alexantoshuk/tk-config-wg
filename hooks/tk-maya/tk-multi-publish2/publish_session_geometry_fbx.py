@@ -213,14 +213,14 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # * append node from collected geometry and replace ':' to '__' in node name to work for windows
         work_fields["node"] = maya_node.rsplit('|', 1)[-1].replace(':', '__')
 
-        if "fbx_preroll" not in item.properties:
+        if "preroll" not in item.properties:
             self.logger.warning(
-                "'abcPreroll' attribute is not founded. Use 0 by default.")
-            item.properties["fbx_preroll"] = 0
-        if "fbx_samples" not in item.properties:
+                "'preroll' attribute is not founded. Use 0 by default.")
+            item.properties["preroll"] = 0
+        if "samples" not in item.properties:
             self.logger.warning(
-                "'abcSamples' attribute is not founded. Use 2 by default.")
-            item.properties["fbx_samples"] = 2
+                "'samples' attribute is not founded. Use 2 by default.")
+            item.properties["samples"] = 2
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
@@ -261,8 +261,8 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # * get fbx cache data
         maya_node = item.properties["node"]
-        preroll = item.properties["fbx_preroll"]
-        samples = item.properties["fbx_samples"]
+        preroll = item.properties["preroll"]
+        samples = item.properties["samples"]
         # get the path to create and publish
         publish_path = item.properties["path"]
 

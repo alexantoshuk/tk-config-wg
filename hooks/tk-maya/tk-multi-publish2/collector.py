@@ -233,13 +233,13 @@ class MayaSessionCollector(HookBaseClass):
             geo_item.properties["node"] = g
             geo_item.properties["camera"] = cam_path
             try:
-                geo_item.properties["abc_preroll"] = cmds.getAttr(
-                    g + ".abcPreroll")
+                geo_item.properties["preroll"] = cmds.getAttr(
+                    g + ".preroll")
             except:
                 pass
             try:
-                geo_item.properties["abc_samples"] = cmds.getAttr(
-                    g + ".abcSamples")
+                geo_item.properties["samples"] = cmds.getAttr(
+                    g + ".samples")
             except:
                 pass
             # get the icon path to display for this item
@@ -263,19 +263,19 @@ class MayaSessionCollector(HookBaseClass):
             )
             geo_item.properties["node"] = g
             try:
-                geo_item.properties["abc_preroll"] = cmds.getAttr(
-                    g + ".abcPreroll")
+                geo_item.properties["preroll"] = cmds.getAttr(
+                    g + ".preroll")
             except:
                 pass
             try:
-                geo_item.properties["abc_samples"] = cmds.getAttr(
-                    g + ".abcSamples")
+                geo_item.properties["samples"] = cmds.getAttr(
+                    g + ".samples")
             except:
                 pass
 
             try:
                 geo_item.properties["checked"] = cmds.getAttr(
-                    g + ".abcPublish")
+                    g + ".publishABC")
             except:
                 geo_item.properties["checked"] = True
             # get the icon path to display for this item
@@ -298,19 +298,19 @@ class MayaSessionCollector(HookBaseClass):
             )
             geo_item.properties["node"] = g
             try:
-                geo_item.properties["fbx_preroll"] = cmds.getAttr(
-                    g + ".abcPreroll")
+                geo_item.properties["preroll"] = cmds.getAttr(
+                    g + ".preroll")
             except:
                 pass
             try:
-                geo_item.properties["fbx_samples"] = cmds.getAttr(
-                    g + ".abcSamples")
+                geo_item.properties["samples"] = cmds.getAttr(
+                    g + ".samples")
             except:
                 pass
 
             try:
                 geo_item.properties["checked"] = cmds.getAttr(
-                    g + ".fbxPublish")
+                    g + ".publishFBX")
             except:
                 geo_item.properties["checked"] = False
 

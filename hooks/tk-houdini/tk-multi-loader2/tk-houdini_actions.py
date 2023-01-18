@@ -113,6 +113,16 @@ class HoudiniActions(HookBaseClass):
                 }
             )
 
+        if "custom_import_fbx_character" in actions:
+            action_instances.append(
+                {
+                    "name": "custom_import_fbx_character",
+                    "params": None,
+                    "caption": "Custom Import",
+                    "description": "Custom Import FBX Character file",
+                }
+            )
+
         if "import_matnet" in actions:
             action_instances.append(
                 {

@@ -86,17 +86,18 @@ class BreakdownSceneOperations(Hook):
         custom_fbxcharacterimport_type = hou.nodeType(
             hou.sopNodeTypeCategory(), "custom_fbxcharacterimport")
 
-        fbxcharacterimport_nodes = set()
+        fbxcharacterimport_nodes = []
         if kinefx__fbxcharacterimport_type:
-            fbxcharacterimport_nodes.add(
+            fbxcharacterimport_nodes += list(
                 kinefx__fbxcharacterimport_type.instances())
         if fbxcharacterimport_type:
-            fbxcharacterimport_nodes.add(fbxcharacterimport_type.instances())
+            fbxcharacterimport_nodes += list(
+                fbxcharacterimport_type.instances())
         if custom_fbxcharacterimport_type:
-            fbxcharacterimport_nodes.add(
+            fbxcharacterimport_nodes += list(
                 custom_fbxcharacterimport_type.instances())
 
-        fbxcharacterimport_nodes = tuple(fbxcharacterimport_nodes)
+        fbxcharacterimport_nodes = tuple(set(fbxcharacterimport_nodes))
         for fbxcharacterimport_node in fbxcharacterimport_nodes:
 
             file_parm = fbxcharacterimport_node.parm("fbxfile")

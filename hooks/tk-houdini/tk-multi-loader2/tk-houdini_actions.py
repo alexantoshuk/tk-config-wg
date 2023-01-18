@@ -208,6 +208,9 @@ class HoudiniActions(HookBaseClass):
         if name == "import_fbx_character":
             self._import_fbx_character(path, sg_publish_data)
 
+        if name == "custom_import_fbx_character":
+            self._import_fbx_character(path, sg_publish_data, custom=True)
+
         if name == "import_matnet":
             self._import_matnet(path, sg_publish_data)
 
@@ -451,13 +454,16 @@ class HoudiniActions(HookBaseClass):
 
     ##############################################################################################################
 
-    def _import_fbx_character(self, path, sg_publish_data):
+    def _import_fbx_character(self, path, sg_publish_data, custom=False):
         """Import the supplied path as a geo/fbxcharacterimport sop.
 
         :param str path: The path to the file to import.
         :param dict sg_publish_data: The publish data for the supplied path.
 
         """
+        nodetype_name = "fbxcharacterimport"
+        if custom:
+            nodetype_name = "custom_fbxcharacterimport"
 
         app = self.parent
 
@@ -485,7 +491,8 @@ class HoudiniActions(HookBaseClass):
             child.destroy()
 
         fbxcharacterimport_sop = geo_node.createNode(
-            "fbxcharacterimport", name)
+            nodetype_name, name)
+
         fbxcharacterimport_sop.parm("fbxfile").set(
             houdini_utils.injectJOB(path))
         app.log_debug(

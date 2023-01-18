@@ -79,8 +79,22 @@ class BreakdownSceneOperations(Hook):
             )
 
         # FBX Character
-        fbxcharacterimport_nodes = set(hou.nodeType(hou.sopNodeTypeCategory(), "kinefx::fbxcharacterimport").instances(
-        ) + hou.nodeType(hou.sopNodeTypeCategory(), "fbxcharacterimport").instances() + hou.nodeType(hou.sopNodeTypeCategory(), "custom_fbxcharacterimport").instances())
+        kinefx__fbxcharacterimport_type = hou.nodeType(
+            hou.sopNodeTypeCategory(), "kinefx::fbxcharacterimport")
+        fbxcharacterimport_type = hou.nodeType(
+            hou.sopNodeTypeCategory(), "fbxcharacterimport")
+        custom_fbxcharacterimport_type = hou.nodeType(
+            hou.sopNodeTypeCategory(), "custom_fbxcharacterimport")
+
+        fbxcharacterimport_nodes = set()
+        if kinefx__fbxcharacterimport_type:
+            fbxcharacterimport_nodes.add(
+                kinefx__fbxcharacterimport_type.instances())
+        if fbxcharacterimport_type:
+            fbxcharacterimport_nodes.add(fbxcharacterimport_type.instances())
+        if custom_fbxcharacterimport_type:
+            fbxcharacterimport_nodes.add(
+                custom_fbxcharacterimport_type.instances())
 
         fbxcharacterimport_nodes = tuple(fbxcharacterimport_nodes)
         for fbxcharacterimport_node in fbxcharacterimport_nodes:

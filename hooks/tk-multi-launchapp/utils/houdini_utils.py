@@ -883,9 +883,15 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
     finally:
         tmp_alembic_node.destroy()
         try:
-            os.remove(tmp_filename)
             read_tmp_alembic_obj_node.destroy()
-            os.remove(tmp_filename_scaled)
+        except:
+            pass
+        try:
+            os.remove(tmp_filename)            
+        except:
+            pass
+        try:
+            os.remove(tmp_filename_scaled)       
         except:
             pass
 

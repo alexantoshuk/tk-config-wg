@@ -523,14 +523,14 @@ class HoudiniActions(HookBaseClass):
         #     'xform', 'scale')
         # xform_node.parm("scale").set(0.01)
 
-        # cache_sop = xform_node.createOutputNode(
-        #     'cache')
+        null_sop = bonedeform_sop.createOutputNode(
+            'null', 'OUT')
 
-        bonedeform_sop.setDisplayFlag(True)
-        bonedeform_sop.setRenderFlag(True)
+        null_sop.setDisplayFlag(True)
+        null_sop.setRenderFlag(True)
 
         set_comment(geo_node, datetime_str())
-        _show_node(bonedeform_sop)
+        _show_node(null_sop)
 
     ##############################################################################################################
 

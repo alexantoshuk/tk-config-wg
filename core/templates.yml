@@ -226,7 +226,7 @@ paths:
   #
   # These don't require the standard formatting (with definition and root_name) because they
   # will be set within each template that uses the alias.
-  shot_root: sequences/{Sequence}/{Shot}/{Step}/{task_name}
+  shot_root: sequences/{Sequence}/{Shot}/{Step}
   asset_root: assets/{sg_asset_type}/{Asset}/{Step}
   sequence_root: sequences/{Sequence}
 
@@ -285,17 +285,17 @@ paths:
 
   # The location of WIP files
   photoshop_shot_work:
-    definition: "@shot_root/work/photoshop/{name}.v{version}.psd"
+    definition: "@shot_root/work/photoshop/{task_name}[_{name}].v{version}.psd"
   shot_work_area_photoshop:
     definition: "@shot_root/work/photoshop"
   # The location of backups of WIP files
   photoshop_shot_snapshot:
-    definition: "@shot_root/work/photoshop/snapshots/{name}.v{version}.{timestamp}.psd"
+    definition: "@shot_root/work/photoshop/snapshots/{task_name}[_{name}].v{version}.{timestamp}.psd"
   # The location of published files
   shot_publish_area_photoshop:
     definition: "@shot_root/publish/photoshop"
   photoshop_shot_publish:
-    definition: "@shot_root/publish/photoshop/{name}.v{version}.psd"
+    definition: "@shot_root/publish/photoshop/{task_name}[_{name}].v{version}.psd"
 
   #
   # After Effects
@@ -303,17 +303,17 @@ paths:
 
   # The location of WIP files
   aftereffects_shot_work:
-    definition: "@shot_root/work/afx/{name}.v{version}.aep"
+    definition: "@shot_root/work/afx/{task_name}[_{name}].v{version}.aep"
   shot_work_area_aftereffects:
     definition: "@shot_root/work/afx"
   # The location of backups of WIP files
   aftereffects_shot_snapshot:
-    definition: "@shot_root/work/afx/snapshots/{name}.v{version}.{timestamp}.aep"
+    definition: "@shot_root/work/afx/snapshots/{task_name}[_{name}].v{version}.{timestamp}.aep"
   # The location of published files
   shot_publish_area_aftereffects:
     definition: "@shot_root/publish/afx"
   aftereffects_shot_publish:
-    definition: "@shot_root/publish/afx/{name}.v{version}.aep"
+    definition: "@shot_root/publish/afx/{task_name}[_{name}].v{version}.aep"
   aftereffects_shot_render_pub_mono:
     definition: "@shot_root/publish/elements/{name}/v{version}/{width}x{height}/{Shot}_{name}_{afx.comp}_v{version}.{SEQ}.tif"
   # The following template uses {afx.mov.ext} this is a special key, that will be only there
@@ -334,13 +334,13 @@ paths:
     definition: "@shot_root/publish/maya"
   # The location of WIP files
   maya_shot_work:
-    definition: "@shot_root/work/maya/{name}.v{version}.{maya_extension}"
+    definition: "@shot_root/work/maya/{task_name}[_{name}].v{version}.{maya_extension}"
   # The location of backups of WIP files
   maya_shot_snapshot:
-    definition: "@shot_root/work/maya/snapshots/{name}.v{version}.{timestamp}.{maya_extension}"
+    definition: "@shot_root/work/maya/snapshots/{task_name}[_{name}].v{version}.{timestamp}.{maya_extension}"
   # The location of published maya files
   maya_shot_publish:
-    definition: "@shot_root/publish/maya/{name}.v{version}.{maya_extension}"
+    definition: "@shot_root/publish/maya/{task_name}[_{name}].v{version}.{maya_extension}"
 
   #
   # Houdini
@@ -354,13 +354,13 @@ paths:
     definition: "@shot_root/publish/houdini"
   # The location of WIP files
   houdini_shot_work:
-    definition: "@shot_root/work/houdini/{name}.v{version}.hip"
+    definition: "@shot_root/work/houdini/{task_name}[_{name}].v{version}.hip"
   # The location of backups of WIP files
   houdini_shot_snapshot:
-    definition: "@shot_root/work/houdini/snapshots/{name}.v{version}.{timestamp}.hip"
+    definition: "@shot_root/work/houdini/snapshots/{task_name}[_{name}].v{version}.{timestamp}.hip"
   # The location of published houdini files
   houdini_shot_publish:
-    definition: "@shot_root/publish/houdini/{name}.v{version}.hip"
+    definition: "@shot_root/publish/houdini/{task_name}[_{name}].v{version}.hip"
   # Alembic caches
   houdini_shot_work_alembic_cache:
     definition: "@shot_root/work/houdini/cache/alembic/{name}/{houdini.node}/v{version}/{Shot}_{name}_v{version}.abc"
@@ -501,17 +501,17 @@ paths:
 
   # The location of WIP files
   photoshop_asset_work:
-    definition: "@asset_root/work/photoshop/{name}.v{version}.psd"
+    definition: "@asset_root/work/photoshop/{task_name}[_{name}].v{version}.psd"
   asset_work_area_photoshop:
     definition: "@asset_root/work/photoshop"
   # The location of backups of WIP files
   photoshop_asset_snapshot:
-    definition: "@asset_root/work/photoshop/snapshots/{name}.v{version}.{timestamp}.psd"
+    definition: "@asset_root/work/photoshop/snapshots/{task_name}[_{name}].v{version}.{timestamp}.psd"
   # The location of published files
   asset_publish_area_photoshop:
     definition: "@asset_root/publish/photoshop"
   photoshop_asset_publish:
-    definition: "@asset_root/publish/photoshop/{name}.v{version}.psd"
+    definition: "@asset_root/publish/photoshop/{task_name}[_{name}].v{version}.psd"
 
   #
   # after effects
@@ -519,17 +519,17 @@ paths:
 
   # The location of WIP files
   aftereffects_asset_work:
-    definition: "@asset_root/work/afx/{name}.v{version}.aep"
+    definition: "@asset_root/work/afx/{task_name}[_{name}].v{version}.aep"
   asset_work_area_aftereffects:
     definition: "@asset_root/work/afx"
   # The location of backups of WIP files
   aftereffects_asset_snapshot:
-    definition: "@asset_root/work/afx/snapshots/{name}.v{version}.{timestamp}.aep"
+    definition: "@asset_root/work/afx/snapshots/{task_name}[_{name}].v{version}.{timestamp}.aep"
   # The location of published files
   asset_publish_area_aftereffects:
     definition: "@asset_root/publish/afx"
   aftereffects_asset_publish:
-    definition: "@asset_root/publish/afx/{name}.v{version}.aep"
+    definition: "@asset_root/publish/afx/{task_name}[_{name}].v{version}.aep"
   aftereffects_asset_render_pub_mono:
     definition: "@asset_root/publish/elements/{name}/v{version}/{width}x{height}/{Asset}_{name}_{afx.comp}_v{version}.{SEQ}.tif"
   # The following template uses {afx.mov.ext} this is a special key, that will be only there
@@ -556,13 +556,13 @@ paths:
     definition: "@asset_root/publish/maya"
   # The location of WIP files
   maya_asset_work:
-    definition: "@asset_root/work/maya/{name}.v{version}.{maya_extension}"
+    definition: "@asset_root/work/maya/{task_name}[_{name}].v{version}.{maya_extension}"
   # The location of backups of WIP files
   maya_asset_snapshot:
-    definition: "@asset_root/work/maya/snapshots/{name}.v{version}.{timestamp}.{maya_extension}"
+    definition: "@asset_root/work/maya/snapshots/{task_name}[_{name}].v{version}.{timestamp}.{maya_extension}"
   # The location of published maya files
   maya_asset_publish:
-    definition: "@asset_root/publish/maya/{name}.v{version}.{maya_extension}"
+    definition: "@asset_root/publish/maya/{task_name}[_{name}].v{version}.{maya_extension}"
 
   #
   # Houdini
@@ -576,13 +576,13 @@ paths:
     definition: "@asset_root/publish/houdini"
   # The location of WIP files
   houdini_asset_work:
-    definition: "@asset_root/work/houdini/{name}.v{version}.hip"
+    definition: "@asset_root/work/houdini/{task_name}[_{name}].v{version}.hip"
   # The location of backups of WIP files
   houdini_asset_snapshot:
-    definition: "@asset_root/work/houdini/snapshots/{name}.v{version}.{timestamp}.hip"
+    definition: "@asset_root/work/houdini/snapshots/{task_name}[_{name}].v{version}.{timestamp}.hip"
   # The location of published houdini files
   houdini_asset_publish:
-    definition: "@asset_root/publish/houdini/{name}.v{version}.hip"
+    definition: "@asset_root/publish/houdini/{task_name}[_{name}].v{version}.hip"
   # Alembic caches
   houdini_asset_work_alembic_cache:
     definition: "@asset_root/work/houdini/cache/alembic/{name}/{houdini.node}/v{version}/{Asset}_{name}_v{version}.abc"

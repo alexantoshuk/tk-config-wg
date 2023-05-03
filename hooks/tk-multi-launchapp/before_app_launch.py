@@ -64,20 +64,20 @@ class BeforeAppLaunch(tank.Hook):
         # os.environ['LIB'] = os.path.dirname(
         #     cur_proj_path.replace('\\', '/')) + '/lib'
 
-        cur_proj_path = os.path.normpath(cur_proj_path)
+        # cur_proj_path = os.path.normpath(cur_proj_path)
 
-        sys.path.append(cur_proj_path)
+        # sys.path.append(cur_proj_path)
 
-        self.logger.debug(
-            "Try to load project environment from '%s/proj_env.py'" % cur_proj_path)
-        try:
-            import proj_env
-            reload(proj_env)
-            self.logger.debug(
-                "Loading project environment from '%s/proj_env.py' done successfully" % cur_proj_path)
-        except:
-            self.logger.warning(
-                "Fail to load project environment from '%s/proj_env.py'" % cur_proj_path)
+        # self.logger.debug(
+        #     "Try to load project environment from '%s/proj_env.py'" % cur_proj_path)
+        # try:
+        #     import proj_env
+        #     reload(proj_env)
+        #     self.logger.debug(
+        #         "Loading project environment from '%s/proj_env.py' done successfully" % cur_proj_path)
+        # except:
+        #     self.logger.warning(
+        #         "Fail to load project environment from '%s/proj_env.py'" % cur_proj_path)
 
         if platform.system() == "Windows":
             tk_app_path = tkroot + '/app/' + platform.system()

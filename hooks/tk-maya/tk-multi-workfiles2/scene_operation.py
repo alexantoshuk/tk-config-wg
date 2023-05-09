@@ -9,6 +9,10 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import maya.cmds as cmds
+try:
+    from importlib import reload
+except:
+    pass
 
 import sgtk
 from sgtk.platform.qt import QtGui

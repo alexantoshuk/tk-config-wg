@@ -111,7 +111,7 @@ def abstract_paths_from_template(self, template, fields):
 
 def sync_fps():
     fps = int(project_field_value('sg_fps', 25))
-    cur_fps = hou.fps()
+    cur_fps = int(hou.fps())
     hou.setFps(fps)
 
 
@@ -121,7 +121,7 @@ def sync_frame_range_and_fps():
     cut_in = int(entity_field_value('sg_cut_in', 1001)) - edit_handles
     cut_out = int(entity_field_value('sg_cut_out', 1100)) + edit_handles
 
-    cur_fps = hou.fps()
+    cur_fps = int(hou.fps())
     cur_cut_in, cur_cut_out = hou.playbar.frameRange()
     out = []
     if cur_fps != fps:
@@ -230,7 +230,7 @@ def update_materials():
 
     def published_textures():
         filters = [
-            #['project.Project.id', 'is', ctx.project['id']],
+            # ['project.Project.id', 'is', ctx.project['id']],
             ['entity.Asset.id', 'is', ctx.entity['id']],
             ['task.Task.step.Step.code', 'is', 'Texture'],
             ['published_file_type.PublishedFileType.code', 'is', 'Texture'],
@@ -323,7 +323,7 @@ def update_materials():
         if new_nodes_count:
             matnet.layoutChildren()
 
-        #matnet.setSelected(True, clear_all_selected=True, show_asset_if_selected=True)
+        # matnet.setSelected(True, clear_all_selected=True, show_asset_if_selected=True)
 
     def generate_matnet_old(matnet, mattype, texpath):
 
@@ -366,7 +366,7 @@ def update_materials():
         if new_nodes_count:
             matnet.layoutChildren()
 
-        #matnet.setSelected(True, clear_all_selected=True, show_asset_if_selected=True)
+        # matnet.setSelected(True, clear_all_selected=True, show_asset_if_selected=True)
 
     def update_textures(matnet, textures):
         textures = dict(
@@ -384,7 +384,7 @@ def update_materials():
                 except:
                     pass
                 texpath = p.eval()
-                #texpath = _texpath.replace('%(UDIM)d', '<UDIM>')
+                # texpath = _texpath.replace('%(UDIM)d', '<UDIM>')
 
                 texname = get_publish_name(texpath)
 
@@ -887,11 +887,11 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
         except:
             pass
         try:
-            os.remove(tmp_filename)            
+            os.remove(tmp_filename)
         except:
             pass
         try:
-            os.remove(tmp_filename_scaled)       
+            os.remove(tmp_filename_scaled)
         except:
             pass
 

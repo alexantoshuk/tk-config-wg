@@ -92,5 +92,5 @@ class SceneOperation(HookClass):
 
         elif operation == "reset":
             hou.hipFile.clear()
-
+            houdini_utils.sync_fps()
             return True

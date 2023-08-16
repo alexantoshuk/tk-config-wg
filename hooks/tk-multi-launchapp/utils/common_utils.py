@@ -2,6 +2,92 @@ import glob
 import os
 from datetime import datetime
 import sys
+import subprocess
+import platform
+
+
+def ue_project_path(cur_projpath):
+    cur_projpath = cur_projpath.replace('\\', '/')
+    root, projname = os.path.split(cur_projpath)
+    ue_projpath = "{0}/ue/{1}".format(
+        os.path.dirname(root), projname)
+    return ue_projpath
+
+
+def ue_publish_path(ue_projpath, publish_path):
+    splitted_path = publish_path.rsplit('/')
+
+    ue_publish_folder = "/".join([ue_projpath] +
+                                 ['Content'] + splitted_path[-7:-3])
+    ue_cache_name = "_".join(splitted_path[-6:-3] + splitted_path[-1:])
+    ue_publish_path = "/".join((ue_publish_folder, ue_cache_name))
+
+    # remove version string
+    ue_publish_path = ue_publish_path.rsplit('.', 2)
+    del ue_publish_path[-2]
+    ue_publish_path = '.'.join(ue_publish_path)
+
+    return ue_publish_path
+
+
+def perforce_username():
+    out = subprocess.check_output(['p4', 'user', '-o'])
+    return out.rsplit(sep=None, maxsplit=1)[-1].decode()
+
+
+def perforce_login():
+    passwd = os.environ['P4PASSWD']
+    return subprocess.check_output(['p4', 'login'], input=passwd.encode())
+
+
+def perforce_add(client, filename):
+    out = subprocess.check_output(['p4', '-c', client, 'add', filename])
+    return out
+
+
+def perforce_edit(client, filename):
+    out = subprocess.check_output(['p4', '-c', client, 'edit', filename])
+    return out
+
+
+def perforce_submit(client, filename, description):
+    out = subprocess.check_output(
+        ['p4', '-c', client, 'submit', '-d', description, filename])
+    return out
+
+
+def perforce_client_name(dirname, username):
+    def _info(client_str):
+        splited = client_str.split()
+        return (splited[1], splited[4].replace('\\', '/'), splited[-2][:-1])
+
+    hostname = platform.node()
+    result = []
+    out = subprocess.check_output(['p4', 'clients'])
+    for c in out.decode().split('\n')[:-1]:
+        data = _info(c)
+        _client, _dirname, _username = data
+        if dirname == _dirname and username == _username and hostname in _client:
+            return _client
+
+    return None
+
+
+def perforce_checkout(ue_projpath, filename):
+    if not os.path.isfile(filename):
+        return
+    perforce_login()
+    username = perforce_username()
+    clientname = perforce_client_name(ue_projpath, username)
+
+    try:
+        perforce_add(clientname, filename)
+    except Exception as e:
+        sys.stderr.write("DEBUG PERFORCE: %s\n" % e)
+        try:
+            perforce_edit(clientname, filename)
+        except Exception as e:
+            sys.stderr.write("DEBUG PERFORCE: %s\n" % e)
 
 
 def seq_files(seqpath, seq_pattern='<UDIM>'):

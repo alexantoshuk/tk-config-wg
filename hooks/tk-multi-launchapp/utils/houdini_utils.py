@@ -202,7 +202,7 @@ def update_materials():
             parms.update(fulltype_parms)
 
         tex = tex.replace('\\', '/')
-        for k, v in parms.get(chan, {}).iteritems():
+        for k, v in parms.get(chan, {}).items():
             if type(v) == str:
                 v = v.format(tex)
                 p = node.parm(k)

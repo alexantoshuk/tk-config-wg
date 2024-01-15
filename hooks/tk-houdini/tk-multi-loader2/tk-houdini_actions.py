@@ -289,7 +289,7 @@ class HoudiniActions(HookBaseClass):
 
             network_module = hou.nodeType(
                 hou.ropNodeTypeCategory(), "wg::network::1.0").hdaModule()
-            network_module.add_network_reader_parms(
+            network_module.add_network_io_parms(
                 objnet_node, pattern="*.objnet")
         else:
             error_msg = "Objnet: %s  already exists " % objnet_node.path()
@@ -337,7 +337,7 @@ class HoudiniActions(HookBaseClass):
 
             network_module = hou.nodeType(
                 hou.ropNodeTypeCategory(), "wg::network::1.0").hdaModule()
-            network_module.add_network_reader_parms(
+            network_module.add_network_io_parms(
                 matnet_node, pattern="*.matnet")
         else:
             error_msg = "Matnet: %s  already exists " % matnet_node.path()

@@ -410,7 +410,7 @@ def update_materials():
             matnet = hou.node('/shop').createNode('matnet', assetname)
 
         if readable and not matnet.comment().strip().startswith('#'):
-            network_io.add_network_reader_parms(matnet, pattern="*.matnet")
+            network_io.add_network_io_parms(matnet, pattern="*.matnet")
 
         return matnet
 

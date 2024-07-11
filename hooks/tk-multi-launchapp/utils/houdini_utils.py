@@ -842,6 +842,7 @@ def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2
         'filename': tmp_filename,
         'root': root,
         'objects': objects,
+        'save_hidden': False,
         'packed_transform': 1,
         'motionBlur': is_animated,
         'samples': samples,

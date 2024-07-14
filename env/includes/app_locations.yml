@@ -12,7 +12,7 @@
 ################################################################################
 
 includes:
-- ./frameworks.yml
+  - ./frameworks.yml
 
 ################################################################################
 # location descriptors for apps used in this configuration
@@ -29,7 +29,7 @@ apps.tk-multi-about.location:
 apps.tk-multi-breakdown.location:
   type: app_store
   name: tk-multi-breakdown
-  version: v1.7.3
+  version: v1.9.0
 
 # demo
 apps.tk-multi-demo.location:
@@ -41,19 +41,19 @@ apps.tk-multi-demo.location:
 apps.tk-multi-launchapp.location:
   type: app_store
   name: tk-multi-launchapp
-  version: v0.11.2
+  version: v0.13.1
 
 # loader2
 apps.tk-multi-loader2.location:
   type: app_store
   name: tk-multi-loader2
-  version: v1.20.3
+  version: v1.25.1
 
 # publish2
 apps.tk-multi-publish2.location:
   type: app_store
   name: tk-multi-publish2
-  version: v2.5.5
+  version: v2.9.0
 
 # pythonconsole
 apps.tk-multi-pythonconsole.location:
@@ -95,7 +95,7 @@ apps.tk-multi-snapshot.location:
 apps.tk-multi-workfiles2.location:
   type: app_store
   name: tk-multi-workfiles2
-  version: v0.12.6
+  version: v0.15.1
 
 # dev utils
 apps.tk-multi-devutils.location:
@@ -195,4 +195,4 @@ apps.tk-mari-projectmanager.location:
 
 ################################################################################
 # reference all of the common frameworks
-frameworks: '@frameworks'
+frameworks: "@frameworks"

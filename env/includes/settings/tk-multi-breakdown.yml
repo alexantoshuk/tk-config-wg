@@ -15,13 +15,6 @@ includes:
 
 ################################################################################
 
-# TODO: This not work.. I don't know why :( 
-# # houdini
-# settings.tk-multi-breakdown.houdini:
-#   hook_scene_operations: '{config}/tk-houdini/tk-multi-breakdown/tk-houdini_scene_operations.py'
-#   location: "@apps.tk-multi-breakdown.location"
-
-
 # nuke studio
 settings.tk-multi-breakdown.nukestudio:
   hook_scene_operations: '{self}/tk-nuke_scene_operations.py'

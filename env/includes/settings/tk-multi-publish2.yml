@@ -15,7 +15,7 @@ includes:
 
 ################################################################################
 
-publish_help_url: &help_url "https://support.shotgunsoftware.com/hc/en-us/articles/115000068574-Integrations-User-Guide#The%20Publisher"
+publish_help_url: &help_url "https://help.autodesk.com/view/SGSUB/ENU/?guid=SG_Supervisor_Artist_sa_integrations_sa_integrations_user_guide_html#the-publisher"
 
 ################################################################################
 
@@ -24,10 +24,9 @@ publish_help_url: &help_url "https://support.shotgunsoftware.com/hc/en-us/articl
 settings.tk-multi-publish2.standalone:
   collector: "{config}/tk-multi-publish2/collector.py"
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{config}/tk-multi-publish2/publish_file.py"
       settings: {}
-
     - name: Upload for review
       hook: "{self}/upload_version.py"
       settings: {}
@@ -39,13 +38,13 @@ settings.tk-multi-publish2.standalone:
 # ---- 3dsMax
 
 # asset step
-settings.tk-multi-publish2.3dsmaxplus.asset_step:
+settings.tk-multi-publish2.3dsmax.asset_step:
   &settings_tk-multi-publish2_3dsmaxplus_asset_step
   collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py"
   collector_settings:
     Work Template: max_asset_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -54,25 +53,24 @@ settings.tk-multi-publish2.3dsmaxplus.asset_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: max_asset_publish
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py"
       settings:
-        Publish Template: maya_asset_alembic_cache
+        Publish Template: asset_alembic_cache
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
 # shot step
-settings.tk-multi-publish2.3dsmaxplus.shot_step:
-  &settings_tk-multi-publish2_3dsmaxplus_shot_step
+settings.tk-multi-publish2.3dsmax.shot_step:
   collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py"
   collector_settings:
     Work Template: max_shot_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -81,20 +79,12 @@ settings.tk-multi-publish2.3dsmaxplus.shot_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: max_shot_publish
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
-
-# ---- 3dsMax
-
-# Uses the exact same settings. The {engine} resolves the hook at the right location.
-# asset step
-settings.tk-multi-publish2.3dsmax.asset_step: *settings_tk-multi-publish2_3dsmaxplus_asset_step
-# shot step
-settings.tk-multi-publish2.3dsmax.shot_step: *settings_tk-multi-publish2_3dsmaxplus_shot_step
 
 ################################################################################
 
@@ -106,7 +96,7 @@ settings.tk-multi-publish2.houdini.asset_step:
   collector_settings:
     Work Template: houdini_asset_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -115,27 +105,27 @@ settings.tk-multi-publish2.houdini.asset_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: houdini_asset_publish
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry.py"
       settings:
         Publish Template: asset_alembic_cache
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera.py"
       settings:
         Publish Template: asset_alembic_cache
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_objnet.py"
       settings:
         Publish Template: houdini_asset_objnet_publish
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_matnet.py"
       settings:
         Publish Template: houdini_asset_matnet_publish
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_textures.py"
       settings:
         Publish Template: publish_asset_texture
@@ -150,7 +140,7 @@ settings.tk-multi-publish2.houdini.shot_step:
   collector_settings:
     Work Template: houdini_shot_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -159,11 +149,11 @@ settings.tk-multi-publish2.houdini.shot_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: houdini_shot_publish
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry.py"
       settings:
         Publish Template: shot_alembic_cache
@@ -171,7 +161,7 @@ settings.tk-multi-publish2.houdini.shot_step:
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry_to_ue.py"
       settings:
         Publish Template: shot_alembic_cache
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera.py"
       settings:
         Publish Template: shot_alembic_cache
@@ -179,11 +169,11 @@ settings.tk-multi-publish2.houdini.shot_step:
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera_to_ue.py"
       settings:
         Publish Template: shot_alembic_cache
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_objnet.py"
       settings:
         Publish Template: houdini_shot_objnet_publish
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_matnet.py"
       settings:
         Publish Template: houdini_shot_matnet_publish
@@ -200,10 +190,10 @@ settings.tk-multi-publish2.houdini.shot_step:
 settings.tk-multi-publish2.mari.asset_step:
   collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py"
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_mari_textures.py"
       settings:
         Publish Template: asset_mari_texture_tif
@@ -223,7 +213,7 @@ settings.tk-multi-publish2.maya.asset_step:
   collector_settings:
     Work Template: maya_asset_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -232,23 +222,24 @@ settings.tk-multi-publish2.maya.asset_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: maya_asset_publish
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
       settings:
         Publish Template: asset_alembic_cache
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx.py"
       settings:
         Publish Template: asset_fbx
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
       settings:
         Publish Template: asset_alembic_cache
   post_phase: "{self}/post_phase.py:{config}/tk-maya/tk-multi-publish2/post_phase.py"
+
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -258,7 +249,7 @@ settings.tk-multi-publish2.maya.shot_step:
   collector_settings:
     Work Template: maya_shot_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -267,11 +258,11 @@ settings.tk-multi-publish2.maya.shot_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: maya_shot_publish
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
       settings:
         Publish Template: shot_alembic_cache
@@ -279,7 +270,7 @@ settings.tk-multi-publish2.maya.shot_step:
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_to_ue.py"
       settings:
         Publish Template: shot_alembic_cache
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx.py"
       settings:
         Publish Template: shot_fbx
@@ -287,7 +278,7 @@ settings.tk-multi-publish2.maya.shot_step:
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx_to_ue.py"
       settings:
         Publish Template: shot_fbx
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
       settings:
         Publish Template: shot_alembic_cache
@@ -296,6 +287,7 @@ settings.tk-multi-publish2.maya.shot_step:
       settings:
         Publish Template: shot_alembic_cache
   post_phase: "{self}/post_phase.py:{config}/tk-maya/tk-multi-publish2/post_phase.py"
+
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -309,7 +301,7 @@ settings.tk-multi-publish2.nuke.asset_step:
   collector_settings:
     Work Template: nuke_asset_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -318,7 +310,7 @@ settings.tk-multi-publish2.nuke.asset_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/nuke_start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/nuke_publish_script.py"
       settings:
         Publish Template: nuke_asset_publish
@@ -334,7 +326,7 @@ settings.tk-multi-publish2.nuke.shot_step:
   collector_settings:
     Work Template: nuke_shot_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -343,7 +335,7 @@ settings.tk-multi-publish2.nuke.shot_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/nuke_start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/nuke_publish_script.py"
       settings:
         Publish Template: nuke_shot_publish
@@ -366,7 +358,7 @@ settings.tk-multi-publish2.nukestudio:
   collector_settings:
     Work Template: hiero_project_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -375,7 +367,7 @@ settings.tk-multi-publish2.nukestudio:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/nukestudio_start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/nukestudio_publish_project.py"
       settings:
         Publish Template: hiero_project_publish
@@ -392,7 +384,7 @@ settings.tk-multi-publish2.photoshop.asset_step:
   collector_settings:
     Work Template: photoshop_asset_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -401,13 +393,28 @@ settings.tk-multi-publish2.photoshop.asset_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_document.py"
       settings:
         Publish Template: photoshop_asset_publish
     - name: Upload for review
       hook: "{engine}/tk-multi-publish2/basic/upload_version.py"
       settings: {}
+    - name: Publish PNG to Flow Production Tracking
+      hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_image.py"
+      settings:
+        Publish Template: photoshop_asset_png_publish
+        Export Settings:
+          format: PNG
+          PNG8: False
+          quality: 100
+    - name: Publish JPEG to Flow Production Tracking
+      hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_image.py"
+      settings:
+        Publish Template: photoshop_asset_jpg_publish
+        Export Settings:
+          format: JPEG
+          quality: 100
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -417,7 +424,7 @@ settings.tk-multi-publish2.photoshop.shot_step:
   collector_settings:
     Work Template: photoshop_shot_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -426,13 +433,28 @@ settings.tk-multi-publish2.photoshop.shot_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_document.py"
       settings:
         Publish Template: photoshop_shot_publish
     - name: Upload for review
       hook: "{engine}/tk-multi-publish2/basic/upload_version.py"
       settings: {}
+    - name: Publish PNG to Flow Production Tracking
+      hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_image.py"
+      settings:
+        Publish Template: photoshop_shot_png_publish
+        Export Settings:
+          format: PNG
+          PNG8: False
+          quality: 100
+    - name: Publish JPEG to Flow Production Tracking
+      hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_image.py"
+      settings:
+        Publish Template: photoshop_shot_jpg_publish
+        Export Settings:
+          format: JPEG
+          quality: 100
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -446,7 +468,7 @@ settings.tk-multi-publish2.aftereffects.asset_step:
   collector_settings:
     Work Template: aftereffects_asset_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -465,10 +487,10 @@ settings.tk-multi-publish2.aftereffects.asset_step:
         Publish Movie Template: aftereffects_asset_render_movie
         Default Sequence Output Module: TIFF Sequence with Alpha
         Default Movie Output Module: Lossless with Alpha
-    - name: Publish Renderings to Shotgun
+    - name: Publish Renderings to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_rendering.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_document.py"
       settings:
         Publish Template: aftereffects_asset_publish
@@ -485,7 +507,7 @@ settings.tk-multi-publish2.aftereffects.shot_step:
   collector_settings:
     Work Template: aftereffects_shot_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Begin file versioning
@@ -501,10 +523,10 @@ settings.tk-multi-publish2.aftereffects.shot_step:
         Publish Movie Template: aftereffects_shot_render_movie
         Default Sequence Output Module: TIFF Sequence with Alpha
         Default Movie Output Module: Lossless with Alpha
-    - name: Publish Renderings to Shotgun
+    - name: Publish Renderings to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_rendering.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_document.py"
       settings:
         Publish Template: aftereffects_shot_publish
@@ -525,7 +547,7 @@ settings.tk-multi-publish2.motion_builder.asset_step:
   collector_settings:
     Work Template: mobu_asset_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -534,7 +556,7 @@ settings.tk-multi-publish2.motion_builder.asset_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: mobu_asset_publish
@@ -547,7 +569,7 @@ settings.tk-multi-publish2.motion_builder.shot_step:
   collector_settings:
     Work Template: mobu_shot_work
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -556,7 +578,7 @@ settings.tk-multi-publish2.motion_builder.shot_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: mobu_shot_publish
@@ -572,8 +594,9 @@ settings.tk-multi-publish2.alias.asset_step:
   collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py"
   collector_settings:
     Work Template: alias_asset_work
+    Background Processing: True
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -582,24 +605,30 @@ settings.tk-multi-publish2.alias.asset_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: alias_asset_publish
-    - name: Create 3D Version for Review
+    - name: Create Version for Review
       hook: "{self}/upload_version.py:{engine}/tk-multi-publish2/basic/upload_version.py"
       settings:
-        3D Version: True
-    - name: Publish CATPart to Shotgun
+        Version Type: 2D Version
+    - name: Publish CATPart to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_translation.py"
       settings:
         Publish Template: alias_asset_catpart_publish
-    - name: Publish Variants to Shotgun
+    - name: Publish Variants to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_variants.py"
       settings: {}
-    - name: Publish Annotations to Shotgun
+    - name: Publish Annotations to Flow Production Tracking
       hook: "{engine}/tk-multi-publish2/basic/publish_annotations.py"
       settings: {}
+    - name: Create VRED Scene
+      hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_vred.py"
+      settings:
+        Work Template: vred_asset_work
+        Publish Template: vred_asset_publish
+  post_phase: "{self}/post_phase.py:{config}/tk-multi-publish2/post_phase.py"
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -612,8 +641,9 @@ settings.tk-multi-publish2.vred.asset_step:
   collector: "{self}/collector.py:{engine}/tk-multi-publish2/basic/collector.py"
   collector_settings:
     Work Template: vred_asset_work
+    Background Processing: True
   publish_plugins:
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py"
       settings: {}
     - name: Upload for review
@@ -622,15 +652,15 @@ settings.tk-multi-publish2.vred.asset_step:
     - name: Begin file versioning
       hook: "{engine}/tk-multi-publish2/basic/start_version_control.py"
       settings: {}
-    - name: Publish to Shotgun
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings:
         Publish Template: vred_asset_publish
-    - name: Create 2D Version for Review
+    - name: Create Version for Review
       hook: "{self}/upload_version.py:{engine}/tk-multi-publish2/basic/upload_session_version.py"
       settings:
-        3D Version: False
-    - name: Publish Rendering to Shotgun
+        Version Type: 2D Version
+    - name: Publish Rendering to Flow Production Tracking
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_rendering.py"
       settings:
         Publish Image Template: vred_asset_render_publish
@@ -638,5 +668,6 @@ settings.tk-multi-publish2.vred.asset_step:
     - name: Upload for review
       hook: "{self}/upload_version.py:{engine}/tk-multi-publish2/basic/upload_version.py"
       settings: {}
+  post_phase: "{self}/post_phase.py:{config}/tk-multi-publish2/post_phase.py"
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"

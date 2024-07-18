@@ -11,8 +11,8 @@
 ################################################################################
 
 includes:
-- ../app_locations.yml
-- ../software_paths.yml
+  - ../app_locations.yml
+  - ../software_paths.yml
 
 ################################################################################
 
@@ -29,8 +29,6 @@ settings.tk-multi-launchapp.shotgun:
   skip_engine_instances: ["tk-nukestudio"]
   hook_before_register_command: "{config}/tk-multi-launchapp/before_register_command.py"
   location: "@apps.tk-multi-launchapp.location"
-
-
 
 ################################################################################
 

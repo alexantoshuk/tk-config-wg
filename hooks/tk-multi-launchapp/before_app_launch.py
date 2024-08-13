@@ -78,8 +78,10 @@ class BeforeAppLaunch(tank.Hook):
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.2/config.ocio'
 
+        utils_path = os.path.join(os.path.dirname(__file__), 'utils').replace('\\', '/')
+        python3libs_path = tkroot + '/python3libs'
         os.environ['PYTHONPATH'] = os.environ.get(
-            'PYTHONPATH', '') + os.pathsep + os.path.join(os.path.dirname(__file__), 'utils').replace('\\', '/')
+            'PYTHONPATH', '') + os.pathsep + utils_path + os.pathsep + python3libs_path 
 
         if engine_name in ("tk-nuke", "tk-nukestudio"):
             os.environ['NUKE_PATH'] = os.environ.get(

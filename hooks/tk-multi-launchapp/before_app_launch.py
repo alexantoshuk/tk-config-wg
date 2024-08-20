@@ -51,9 +51,7 @@ class BeforeAppLaunch(tank.Hook):
         # you can set environment variables like this:
         # os.environ["MY_SETTING"] = "foo bar"
         ctx = self.parent.context
-        projects = os.path.dirname(ctx.sgtk.roots.get('primary'))
-        root = os.path.dirname(projects)
-
+        root = os.path.dirname(ctx.sgtk.roots.get('primary'))
         tkroot = os.path.join(root, 'playsense-cgi-tk').replace('\\', '/')
 
         if not os.path.isdir(tkroot):
@@ -78,10 +76,11 @@ class BeforeAppLaunch(tank.Hook):
         os.environ['OCIO'] = tkroot + \
             '/OpenColorIO-Configs/aces_1.2/config.ocio'
 
-        utils_path = os.path.join(os.path.dirname(__file__), 'utils').replace('\\', '/')
+        utils_path = os.path.join(os.path.dirname(
+            __file__), 'utils').replace('\\', '/')
         python3libs_path = tkroot + '/python3libs'
         os.environ['PYTHONPATH'] = os.environ.get(
-            'PYTHONPATH', '') + os.pathsep + utils_path + os.pathsep + python3libs_path 
+            'PYTHONPATH', '') + os.pathsep + utils_path + os.pathsep + python3libs_path
 
         if engine_name in ("tk-nuke", "tk-nukestudio"):
             os.environ['NUKE_PATH'] = os.environ.get(

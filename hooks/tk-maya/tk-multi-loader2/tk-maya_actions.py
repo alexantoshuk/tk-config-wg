@@ -233,11 +233,13 @@ class MayaActions(HookBaseClass):
 
         # make a name space out of entity name + publish name
         # e.g. bunny_upperbody
-        namespace = "%s %s" % (
-            sg_publish_data.get("entity").get("name"),
-            sg_publish_data.get("name"),
-        )
-        namespace = namespace.replace(" ", "_")
+        # namespace = "%s %s" % (
+        #     sg_publish_data.get("entity").get("name"),
+        #     sg_publish_data.get("name"),
+        # )
+        # namespace = namespace.replace(" ", "_")
+
+        namespace = sg_publish_data.get("entity").get("name")
 
         # Now create the reference object in Maya.
         cmds.file(

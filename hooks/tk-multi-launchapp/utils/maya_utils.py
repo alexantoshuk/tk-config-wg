@@ -6,6 +6,10 @@ import shutil
 import tempfile
 
 
+def get_namespace(maya_node_path):
+    return maya_node_path.rsplit('|', 1)[-1].split(':', 1)[0]
+
+
 def get_tempfile_name():
     return os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names())).replace("\\", "/")
 

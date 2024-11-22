@@ -14,6 +14,7 @@ import glob
 import maya.cmds as cmds
 import maya.mel as mel
 import sgtk
+import shutil
 
 from tank_vendor import six
 
@@ -280,6 +281,26 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
                                   end=end_frame, preroll=preroll, samples=samples)
         except Exception as e:
             self.logger.error("Failed to export Geometry: %s" % e)
+            return
+
+        namespace = maya_utils.get_namespace(maya_node)
+
+        en = sgtk.platform.current_engine()
+        ctx = en.context
+
+        # entity_type = ctx.entity['type']
+        entity_name = ctx.entity['name']
+        publish_dir = os.path.dirname(publish_path)
+        publish_path_without_version = os.path.join(publish_dir, "{}_{}.fbx".format(
+            namespace, entity_name))
+
+        try:
+            self.parent.log_debug("Copy '%s' to '%s'" % (
+                publish_path, publish_path_without_version))
+            shutil.copy(publish_path, publish_path_without_version)
+        except Exception as e:
+            self.logger.error("Failed to copy '%s' to '%s'" %
+                              (publish_path, publish_path_without_version))
             return
 
         # Now that the path has been generated, hand it off to the

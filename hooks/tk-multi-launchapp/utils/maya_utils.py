@@ -156,6 +156,7 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2):
     cmds.select(root, replace=True)
     # This ensures the user's settings are ignored so that you can just set values which differ from the default
     mel.eval('FBXResetExport')
+    mel.eval('FBXExportInputConnections -v false')
     mel.eval('FBXExportBakeComplexAnimation -v 1')
     # mel.eval('FBXExportBakeResampleAll -v 1')
     mel.eval('FBXExportBakeComplexStart -v %i' % start_frame)

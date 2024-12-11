@@ -161,7 +161,7 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2):
     # mel.eval('FBXExportBakeResampleAll -v 1')
     mel.eval('FBXExportBakeComplexStart -v %i' % start_frame)
     mel.eval('FBXExportBakeComplexEnd -v %i' % end_frame)
-    mel.eval('FBXExportBakeComplexStep -v %i' % samples)
+    mel.eval('FBXExportBakeComplexStep -v %i' % 1.0/samples)
     mel.eval('FBXExport -f "%s" -s' % tmp_filename)
     # cmds.file(tmp_filename, force=True, options="v=0;", typ="FBX export", es=True)
     try:

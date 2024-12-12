@@ -219,7 +219,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # template:
         work_fields = work_template.get_fields(path)
 
-        work_fields["node"] = item.properties.get("name")
+        work_fields["node"] = item.properties["name"]
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)

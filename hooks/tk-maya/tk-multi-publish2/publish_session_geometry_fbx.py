@@ -212,7 +212,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # template:
         work_fields = work_template.get_fields(path)
 
-        work_fields["node"] = item.properties.get("name")
+        work_fields["node"] = item.properties["name"]
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
@@ -274,15 +274,14 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
             self.logger.error("Failed to export Geometry: %s" % e)
             return
 
-        name = publish_path = item.properties["name"]
+        name = item.properties["name"]
 
         en = sgtk.platform.current_engine()
         ctx = en.context
 
         # entity_type = ctx.entity['type']
         entity_name = ctx.entity['name']
-        publish_dir = os.path.dirname(publish_path)
-        publish_path_without_version = os.path.join(publish_dir, "{}_{}.fbx".format(
+        publish_path_without_version = os.path.join(publish_folder, "{}_{}.fbx".format(
             name, entity_name))
 
         try:

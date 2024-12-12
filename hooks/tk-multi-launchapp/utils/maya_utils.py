@@ -6,10 +6,17 @@ import shutil
 import tempfile
 
 
-def collect_publish_items():
+def collect_publish_items(toggle_attr="publishABC"):
     items = dict()
     for g in cmds.ls(type='transform'):
         if not is_publish_geometry(g):
+            continue
+
+        try:
+            enable = cmds.getAttr(g + "." + toggle_attr)
+            if not enable:
+                continue
+        except:
             continue
 
         basename = get_basename(g)
@@ -22,8 +29,6 @@ def collect_publish_items():
         item = items.setdefault(name, {})
         preroll = item.setdefault('preroll', 0)
         samples = item.setdefault('samples', 1)
-        checked_fbx = item.setdefault('checked_fbx', False)
-        checked_abc = item.setdefault('checked_abc', False)
         nodes_list = item.setdefault('nodes', [])
         nodes_list.append(g)
 
@@ -42,19 +47,6 @@ def collect_publish_items():
             pass
         item['samples'] = samples
 
-        try:
-            checked_abc = checked_abc or cmds.getAttr(
-                g + ".publishABC")
-        except:
-            pass
-        item['checked_abc'] = checked_abc
-
-        try:
-            checked_fbx = checked_fbx or cmds.getAttr(
-                g + ".publishFBX")
-        except:
-            pass
-        item['checked_fbx'] = checked_fbx
     return items
 
 

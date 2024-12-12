@@ -257,8 +257,9 @@ class MayaSessionCollector(HookBaseClass):
         :param parent_item: Parent Item instance
         """
         # * collect all checked objects in scene for publishing
-        for name, data in maya_utils.collect_publish_items().items():
+        for name, data in maya_utils.collect_publish_items("publishABC").items():
             # ABC ######################################################
+
             geo_item = parent_item.create_item(
                 "maya.session.geometry", "Geometry ABC", name
             )
@@ -266,12 +267,12 @@ class MayaSessionCollector(HookBaseClass):
             geo_item.properties["nodes"] = data['nodes']
             geo_item.properties["preroll"] = data['preroll']
             geo_item.properties["samples"] = data['samples']
-            geo_item.properties["checked"] = data['checked_fbx']
 
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/geometry.png"
             geo_item.set_icon_from_path(icon_path)
 
+        for name, data in maya_utils.collect_publish_items("publishFBX").items():
             # FBX ######################################################
             geo_item = parent_item.create_item(
                 "maya.session.geometry.fbx", "Geometry FBX", name
@@ -280,7 +281,6 @@ class MayaSessionCollector(HookBaseClass):
             geo_item.properties["nodes"] = data['nodes']
             geo_item.properties["preroll"] = data['preroll']
             geo_item.properties["samples"] = data['samples']
-            geo_item.properties["checked"] = data['checked_fbx']
 
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/fbx.png"

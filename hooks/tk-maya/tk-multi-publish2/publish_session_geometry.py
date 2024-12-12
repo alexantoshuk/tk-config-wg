@@ -171,7 +171,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # natively.
         item.context_change_allowed = False
 
-        return {"accepted": accepted, "checked": item.properties.get("checked")}
+        return {"accepted": accepted, "checked": True}
 
     def validate(self, settings, item):
         """

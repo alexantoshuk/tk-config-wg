@@ -23,7 +23,7 @@ def collect_publish_items():
         preroll = item.setdefault('preroll', 0)
         samples = item.setdefault('samples', 1)
         checked_fbx = item.setdefault('checked_fbx', False)
-        checked_abc = item.setdefault('checked_abc', True)
+        checked_abc = item.setdefault('checked_abc', False)
         nodes_list = item.setdefault('nodes', [])
         nodes_list.append(g)
 

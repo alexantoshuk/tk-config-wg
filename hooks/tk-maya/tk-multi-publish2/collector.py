@@ -116,7 +116,6 @@ class MayaSessionCollector(HookBaseClass):
         self._collect_session_camera(item)
         if cmds.ls(geometry=True, noIntermediate=True):
             self._collect_session_geometry(item)
-            self._collect_session_geometry_fbx(item)
 
     def collect_current_maya_session(self, settings, parent_item):
         """
@@ -237,22 +236,13 @@ class MayaSessionCollector(HookBaseClass):
                 geo_item.properties["preroll"] = cmds.getAttr(
                     g + ".preroll")
             except:
-                # legacy support
-                try:
-                    geo_item.properties["preroll"] = cmds.getAttr(
-                        g + ".abcPreroll")
-                except:
-                    pass
+                geo_item.properties["preroll"] = 0
+
             try:
                 geo_item.properties["samples"] = cmds.getAttr(
                     g + ".samples")
             except:
-                # legacy support
-                try:
-                    geo_item.properties["samples"] = cmds.getAttr(
-                        g + ".abcSamples")
-                except:
-                    pass
+                geo_item.properties["samples"] = 1
 
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/camera.png"
@@ -267,90 +257,33 @@ class MayaSessionCollector(HookBaseClass):
         :param parent_item: Parent Item instance
         """
         # * collect all checked objects in scene for publishing
-        for g in cmds.ls(type='transform'):
-            if not maya_utils.is_publish_geometry(g):
-                continue
+        for name, data in maya_utils.collect_publish_items().items():
+            # ABC ######################################################
             geo_item = parent_item.create_item(
-                "maya.session.geometry", "Geometry ABC", g
+                "maya.session.geometry", "Geometry ABC", name
             )
-            geo_item.properties["node"] = g
+            geo_item.properties["name"] = name
+            geo_item.properties["nodes"] = data['nodes']
+            geo_item.properties["preroll"] = data['preroll']
+            geo_item.properties["samples"] = data['samples']
+            geo_item.properties["checked"] = data['checked_fbx']
 
-            try:
-                geo_item.properties["preroll"] = cmds.getAttr(
-                    g + ".preroll")
-            except:
-                # legacy support
-                try:
-                    geo_item.properties["preroll"] = cmds.getAttr(
-                        g + ".abcPreroll")
-                except:
-                    pass
-            try:
-                geo_item.properties["samples"] = cmds.getAttr(
-                    g + ".samples")
-            except:
-                # legacy support
-                try:
-                    geo_item.properties["samples"] = cmds.getAttr(
-                        g + ".abcSamples")
-                except:
-                    pass
-
-            try:
-                geo_item.properties["checked"] = cmds.getAttr(
-                    g + ".publishABC")
-            except:
-                geo_item.properties["checked"] = True
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/geometry.png"
-
             geo_item.set_icon_from_path(icon_path)
 
-    def _collect_session_geometry_fbx(self, parent_item):
-        """
-        Creates items for session geometry to be exported.
-
-        :param parent_item: Parent Item instance
-        """
-        # * collect all checked objects in scene for publishing
-        for g in cmds.ls(type='transform'):
-            if not maya_utils.is_publish_geometry(g):
-                continue
+            # FBX ######################################################
             geo_item = parent_item.create_item(
-                "maya.session.geometry.fbx", "Geometry FBX", g
+                "maya.session.geometry.fbx", "Geometry FBX", name
             )
-            geo_item.properties["node"] = g
-
-            try:
-                geo_item.properties["preroll"] = cmds.getAttr(
-                    g + ".preroll")
-            except:
-                # legacy support
-                try:
-                    geo_item.properties["preroll"] = cmds.getAttr(
-                        g + ".abcPreroll")
-                except:
-                    pass
-            try:
-                geo_item.properties["samples"] = cmds.getAttr(
-                    g + ".samples")
-            except:
-                # legacy support
-                try:
-                    geo_item.properties["samples"] = cmds.getAttr(
-                        g + ".abcSamples")
-                except:
-                    pass
-
-            try:
-                geo_item.properties["checked"] = cmds.getAttr(
-                    g + ".publishFBX")
-            except:
-                geo_item.properties["checked"] = False
+            geo_item.properties["name"] = name
+            geo_item.properties["nodes"] = data['nodes']
+            geo_item.properties["preroll"] = data['preroll']
+            geo_item.properties["samples"] = data['samples']
+            geo_item.properties["checked"] = data['checked_fbx']
 
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/fbx.png"
-
             geo_item.set_icon_from_path(icon_path)
 
     def collect_playblasts(self, parent_item, project_root):

@@ -191,17 +191,18 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # get the normalized path
         path = sgtk.util.ShotgunPath.normalize(path)
-        maya_node = item.properties.get("node")
+        maya_nodes = item.properties.get("nodes")
 
         # check that there is still geometry in the scene:
-        if not cmds.ls(maya_node):
-            error_msg = (
-                "Validation failed because there is no geometry '%s' in the scene "
-                "to be exported. You can uncheck this plugin or create "
-                "geometry to export to avoid this error."
-            ) % maya_node
-            self.logger.error(error_msg)
-            raise Exception(error_msg)
+        for maya_node in maya_nodes:
+            if not cmds.ls(maya_node):
+                error_msg = (
+                    "Validation failed because there is no geometry '%s' in the scene "
+                    "to be exported. You can uncheck this plugin or create "
+                    "geometry to export to avoid this error."
+                ) % maya_node
+                self.logger.error(error_msg)
+                raise Exception(error_msg)
 
         # get the configured work file template
         work_template = item.parent.properties.get("work_template")
@@ -211,17 +212,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # template:
         work_fields = work_template.get_fields(path)
 
-        # * append node from collected geometry and replace ':' to '__' in node name to work for windows
-        work_fields["node"] = maya_node.rsplit('|', 1)[-1].replace(':', '__')
-
-        if "preroll" not in item.properties:
-            self.logger.warning(
-                "'preroll' attribute is not founded. Use 0 by default.")
-            item.properties["preroll"] = 0
-        if "samples" not in item.properties:
-            self.logger.warning(
-                "'samples' attribute is not founded. Use 2 by default.")
-            item.properties["samples"] = 2
+        work_fields["node"] = item.properties.get("name")
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
@@ -261,7 +252,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         publisher = self.parent
 
         # * get fbx cache data
-        maya_node = item.properties["node"]
+        maya_nodes = item.properties["nodes"]
         preroll = item.properties["preroll"]
         samples = item.properties["samples"]
         # get the path to create and publish
@@ -277,13 +268,13 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # ...and execute it:
         try:
             self.parent.log_debug("Export FBX: %s" % publish_path)
-            maya_utils.fbx_export(maya_node, publish_path, start=start_frame,
+            maya_utils.fbx_export(maya_nodes, publish_path, start=start_frame,
                                   end=end_frame, preroll=preroll, samples=samples)
         except Exception as e:
             self.logger.error("Failed to export Geometry: %s" % e)
             return
 
-        namespace = maya_utils.get_namespace(maya_node)
+        name = publish_path = item.properties["name"]
 
         en = sgtk.platform.current_engine()
         ctx = en.context
@@ -292,7 +283,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         entity_name = ctx.entity['name']
         publish_dir = os.path.dirname(publish_path)
         publish_path_without_version = os.path.join(publish_dir, "{}_{}.fbx".format(
-            namespace, entity_name))
+            name, entity_name))
 
         try:
             self.parent.log_debug("Copy '%s' to '%s'" % (

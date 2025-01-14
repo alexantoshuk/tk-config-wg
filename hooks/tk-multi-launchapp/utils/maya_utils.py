@@ -6,8 +6,60 @@ import shutil
 import tempfile
 
 
+def collect_publish_items(toggle_attr="publishABC"):
+    items = dict()
+    for g in cmds.ls(type='transform'):
+        if not is_publish_geometry(g):
+            continue
+
+        try:
+            enable = cmds.getAttr(g + "." + toggle_attr)
+            if not enable:
+                continue
+        except:
+            continue
+
+        basename = get_basename(g)
+        namespace = get_namespace(basename)
+        if namespace:
+            name = namespace
+        else:
+            name = basename
+
+        item = items.setdefault(name, {})
+        preroll = item.setdefault('preroll', 0)
+        samples = item.setdefault('samples', 1)
+        nodes_list = item.setdefault('nodes', [])
+        nodes_list.append(g)
+
+        try:
+            preroll = max(preroll, cmds.getAttr(
+                g + ".preroll"))
+        except:
+            pass
+
+        item['preroll'] = preroll
+
+        try:
+            samples = max(samples, cmds.getAttr(
+                g + ".samples"))
+        except:
+            pass
+        item['samples'] = samples
+
+    return items
+
+
+def get_basename(maya_node_path):
+    return maya_node_path.rsplit('|', 1)[-1]
+
+
 def get_namespace(maya_node_path):
-    return maya_node_path.rsplit('|', 1)[-1].split(':', 1)[0]
+    basename = get_basename(maya_node_path)
+    namespace, ok, basename = basename.partition(':')
+    if ok:
+        return namespace
+    return ''
 
 
 def get_tempfile_name():
@@ -126,7 +178,11 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
     tmp_filename = get_tempfile_name() + '.abc'
 
     # * set object to export
-    alembic_args.append("-root '%s'" % root)
+    if isinstance(root, (list, tuple)):
+        for r in root:
+            alembic_args.append("-root '%s'" % r)
+    else:
+        alembic_args.append("-root '%s'" % root)
     # Set the output path:
     # Note: The AbcExport command expects forward slashes!
     alembic_args.append("-file '%s'" % tmp_filename)
@@ -152,15 +208,17 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2):
     end_frame = end + 2
     filename = filename.replace("\\", "/")
     tmp_filename = get_tempfile_name() + '.fbx'
-
+    # step = 1.0/samples
+    step = 1  # !FIXME: use default step for now
     cmds.select(root, replace=True)
     # This ensures the user's settings are ignored so that you can just set values which differ from the default
     mel.eval('FBXResetExport')
+    mel.eval('FBXExportInputConnections -v false')
     mel.eval('FBXExportBakeComplexAnimation -v 1')
     # mel.eval('FBXExportBakeResampleAll -v 1')
     mel.eval('FBXExportBakeComplexStart -v %i' % start_frame)
     mel.eval('FBXExportBakeComplexEnd -v %i' % end_frame)
-    mel.eval('FBXExportBakeComplexStep -v %i' % samples)
+    mel.eval('FBXExportBakeComplexStep -v %i' % step)
     mel.eval('FBXExport -f "%s" -s' % tmp_filename)
     # cmds.file(tmp_filename, force=True, options="v=0;", typ="FBX export", es=True)
     try:

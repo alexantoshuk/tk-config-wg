@@ -12,11 +12,11 @@
 ################################################################################
 
 includes:
-- ../app_locations.yml
-- ../engine_locations.yml
-- ./tk-multi-launchapp.yml
-- ./tk-multi-publish2.yml
-- ./tk-multi-screeningroom.yml
+  - ../app_locations.yml
+  - ../engine_locations.yml
+  - ./tk-multi-launchapp.yml
+  - ./tk-multi-publish2.yml
+  - ./tk-multi-screeningroom.yml
 
 ################################################################################
 
@@ -24,7 +24,6 @@ includes:
 settings.tk-desktop.site:
   apps:
   location: "@engines.tk-desktop.location"
-
 
 # project
 settings.tk-desktop.project:
@@ -40,23 +39,24 @@ settings.tk-desktop.project:
     tk-multi-publish2: "@settings.tk-multi-publish2.standalone"
     tk-multi-screeningroom: "@settings.tk-multi-screeningroom.rv"
   groups:
-  - matches:
-    - "*Fla*"
-    - "*Houdini*"
-    - "*Mari*"
-    - "*Max*"
-    - "*Maya*"
-    - "*Motion*"
-    - "*Nuke*"
-    - "*Photoshop*"
-    - "*After*"
-    - "*Effects*"
-    name: Creative Tools
-  - matches:
-    - "*Hiero*"
-    name: Editorial Tools
-  - matches:
-    - "*Alias*"
-    - "*VRED*"
-    name: Automotive Tools
+    - matches:
+        - "*Fla*"
+        - "*Houdini*"
+        - "*Mari*"
+        - "*Max*"
+        - "*Maya*"
+        - "*Motion*"
+        - "*Nuke*"
+        - "*Photoshop*"
+        - "*Unreal*"
+        - "*After*"
+        - "*Effects*"
+      name: Creative Tools
+    - matches:
+        - "*Hiero*"
+      name: Editorial Tools
+    - matches:
+        - "*Alias*"
+        - "*VRED*"
+      name: Automotive Tools
   location: "@engines.tk-desktop.location"

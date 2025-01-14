@@ -12,8 +12,11 @@
 
 includes:
   - ../app_locations.yml
-
+  - ../unreal/settings/tk-multi-loader2.yml
 ################################################################################
+
+# unreal
+settings.tk-multi-loader2.unreal: "@settings.tk-multi-loader2.unreal"
 
 # 3dsmax
 settings.tk-multi-loader2.3dsmax:

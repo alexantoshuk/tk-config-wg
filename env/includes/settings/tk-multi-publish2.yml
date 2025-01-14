@@ -12,7 +12,7 @@
 
 includes:
   - ../app_locations.yml
-
+  - ../unreal/settings/tk-multi-publish2.yml
 ################################################################################
 
 publish_help_url: &help_url "https://help.autodesk.com/view/SGSUB/ENU/?guid=SG_Supervisor_Artist_sa_integrations_sa_integrations_user_guide_html#the-publisher"

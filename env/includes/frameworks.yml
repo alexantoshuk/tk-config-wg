@@ -80,3 +80,4 @@ frameworks:
       version: v1.1.0
       type: app_store
       name: tk-framework-lmv
+include: unreal/frameworks.yml

@@ -19,6 +19,7 @@
 # Whenever an app or an engine refers to a location on disk, it is using an entry defined in
 # this file. For more information, see the Shotgun Pipeline Toolkit Documentation.
 
+include: ../env/includes/unreal/templates.yml
 #
 # The keys section contains the definitions for all the different keys that are being
 # used by Sgtk. A key is a magic token that is replaced by a value at runtime, for example
@@ -41,7 +42,7 @@ keys:
   #   shotgun_field_name: content
   name:
     type: str
-    filter_by: alphanumeric
+    filter_by: "^[A-Za-z0-9_]+$"
   iteration:
     type: int
   version:

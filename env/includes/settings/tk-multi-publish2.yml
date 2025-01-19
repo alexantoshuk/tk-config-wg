@@ -157,16 +157,8 @@ settings.tk-multi-publish2.houdini.shot_step:
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry.py"
       settings:
         Publish Template: shot_alembic_cache
-    - name: Publish to UE
-      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry_to_ue.py"
-      settings:
-        Publish Template: shot_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera.py"
-      settings:
-        Publish Template: shot_alembic_cache
-    - name: Publish to UE
-      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera_to_ue.py"
       settings:
         Publish Template: shot_alembic_cache
     - name: Publish to Flow Production Tracking
@@ -266,26 +258,14 @@ settings.tk-multi-publish2.maya.shot_step:
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
       settings:
         Publish Template: shot_alembic_cache
-    # - name: Publish to UE
-    #   hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_to_ue.py"
-    #   settings:
-    #     Publish Template: shot_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx.py"
       settings:
         Publish Template: shot_fbx
-    # - name: Publish to UE
-    #   hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx_to_ue.py"
-    #   settings:
-    #     Publish Template: shot_fbx
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
       settings:
         Publish Template: shot_alembic_cache
-    # - name: Publish to UE
-    #   hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera_to_ue.py"
-    #   settings:
-    #     Publish Template: shot_alembic_cache
   post_phase: "{self}/post_phase.py:{config}/tk-maya/tk-multi-publish2/post_phase.py"
 
   help_url: *help_url

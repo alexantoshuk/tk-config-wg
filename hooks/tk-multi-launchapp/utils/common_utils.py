@@ -6,30 +6,11 @@ import subprocess
 import platform
 
 
-def ue_project_path(cur_projpath):
-    cur_projpath = cur_projpath.replace('\\', '/')
-    root, projname = os.path.split(cur_projpath)
-    ue_projpath = "{0}/ue/{1}".format(
-        os.path.dirname(root), projname)
-    return ue_projpath
-
-
 def remove_version_from_path(path):
     path = path.rsplit('.', 2)
     del path[-2]
     path = '.'.join(path)
     return path
-
-
-def ue_publish_path(ue_projpath, publish_path):
-    splitted_path = publish_path.rsplit('/')
-
-    ue_publish_folder = "/".join([ue_projpath] +
-                                 ['Content'] + splitted_path[-7:-3])
-    ue_cache_name = "_".join(splitted_path[-6:-3] + splitted_path[-1:])
-    ue_publish_path = "/".join((ue_publish_folder, ue_cache_name))
-
-    return remove_version_from_path(ue_publish_path)
 
 
 def perforce_username():

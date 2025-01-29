@@ -218,37 +218,39 @@ class MayaSessionCollector(HookBaseClass):
         :param parent_item: Parent Item instance
         """
         # * collect all checked objects in scene for publishing
-        for g in cmds.ls(type='transform'):
-            if not maya_utils.is_publish_camera(g):
-                continue
-
-            cam_path = maya_utils.search_camera(g)
-            if not cam_path:
-                continue
-
+        for data in maya_utils.collect_publish_cameras("publishABC"):
+            # ABC ######################################################
+            name = data['name']
             geo_item = parent_item.create_item(
-                "maya.session.camera", "Camera", g
+                "maya.session.camera", "Alembic Camera", name
             )
-            geo_item.properties["node"] = g
-            geo_item.properties["camera"] = cam_path
-
-            try:
-                geo_item.properties["preroll"] = cmds.getAttr(
-                    g + ".preroll")
-            except:
-                geo_item.properties["preroll"] = 0
-
-            try:
-                geo_item.properties["samples"] = cmds.getAttr(
-                    g + ".samples")
-            except:
-                geo_item.properties["samples"] = 1
+            geo_item.properties["name"] = name
+            geo_item.properties["camera"] = data['camera']
+            geo_item.properties["node"] = data['node']
+            geo_item.properties["preroll"] = data['preroll']
+            geo_item.properties["samples"] = data['samples']
 
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/camera.png"
-
             geo_item.set_icon_from_path(icon_path)
-            geo_item.name = "{0} ({1})".format(g, cam_path)
+            geo_item.name = name
+
+        for data in maya_utils.collect_publish_cameras("publishFBX"):
+            # FBX ######################################################
+            name = data['name']
+            geo_item = parent_item.create_item(
+                "maya.session.camera.fbx", "FBX Camera", name
+            )
+            geo_item.properties["name"] = name
+            geo_item.properties["camera"] = data['camera']
+            geo_item.properties["node"] = data['node']
+            geo_item.properties["preroll"] = data['preroll']
+            geo_item.properties["samples"] = data['samples']
+
+            # get the icon path to display for this item
+            icon_path = self._icons_dir() + "/camera.png"
+            geo_item.set_icon_from_path(icon_path)
+            geo_item.name = name
 
     def _collect_session_geometry(self, parent_item):
         """

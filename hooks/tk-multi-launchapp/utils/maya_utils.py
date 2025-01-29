@@ -6,6 +6,51 @@ import shutil
 import tempfile
 
 
+def collect_publish_cameras(toggle_attr="publishABC"):
+    items = []
+    for n in cmds.ls(type='transform'):
+        if not is_publish_camera(n):
+            continue
+
+        cam_path = search_camera(n)
+        if not cam_path:
+            continue
+
+        try:
+            enable = cmds.getAttr(n + "." + toggle_attr)
+            if not enable:
+                continue
+        except:
+            continue
+
+        item = {}
+        preroll = 0
+        samples = 1
+
+        try:
+            preroll = max(preroll, cmds.getAttr(
+                n + ".preroll"))
+        except:
+            pass
+
+        item['preroll'] = preroll
+
+        try:
+            samples = max(samples, cmds.getAttr(
+                n + ".samples"))
+        except:
+            pass
+
+        item['samples'] = samples
+        item['node'] = n
+        item['camera'] = cam_path
+        item['name'] = f"{n} ({cam_path})"
+
+        items.append(item)
+
+    return items
+
+
 def collect_publish_items(toggle_attr="publishABC"):
     items = dict()
     for g in cmds.ls(type='transform'):
@@ -228,3 +273,49 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2):
             os.remove(tmp_filename)
         except:
             pass
+
+
+def fbx_camera_export(camera, filename, start=1, end=1, preroll=0, samples=2):
+    # sys.stderr.write("{0} {1} {2} {3} {4} {5}".format(
+    #     camera, filename, start, end, preroll, samples))
+    camera = cmds.ls(camera, long=True)[0]
+    camera_name = camera.rsplit("|", 1)[-1]
+    camera_shape = cmds.listRelatives(camera, shapes=True, f=True)[0]
+
+    # create temp fetch camera
+    # try:
+    #     cmds.delete('__tmp__camera__group__')
+    # except:
+    #     pass
+    # tmp_group = cmds.group(em=True, name='__tmp__camera__group__')
+
+    fetched_cam = cmds.camera()[0]
+    # fetched_cam = cmds.parent(fetched_cam, tmp_group, relative=True)
+    fetched_cam = cmds.rename(fetched_cam, camera_name)
+    fetched_cam_shape = cmds.listRelatives(fetched_cam, shapes=True, f=True)[0]
+
+    decompose_matrix = cmds.createNode(
+        'decomposeMatrix', n='__tmp__decomposeMatrix')
+
+    try:
+        cmds.connectAttr(
+            camera + '.worldMatrix[0]', decompose_matrix + '.inputMatrix')
+        cmds.connectAttr(
+            decompose_matrix + '.outputTranslate', fetched_cam + '.translate')
+        cmds.connectAttr(
+            decompose_matrix + '.outputRotate', fetched_cam + '.rotate')
+        cmds.connectAttr(
+            decompose_matrix + '.outputScale', fetched_cam + '.scale')
+
+        for name in ('.cameraAperture', '.fStop', '.focalLength', '.focusDistance', '.shutterAngle', '.lensSqueezeRatio', '.nearClipPlane', '.farClipPlane'):
+            cmds.connectAttr(camera_shape + name, fetched_cam_shape + name)
+
+        # prepare to alembic export
+        is_animated = end > start
+
+        fbx_export(fetched_cam, filename, start,
+                   end, preroll, samples)
+    finally:
+        cmds.delete(decompose_matrix)
+        cmds.delete(fetched_cam)
+        # cmds.delete(tmp_group)

@@ -5,16 +5,16 @@
 ################################################################################
 
 includes:
-- ../frameworks.yml
-- ../../app_locations.yml
-- ../tk-unreal-location.yml
-- ./tk-multi-loader2.yml
-- ./tk-multi-publish2.yml
-- ../../settings/tk-multi-screeningroom.yml
-- ./tk-multi-shotgunpanel.yml
+  - ../frameworks.yml
+  - ../../app_locations.yml
+  - ../tk-unreal-location.yml
+  - ./tk-multi-loader2.yml
+  - ./tk-multi-publish2.yml
+  - ./tk-multi-breakdown.yml
+  - ../../settings/tk-multi-screeningroom.yml
+  - ./tk-multi-shotgunpanel.yml
 
 ################################################################################
-
 
 # project
 settings.tk-unreal.project:
@@ -23,12 +23,13 @@ settings.tk-unreal.project:
       location: "@apps.tk-multi-about.location"
     tk-multi-loader2: "@settings.tk-multi-loader2.unreal"
     tk-multi-publish2: "@settings.tk-multi-publish2.unreal.project"
+    tk-multi-breakdown: "@settings.tk-multi-breakdown.unreal"
     tk-multi-pythonconsole:
       location: "@apps.tk-multi-pythonconsole.location"
     tk-multi-shotgunpanel: "@settings.tk-multi-shotgunpanel.unreal"
   location: "@tk-unreal.location"
   menu_favourites: []
   run_at_startup:
-  - {app_instance: tk-multi-shotgunpanel, name: ''}
+    - { app_instance: tk-multi-shotgunpanel, name: "" }
   launch_builtin_plugins: [basic]
   automatic_context_switch: false

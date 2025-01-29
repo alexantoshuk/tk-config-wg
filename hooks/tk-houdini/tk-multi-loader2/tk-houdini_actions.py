@@ -209,25 +209,25 @@ class HoudiniActions(HookBaseClass):
         if name == "merge":
             self._merge(path, sg_publish_data)
 
-        if name == "import":
+        elif name == "import":
             self._import(path, sg_publish_data)
 
-        if name == "import_alembic_camera":
+        elif name == "import_alembic_camera":
             self._import_alembic_camera(path, sg_publish_data)
 
-        if name == "import_fbx_character":
+        elif name == "import_fbx_character":
             self._import_fbx_character(path, sg_publish_data)
 
-        if name == "custom_import_fbx_character":
+        elif name == "custom_import_fbx_character":
             self._import_fbx_character(path, sg_publish_data, custom=True)
 
-        if name == "import_matnet":
+        elif name == "import_matnet":
             self._import_matnet(path, sg_publish_data)
 
-        if name == "import_objnet":
+        elif name == "import_objnet":
             self._import_objnet(path, sg_publish_data)
 
-        if name == "file_cop":
+        elif name == "file_cop":
             self._file_cop(path, sg_publish_data)
 
     ##############################################################################################################

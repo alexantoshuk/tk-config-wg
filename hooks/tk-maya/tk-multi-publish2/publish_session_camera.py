@@ -212,7 +212,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
             self.logger.error(error_msg)
             raise Exception(error_msg)
 
-        if not maya_node_without_namespace.startswith('camera'):
+        if 'camera' not in maya_node_without_namespace.lower():
             error_msg = "The name of the camera group '%s' must be started with 'camera' word." % maya_node
             self.logger.error(error_msg)
             raise Exception(error_msg)
@@ -227,15 +227,6 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
 
         # * append node from collected camera and replace ':' to '__' in node name to work for windows
         work_fields["node"] = maya_node.rsplit('|', 1)[-1].replace(':', '__')
-
-        if "preroll" not in item.properties:
-            self.logger.warning(
-                "'preroll' attribute is not founded. Use 0 by default.")
-            item.properties["preroll"] = 0
-        if "samples" not in item.properties:
-            self.logger.warning(
-                "'samples' attribute is not founded. Use 8 by default.")
-            item.properties["samples"] = 8
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)

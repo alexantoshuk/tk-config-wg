@@ -103,6 +103,16 @@ class HoudiniActions(HookBaseClass):
                 }
             )
 
+        if "import_fbx_camera" in actions:
+            action_instances.append(
+                {
+                    "name": "import_fbx_camera",
+                    "params": None,
+                    "caption": "Import",
+                    "description": "Import the FBX Camera file.",
+                }
+            )
+
         if "import_fbx_character" in actions:
             action_instances.append(
                 {
@@ -214,6 +224,9 @@ class HoudiniActions(HookBaseClass):
 
         elif name == "import_alembic_camera":
             self._import_alembic_camera(path, sg_publish_data)
+
+        elif name == "import_fbx_camera":
+            self._import_fbx_camera(path, sg_publish_data)
 
         elif name == "import_fbx_character":
             self._import_fbx_character(path, sg_publish_data)
@@ -401,6 +414,34 @@ class HoudiniActions(HookBaseClass):
         set_comment(alembic_camera_node, datetime_str())
 
         _show_node(alembic_camera_node)
+
+    ##############################################################################################################
+
+    def _import_fbx_camera(self, path, sg_publish_data):
+        """Import the supplied path as a fbx camera
+
+        :param str path: The path to the file to import.
+        :param dict sg_publish_data: The publish data for the supplied path.
+
+        """
+
+        app = self.parent
+
+        name = sg_publish_data.get("name")
+        name, _ = os.path.splitext(name)
+        path = self.get_publish_path(sg_publish_data)
+
+        # houdini doesn't like UNC paths.
+        path = path.replace("\\", "/")
+
+        obj_context = _get_current_context("/obj")
+
+        camera_subnet_node = houdini_utils.fbx_camera_import(path, name)
+
+        app.log_debug("Created fbx_camera: %s  path: '%s' " %
+                      (camera_subnet_node.path(), path))
+
+        _show_node(camera_subnet_node)
 
     ##############################################################################################################
 

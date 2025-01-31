@@ -207,19 +207,6 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         # template:
         work_fields = work_template.get_fields(path)
 
-        if "abc_preroll" not in item.properties:
-            self.logger.warning(
-                "'abc_preroll' parameter is not founded. Use 0 by default.")
-            item.properties["abc_preroll"] = 0
-        if "abc_samples" not in item.properties:
-            self.logger.warning(
-                "'abc_samples' parameter is not founded. Use 8 by default.")
-            item.properties["abc_samples"] = 8
-        if "abc_units" not in item.properties:
-            self.logger.warning(
-                "'abc_units' parameter is not founded. Use 'centimeters' by default.")
-            item.properties["abc_units"] = 'centimeters'
-
         work_fields['node'] = node_name
 
         # ensure the fields work for the publish template
@@ -260,12 +247,12 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         publisher = self.parent
 
         cam_path = item.properties["camera"]
-        abc_preroll = item.properties["abc_preroll"]
-        abc_samples = item.properties["abc_samples"]
-        abc_units = item.properties["abc_units"]
-        abc_scale = 1
-        if abc_units == 'centimeters':
-            abc_scale = 100
+        preroll = item.properties["preroll"]
+        samples = item.properties["samples"]
+        units = item.properties["units"]
+        scale = 1
+        if units == 'centimeters':
+            scale = 100
         # get the path to create and publish
         publish_path = item.properties["path"]
 
@@ -287,7 +274,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
                 "Export camera alembic file: %s" % publish_path)
 
             houdini_utils.alembic_camera_export(cam_path, publish_path, start=start_frame,
-                                                end=end_frame, preroll=abc_preroll, samples=abc_samples, scale=abc_scale)
+                                                end=end_frame, preroll=preroll, samples=samples, scale=scale)
 
         except Exception as e:
             error_msg = "Failed to export Camera: %s" % e

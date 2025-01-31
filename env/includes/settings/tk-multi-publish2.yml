@@ -162,6 +162,10 @@ settings.tk-multi-publish2.houdini.shot_step:
       settings:
         Publish Template: shot_alembic_cache
     - name: Publish to Flow Production Tracking
+      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera_fbx.py"
+      settings:
+        Publish Template: shot_fbx
+    - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_objnet.py"
       settings:
         Publish Template: houdini_shot_objnet_publish

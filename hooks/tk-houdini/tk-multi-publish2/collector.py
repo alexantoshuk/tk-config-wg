@@ -108,6 +108,7 @@ class HoudiniSessionCollector(HookBaseClass):
         self._collect_matnet(item)
         self._collect_objnet(item)
         self._collect_session_camera(item)
+        self._collect_session_camera_fbx(item)
         self._collect_session_geometry(item)
 
     def collect_current_houdini_session(self, settings, parent_item):
@@ -401,7 +402,7 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # * collect all checked objects in scene for publishing
         for node in hou.node("/obj").children():
-            if not houdini_utils.is_publish_camera(node):
+            if not houdini_utils.is_publish_alembic_camera(node):
                 continue
 
             node_path = node.path()
@@ -412,31 +413,77 @@ class HoudiniSessionCollector(HookBaseClass):
             cam_path = cam_node.path()
 
             geo_item = parent_item.create_item(
-                "houdini.session.camera", "Camera", node_path
+                "houdini.session.camera", "Alembic Camera", node_path
             )
             geo_item.properties["camera"] = cam_path
             geo_item.properties["node"] = node.path()
 
             try:
-                geo_item.properties["abc_preroll"] = node.evalParm(
-                    "abc_preroll")
+                geo_item.properties["preroll"] = node.evalParm(
+                    "preroll")
             except:
-                pass
+                geo_item.properties["preroll"] = 0
             try:
-                geo_item.properties["abc_samples"] = node.evalParm(
-                    "abc_samples")
+                geo_item.properties["samples"] = node.evalParm(
+                    "samples")
             except:
-                pass
+                geo_item.properties["samples"] = 1
             try:
-                geo_item.properties["abc_units"] = node.evalParm(
-                    "abc_units")
+                geo_item.properties["units"] = node.evalParm(
+                    "units")
             except:
-                pass
+                geo_item.properties["units"] = 'centimeters'
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/camera.png"
 
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0}.abc ({1})".format(node.name(), cam_path)
+
+    def _collect_session_camera_fbx(self, parent_item):
+        """
+        Creates items for session camera to be exported.
+
+        :param parent_item: Parent Item instance
+        """
+
+        # * collect all checked objects in scene for publishing
+        for node in hou.node("/obj").children():
+            if not houdini_utils.is_publish_fbx_camera(node):
+                continue
+
+            node_path = node.path()
+            cam_path = node_path
+            cam_node = houdini_utils.search_camera(node)
+            if not cam_node:
+                continue
+            cam_path = cam_node.path()
+
+            geo_item = parent_item.create_item(
+                "houdini.session.camera.fbx", "FBX Camera", node_path
+            )
+            geo_item.properties["camera"] = cam_path
+            geo_item.properties["node"] = node.path()
+
+            try:
+                geo_item.properties["preroll"] = node.evalParm(
+                    "preroll")
+            except:
+                geo_item.properties["preroll"] = 0
+            try:
+                geo_item.properties["samples"] = node.evalParm(
+                    "samples")
+            except:
+                geo_item.properties["samples"] = 1
+            try:
+                geo_item.properties["units"] = node.evalParm(
+                    "units")
+            except:
+                geo_item.properties["units"] = 'centimeters'
+            # get the icon path to display for this item
+            icon_path = self._icons_dir() + "/camera.png"
+
+            geo_item.set_icon_from_path(icon_path)
+            geo_item.name = "{0}.fbx ({1})".format(node.name(), cam_path)
 
     def _collect_session_geometry(self, parent_item):
         """
@@ -447,7 +494,7 @@ class HoudiniSessionCollector(HookBaseClass):
 
         # * collect all checked objects in scene for publishing
         for node in hou.node("/obj").children():
-            if not houdini_utils.is_publish_geometry(node):
+            if not houdini_utils.is_publish_alembic(node):
                 continue
             # sys.stderr.write("{0}\n".format(node.path()))
             geo_item = parent_item.create_item(
@@ -456,20 +503,20 @@ class HoudiniSessionCollector(HookBaseClass):
             geo_item.properties["node"] = node.path()
 
             try:
-                geo_item.properties["abc_preroll"] = node.evalParm(
-                    "abc_preroll")
+                geo_item.properties["preroll"] = node.evalParm(
+                    "preroll")
             except:
-                pass
+                geo_item.properties["preroll"] = 0
             try:
-                geo_item.properties["abc_samples"] = node.evalParm(
-                    "abc_samples")
+                geo_item.properties["samples"] = node.evalParm(
+                    "samples")
             except:
-                pass
+                geo_item.properties["samples"] = 1
             try:
-                geo_item.properties["abc_units"] = node.evalParm(
-                    "abc_units")
+                geo_item.properties["units"] = node.evalParm(
+                    "units")
             except:
-                pass
+                geo_item.properties["units"] = 'centimeters'
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/geometry.png"
 

@@ -200,20 +200,6 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         # template:
         work_fields = work_template.get_fields(path)
 
-        if "abc_preroll" not in item.properties:
-            self.logger.warning(
-                "'abc_preroll' parameter is not founded. Use 0 by default.")
-            item.properties["abc_preroll"] = 0
-        if "abc_samples" not in item.properties:
-            self.logger.warning(
-                "'abc_samples' parameter is not founded. Use 2 by default.")
-            item.properties["abc_samples"] = 2
-
-        if "abc_units" not in item.properties:
-            self.logger.warning(
-                "'abc_units' parameter is not founded. Use 'centimeters' by default.")
-            item.properties["abc_units"] = 'centimeters'
-
         work_fields['node'] = node_name
 
         # ensure the fields work for the publish template
@@ -257,11 +243,11 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         node_path = item.properties["node"]
         node_name = node_path.rsplit("/", 1)[-1]
 
-        abc_preroll = item.properties["abc_preroll"]
-        abc_samples = item.properties["abc_samples"]
-        abc_units = item.properties["abc_units"]
+        preroll = item.properties["preroll"]
+        samples = item.properties["samples"]
+        units = item.properties["units"]
         abc_scale = 1
-        if abc_units == 'centimeters':
+        if units == 'centimeters':
             abc_scale = 100
         # get the path to create and publish
         publish_path = item.properties["path"]
@@ -283,7 +269,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         try:
             self.parent.log_debug("Export alembic file: %s" % publish_path)
             houdini_utils.alembic_subnet_export(node_path, publish_path, start=start_frame,
-                                                end=end_frame, preroll=abc_preroll, samples=abc_samples, scale=abc_scale)
+                                                end=end_frame, preroll=preroll, samples=samples, scale=abc_scale)
         except Exception as e:
             error_msg = "Failed to export Geometry: %s" % e
             self.logger.error(error_msg)

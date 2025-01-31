@@ -9,7 +9,7 @@ import tempfile
 def collect_publish_cameras(toggle_attr="publishABC"):
     items = []
     for n in cmds.ls(type='transform'):
-        if not is_publish_camera(n):
+        if not is_publish_alembic_camera(n):
             continue
 
         cam_path = search_camera(n)
@@ -54,7 +54,7 @@ def collect_publish_cameras(toggle_attr="publishABC"):
 def collect_publish_items(toggle_attr="publishABC"):
     items = dict()
     for g in cmds.ls(type='transform'):
-        if not is_publish_geometry(g):
+        if not is_publish_alembic(g):
             continue
 
         try:
@@ -111,7 +111,7 @@ def get_tempfile_name():
     return os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names())).replace("\\", "/")
 
 
-def is_publish_geometry(node):
+def is_publish_alembic(node):
     if not cmds.getAttr(node + ".useOutlinerColor"):
         return False
     color = cmds.getAttr(node + ".outlinerColor")[0]
@@ -119,7 +119,7 @@ def is_publish_geometry(node):
     return (round(r, 1), round(g, 1), round(b, 1)) == (0.1, 0.7, 0.1)
 
 
-def is_publish_camera(node):
+def is_publish_alembic_camera(node):
     if not cmds.getAttr(node + ".useOutlinerColor"):
         return False
     color = cmds.getAttr(node + ".outlinerColor")[0]

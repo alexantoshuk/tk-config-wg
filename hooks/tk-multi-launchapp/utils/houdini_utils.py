@@ -4,7 +4,7 @@ import sys
 import os
 import shutil
 import tempfile
-from common_utils import project_field_value, entity_field_value
+from common_utils import project_field_value, entity_field_value, datetime_str
 
 
 def injectJOB(path):
@@ -772,7 +772,75 @@ def create_fetch_camera(parent, name, fetchcam_path):
     return fetch_camera_node
 
 
-def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=8, scale=1.0):
+def fbx_camera_import(file_name, node_name=None):
+    node, _ = hou.hipFile.importFBX(
+        file_name,
+        suppress_save_prompt=False,
+        merge_into_scene=True,
+        import_cameras=True,
+        import_joints_and_skin=False,
+        import_geometry=False,
+        import_lights=False,
+        import_animation=True,
+        import_materials=False,
+        resample_animation=False,
+        resample_interval=1.0,
+        override_framerate=False,
+        framerate=-1,
+        compatibility_mode=hou.fbxCompatibilityMode.Maya,
+        segment_scale_already_baked_in=True,
+        convert_file_paths_to_relative=True,
+        import_nulls_as_subnets=False,
+        import_into_object_subnet=True,
+        convert_into_y_up_coordinate_system=True,
+        override_scene_frame_range=False,
+        convert_units=True
+    )
+    if node_name:
+        node.setName(node_name)
+
+    node.moveToGoodPosition()
+    path_parm = node.addSpareParmTuple(
+        hou.StringParmTemplate("fbx_camera_path", "fbx_camera_path", 1))
+    job_path = injectJOB(file_name)
+    path_parm.set([job_path])
+    path_parm.lock([True])
+    node.setUserData("nodeshape", "camera")
+    basename = os.path.basename(file_name)
+    set_comment(node, f"{basename}\n{datetime_str()}")
+
+    return node
+
+
+def fbx_camera_export(campath, filename, start=1, end=1, preroll=0, samples=1, scale=1.0):
+    tmp_obj_subnet = hou.node("/out").createNode('objnet')
+
+    node = hou.node(campath)
+    campath = node.path()
+    name = campath.split('/', 3)[2]
+
+    fetch_camera_node = create_fetch_camera(
+        tmp_obj_subnet, name, campath)
+    fetch_camera_node.parm('scale').set(scale)
+
+    tmp_rop = hou.node("/out").createNode('filmboxfbx')
+    tmp_rop.parm('trange').set(1)
+    f = tmp_rop.parmTuple('f')
+    f.deleteAllKeyframes()
+    f.set([start-preroll, end, 1])
+
+    tmp_rop.parm('startnode').set(fetch_camera_node.path())
+    tmp_rop.parm('sopoutput').set(filename)
+
+    try:
+        tmp_rop.render()
+
+    finally:
+        tmp_obj_subnet.destroy()
+        tmp_rop.destroy()
+
+
+def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=1, scale=1.0):
     tmp_subnet_name = '__tmp__'
     tmp_obj_subnet = None
 
@@ -803,7 +871,7 @@ def alembic_camera_export(campath, filename, start=1, end=1, preroll=0, samples=
         tmp_obj_subnet.destroy()
 
 
-def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, samples=2, scale=1.0):
+def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, samples=1, scale=1.0):
     node = hou.node(subnetpath)
 
     is_display = node.isDisplayFlagSet()
@@ -816,7 +884,7 @@ def alembic_subnet_export(subnetpath, filename, start=1, end=1, preroll=0, sampl
         node.setDisplayFlag(is_display)
 
 
-def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=2, build_from_path=False, scale=1.0):
+def alembic_export(root, objects, filename, start=1, end=1, preroll=0, samples=1, build_from_path=False, scale=1.0):
     is_animated = end > start
     if is_animated:
         is_animated = False
@@ -918,7 +986,8 @@ def inject_JOB_in_subnet(subnet):
 
 FLAG_COLOR = {
     '# Publish Alembic': hou.Color((0.04, 0.7, 0.04)),
-    '# Publish Camera': hou.Color((0.7, 0.2, 0.25)),
+    '# Publish Alembic Camera': hou.Color((0.7, 0.2, 0.25)),
+    '# Publish FBX Camera': hou.Color((0.7, 0.2, 0.25)),
     '# Publish Network': hou.Color((0.2, 0.4, 0.7)),
     '# Publish Material Network': hou.Color((0.2, 0.4, 0.7)),
 }
@@ -994,9 +1063,13 @@ def is_publish_objnet(node):
     return "# Publish Network" in get_flags(node)
 
 
-def is_publish_geometry(node):
+def is_publish_alembic(node):
     return "# Publish Alembic" in get_flags(node)
 
 
-def is_publish_camera(node):
-    return "# Publish Camera" in get_flags(node)
+def is_publish_alembic_camera(node):
+    return "# Publish Alembic Camera" in get_flags(node)
+
+
+def is_publish_fbx_camera(node):
+    return "# Publish FBX Camera" in get_flags(node)

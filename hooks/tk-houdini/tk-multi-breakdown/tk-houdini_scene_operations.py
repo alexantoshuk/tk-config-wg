@@ -131,16 +131,28 @@ class BreakdownSceneOperations(Hook):
                 continue
             if objnet_node.comment().strip().startswith('#'):
                 continue
+
             try:
                 file_parm = objnet_node.parm("network_filename")
                 file_path = os.path.normpath(file_parm.eval())
-            except:
-                continue
 
-            items.append(
-                {"node": objnet_node.path(), "type": "objnet",
-                 "path": file_path}
-            )
+                items.append(
+                    {"node": objnet_node.path(), "type": "objnet",
+                     "path": file_path}
+                )
+            except:
+                pass
+
+            try:
+                file_parm = objnet_node.parm("fbx_camera_path")
+                file_path = os.path.normpath(file_parm.eval())
+
+                items.append(
+                    {"node": objnet_node.path(), "type": "fbx_camera",
+                     "path": file_path}
+                )
+            except:
+                pass
 
         return items
 
@@ -189,6 +201,16 @@ class BreakdownSceneOperations(Hook):
                 )
                 node.parm("fileName").set(houdini_utils.injectJOB(file_path))
                 set_comment(node, datetime_str())
+
+            elif node_type == "fbx_camera":
+                node = hou.node(node_path)
+                name = node.name()
+                engine.log_debug(
+                    "Updating fbx_camera node '%s' to: %s" % (
+                        node_path, file_path)
+                )
+                node.destroy()
+                houdini_utils.fbx_camera_import(file_path, name)
 
             elif node_type == "fbx_character":
 

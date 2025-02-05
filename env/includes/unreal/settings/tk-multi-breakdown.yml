@@ -17,5 +17,12 @@ includes:
 
 # Unreal
 settings.tk-multi-breakdown.unreal:
+  display_name: "Breakdown"
   hook_scene_operations: "{engine}/tk-multi-breakdown/scene_operations.py"
   location: "@apps.tk-multi-breakdown.location"
+
+# Unreal
+settings.tk-multi-breakdown2.unreal:
+  display_name: "Scene Breakdown"
+  hook_scene_operations: "{engine}/tk-multi-breakdown/scene_operations.py"
+  location: "@apps.tk-multi-breakdown2.location"

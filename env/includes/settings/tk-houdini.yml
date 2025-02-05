@@ -112,7 +112,10 @@ settings.tk-houdini.shot_step:
       display_name: "Legacy Breakdown"
       location: "@apps.tk-multi-breakdown.location"
       hook_scene_operations: "{config}/tk-houdini/tk-multi-breakdown/tk-houdini_scene_operations.py"
-    tk-multi-breakdown2: "@settings.tk-multi-breakdown2.houdini"
+    tk-multi-breakdown2:
+      display_name: "Scene Breakdown"
+      location: "@apps.tk-multi-breakdown2.location"
+      hook_scene_operations: "{config}/tk-houdini/tk-multi-breakdown/tk-houdini_scene_operations.py"
     tk-multi-loader2: "@settings.tk-multi-loader2.houdini"
     tk-multi-publish2: "@settings.tk-multi-publish2.houdini.shot_step"
     tk-multi-screeningroom: "@settings.tk-multi-screeningroom.rv"

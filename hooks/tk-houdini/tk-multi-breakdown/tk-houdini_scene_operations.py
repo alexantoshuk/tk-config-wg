@@ -61,7 +61,8 @@ class BreakdownSceneOperations(Hook):
             file_path = os.path.normpath(file_parm.eval())
 
             items.append(
-                {"node": alembic_node.path(), "type": "alembic", "path": file_path}
+                {"node": alembic_node.path(), "node_name": alembic_node.path(
+                ), "type": "alembic",  "node_type": "alembic", "path": file_path}
             )
 
         # Alembic Camera
@@ -74,7 +75,7 @@ class BreakdownSceneOperations(Hook):
             file_path = os.path.normpath(file_parm.eval())
 
             items.append(
-                {"node": alembic_camera_node.path(), "type": "alembic_camera",
+                {"node": alembic_camera_node.path(), "node_name": alembic_camera_node.path(), "type": "alembic_camera", "node_type": "alembic_camera",
                  "path": file_path}
             )
 
@@ -104,7 +105,7 @@ class BreakdownSceneOperations(Hook):
             file_path = os.path.normpath(file_parm.eval())
 
             items.append(
-                {"node": fbxcharacterimport_node.path(), "type": "fbx_character",
+                {"node": fbxcharacterimport_node.path(), "node_name": fbxcharacterimport_node.path(), "type": "fbx_character", "node_type": "fbx_character",
                  "path": file_path}
             )
 
@@ -121,7 +122,7 @@ class BreakdownSceneOperations(Hook):
                 continue
 
             items.append(
-                {"node": matnet_node.path(), "type": "matnet",
+                {"node": matnet_node.path(),  "node_name": matnet_node.path(), "type": "matnet", "node_type": "matnet",
                  "path": file_path}
             )
 
@@ -137,7 +138,7 @@ class BreakdownSceneOperations(Hook):
                 file_path = os.path.normpath(file_parm.eval())
 
                 items.append(
-                    {"node": objnet_node.path(), "type": "objnet",
+                    {"node": objnet_node.path(), "node_name": objnet_node.path(), "type": "objnet",  "node_type": "objnet",
                      "path": file_path}
                 )
             except:
@@ -148,7 +149,7 @@ class BreakdownSceneOperations(Hook):
                 file_path = os.path.normpath(file_parm.eval())
 
                 items.append(
-                    {"node": objnet_node.path(), "type": "fbx_camera",
+                    {"node": objnet_node.path(), "node_name": objnet_node.path(), "type": "fbx_camera",  "node_type": "fbx_camera",
                      "path": file_path}
                 )
             except:
@@ -156,7 +157,7 @@ class BreakdownSceneOperations(Hook):
 
         return items
 
-    def update(self, items):
+    def update(self, item=None, items=None):
         """
         Perform replacements given a number of scene items passed from the app.
 
@@ -173,10 +174,9 @@ class BreakdownSceneOperations(Hook):
         # these items are to be updated. swap out the fileName parm value with the
         # new path as supplied by the breakdown app.
 
-        for item in items:
-
-            node_path = item["node"]
-            node_type = item["type"]
+        def item_update(item):
+            node_path = item.get("node", item["node_name"])
+            node_type = item.get("type", item["node_type"])
             file_path = item["path"]
 
             file_path = file_path.replace("\\", "/")
@@ -242,5 +242,9 @@ class BreakdownSceneOperations(Hook):
                 node.parm("network_filename").set(
                     houdini_utils.injectJOB(file_path))
                 node.parm("network_reload").pressButton()
-            else:
-                continue
+
+        if items:
+            for item in items:
+                item_update(item)
+        else:
+            item_update(item)

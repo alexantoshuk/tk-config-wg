@@ -342,6 +342,12 @@ paths:
   # The location of published maya files
   maya_shot_publish:
     definition: "@shot_root/publish/maya/{task_name}[_{name}].v{version}.{maya_extension}"
+  # Alembic caches
+  maya_shot_alembic_cache:
+    definition: "@shot_root/publish/maya/{node}.v{version}.abc"
+  # FBX
+  maya_shot_fbx:
+    definition: "@shot_root/publish/maya/{node}.v{version}.fbx"
 
   #
   # Houdini
@@ -385,6 +391,12 @@ paths:
 
   houdini_shot_matnet_publish:
     definition: "@shot_root/publish/houdini/{node}.v{version}.matnet"
+  # Alembic caches
+  houdini_shot_alembic_cache:
+    definition: "@shot_root/publish/houdini/{node}.v{version}.abc"
+  # FBX
+  houdini_shot_fbx:
+    definition: "@shot_root/publish/houdini/{node}.v{version}.fbx"
 
   #
   # 3dsmax
@@ -564,6 +576,12 @@ paths:
   # The location of published maya files
   maya_asset_publish:
     definition: "@asset_root/publish/maya/{task_name}[_{name}].v{version}.{maya_extension}"
+  # Alembic caches
+  maya_asset_alembic_cache:
+    definition: "@asset_root/publish/maya/{node}.v{version}.abc"
+  # FBX
+  maya_asset_fbx:
+    definition: "@asset_root/publish/maya/{node}.v{version}.fbx"
 
   #
   # Houdini
@@ -607,6 +625,12 @@ paths:
 
   houdini_asset_matnet_publish:
     definition: "@asset_root/publish/houdini/{node}.v{version}.matnet"
+  # Alembic caches
+  houdini_asset_alembic_cache:
+    definition: "@asset_root/publish/houdini/{node}.v{version}.abc"
+  # FBX
+  houdini_asset_fbx:
+    definition: "@asset_root/publish/houdini/{node}.v{version}.fbx"
 
   #
   # 3dsmax

@@ -57,7 +57,7 @@ settings.tk-multi-publish2.maya.asset_step.unreal:
     - name: Publish to ShotGrid
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session_geometry.py"
       settings:
-        Publish Template: asset_alembic_cache
+        Publish Template: maya_asset_alembic_cache
     - name: Publish FBX to ShotGrid
       hook: "{self}/publish_file.py:{tk-framework-unrealqt_v1.x.x}/tk-multi-publish2/tk-maya/basic/publish_fbx.py"
       settings:

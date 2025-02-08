@@ -112,11 +112,11 @@ settings.tk-multi-publish2.houdini.asset_step:
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry.py"
       settings:
-        Publish Template: asset_alembic_cache
+        Publish Template: houdini_asset_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera.py"
       settings:
-        Publish Template: asset_alembic_cache
+        Publish Template: houdini_asset_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_objnet.py"
       settings:
@@ -156,15 +156,15 @@ settings.tk-multi-publish2.houdini.shot_step:
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry.py"
       settings:
-        Publish Template: shot_alembic_cache
+        Publish Template: houdini_shot_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera.py"
       settings:
-        Publish Template: shot_alembic_cache
+        Publish Template: houdini_shot_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera_fbx.py"
       settings:
-        Publish Template: shot_fbx
+        Publish Template: houdini_shot_fbx
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_objnet.py"
       settings:
@@ -225,15 +225,15 @@ settings.tk-multi-publish2.maya.asset_step:
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
       settings:
-        Publish Template: asset_alembic_cache
+        Publish Template: maya_asset_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx.py"
       settings:
-        Publish Template: asset_fbx
+        Publish Template: maya_asset_fbx
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
       settings:
-        Publish Template: asset_alembic_cache
+        Publish Template: maya_asset_alembic_cache
   post_phase: "{self}/post_phase.py:{config}/tk-maya/tk-multi-publish2/post_phase.py"
 
   help_url: *help_url
@@ -261,7 +261,7 @@ settings.tk-multi-publish2.maya.shot_step:
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry.py"
       settings:
-        Publish Template: shot_alembic_cache
+        Publish Template: maya_shot_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx.py"
       settings:
@@ -269,7 +269,7 @@ settings.tk-multi-publish2.maya.shot_step:
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
       settings:
-        Publish Template: shot_alembic_cache
+        Publish Template: maya_shot_alembic_cache
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera_fbx.py"
       settings:

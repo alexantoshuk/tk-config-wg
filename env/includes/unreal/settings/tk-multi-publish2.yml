@@ -21,7 +21,7 @@ settings.tk-multi-publish2.unreal.project:
     - name: Publish to ShotGrid
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_session.py"
       settings: {}
-    - name: Export FBX and Publish to ShotGrid
+    - name: Export Asset to FBX and Publish to ShotGrid
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_asset.py"
       settings:
         Publish Template: unreal.asset_publish
@@ -29,6 +29,10 @@ settings.tk-multi-publish2.unreal.project:
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_actor.py"
       settings:
         Publish Template: unreal.actor_publish
+    - name: Publish Rendered Movie for Review
+      hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_rendered_movie.py"
+      settings:
+        Publish Template: unreal.rendered_movie_publish
     - name: Render Movie and Submit for Review
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_movie.py"
       settings:

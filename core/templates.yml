@@ -28,8 +28,12 @@ include: ../env/includes/unreal/templates.yml
 keys:
   Sequence:
     type: str
+    shotgun_entity_type: Shot
+    shotgun_field_name: sg_sequence
   Shot:
     type: str
+    shotgun_entity_type: Shot
+    shotgun_field_name: code
   Step:
     type: str
   sg_asset_type:
@@ -230,6 +234,7 @@ paths:
   shot_root: scenes/{Sequence}/{Shot}/{Step}
   asset_root: assets/{sg_asset_type}/{Asset}/{Step}
   sequence_root: scenes/{Sequence}
+  shot_render_root: render/{Sequence}/{Shot}
 
   ##########################################################################################
   # Project level paths

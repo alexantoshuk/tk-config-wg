@@ -29,6 +29,10 @@ settings.tk-multi-publish2.unreal.project:
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_actor.py"
       settings:
         Publish Template: unreal.actor_publish
+    - name: Export Actors in SceneMovieFolder to FBX and Publish to ShotGrid
+      hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_movie_scene_folder.py"
+      settings:
+        Publish Template: unreal.actor_publish
     - name: Publish Rendered Movie for Review
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_rendered_movie.py"
       settings:

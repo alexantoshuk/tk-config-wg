@@ -3,10 +3,10 @@
 # file included in this repository.
 
 tk-unreal.location:
-    version: v1.3.1-7
-    type: github_release
-    # type: path
-    organization: alexantoshuk
-    # organization: ue4plugins
-    repository: tk-unreal
-    # path: c:/Users/alexa/projects/tk-unreal
+  version: v1.3.1-8
+  type: github_release
+  # type: path
+  organization: alexantoshuk
+  # organization: ue4plugins
+  repository: tk-unreal
+  # path: c:/Users/alexa/projects/tk-unreal

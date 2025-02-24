@@ -139,15 +139,15 @@ settings.tk-multi-loader2.mari:
 settings.tk-multi-loader2.maya:
   actions_hook: "{self}/{engine_name}_actions.py:{config}/tk-maya/tk-multi-loader2/tk-maya_actions.py"
   action_mappings:
-    Alembic Cache: [reference, import]
-    Alembic Camera: [reference_alembic_camera, import_alembic_camera]
+    Alembic Cache: [reference, import, import_with_namespace]
+    Alembic Camera: [reference, import, import_with_namespace]
     Image: [texture_node, image_plane]
     Maya Scene: [reference, import]
     Photoshop Image: [texture_node, image_plane]
     Rendered Image: [texture_node, image_plane]
     Texture: [texture_node, image_plane]
-    FBX: [reference, import]
-    FBX Camera: [reference, import]
+    FBX: [reference, import, import_with_namespace]
+    FBX Camera: [reference, import, import_with_namespace]
   entities:
     - caption: Assets
       entity_type: Asset

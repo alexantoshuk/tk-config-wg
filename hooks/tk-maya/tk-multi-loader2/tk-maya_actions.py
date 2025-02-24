@@ -94,26 +94,16 @@ class MayaActions(HookBaseClass):
                     "description": "This will import the item into the current scene.",
                 }
             )
-        if "reference_alembic_camera" in actions:
-            action_instances.append(
-                {
-                    "name": "reference",
-                    "params": None,
-                    "caption": "Create Reference",
-                    "description": "This will add the item to the scene as a standard reference.",
-                }
-            )
 
-        if "import_alembic_camera" in actions:
+        if "import_with_namespace" in actions:
             action_instances.append(
                 {
-                    "name": "import",
+                    "name": "import_with_namespace",
                     "params": None,
-                    "caption": "Import into Scene",
+                    "caption": "Import with Namespace",
                     "description": "This will import the item into the current scene.",
                 }
             )
-
         if "texture_node" in actions:
             action_instances.append(
                 {
@@ -205,16 +195,19 @@ class MayaActions(HookBaseClass):
         if name == "reference":
             self._create_reference(path, sg_publish_data)
 
-        if name == "import":
+        elif name == "import":
             self._do_import(path, sg_publish_data)
 
-        if name == "texture_node":
+        elif name == "import_with_namespace":
+            self._do_import(path, sg_publish_data, namespace=True)
+
+        elif name == "texture_node":
             self._create_texture_node(path, sg_publish_data)
 
-        if name == "udim_texture_node":
+        elif name == "udim_texture_node":
             self._create_udim_texture_node(path, sg_publish_data)
 
-        if name == "image_plane":
+        elif name == "image_plane":
             self._create_image_plane(path, sg_publish_data)
 
     ##############################################################################################################
@@ -238,9 +231,14 @@ class MayaActions(HookBaseClass):
         #     sg_publish_data.get("name"),
         # )
         # namespace = namespace.replace(" ", "_")
+        entity = sg_publish_data.get("entity")
+        namespace = entity.get("name")
 
-        namespace = sg_publish_data.get("entity").get("name")
-
+        if entity.get('type') == 'Shot':
+            basename = os.path.basename(path)
+            basename = basename.split('.')[0]
+            namespace = "_".join((namespace, basename))
+        namespace = namespace.replace(' ', '_')
         # Now create the reference object in Maya.
         cmds.file(
             path,
@@ -250,7 +248,7 @@ class MayaActions(HookBaseClass):
             namespace=namespace,
         )
 
-    def _do_import(self, path, sg_publish_data):
+    def _do_import(self, path, sg_publish_data, namespace=False):
         """
         Create a reference with the same settings Maya would use
         if you used the create settings dialog.
@@ -261,23 +259,33 @@ class MayaActions(HookBaseClass):
         if not os.path.exists(path):
             raise Exception("File not found on disk - '%s'" % path)
 
-        # make a name space out of entity name + publish name
-        # e.g. bunny_upperbody
-        namespace = "%s %s" % (
-            sg_publish_data.get("entity").get("name"),
-            sg_publish_data.get("name"),
-        )
-        namespace = namespace.replace(" ", "_")
+        if namespace:
+            entity = sg_publish_data.get("entity")
+            namespace = entity.get("name")
 
-        # perform a more or less standard maya import, putting all nodes brought in into a specific namespace
-        cmds.file(
-            path,
-            i=True,
-            renameAll=False,
-            # namespace=namespace,
-            loadReferenceDepth="all",
-            preserveReferences=True,
-        )
+            if entity.get('type') == 'Shot':
+                basename = os.path.basename(path)
+                basename = basename.split('.')[0]
+                namespace = "_".join((namespace, basename))
+            namespace = namespace.replace(' ', '_')
+
+            # perform a more or less standard maya import, putting all nodes brought in into a specific namespace
+            cmds.file(
+                path,
+                i=True,
+                renameAll=False,
+                namespace=namespace,
+                loadReferenceDepth="all",
+                preserveReferences=True,
+            )
+        else:
+            cmds.file(
+                path,
+                i=True,
+                renameAll=False,
+                loadReferenceDepth="all",
+                preserveReferences=True,
+            )
 
     def _create_texture_node(self, path, sg_publish_data):
         """

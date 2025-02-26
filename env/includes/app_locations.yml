@@ -12,7 +12,7 @@
 ################################################################################
 
 includes:
-- ./frameworks.yml
+  - ./frameworks.yml
 
 ################################################################################
 # location descriptors for apps used in this configuration
@@ -144,4 +144,4 @@ apps.tk-mari-projectmanager.location:
   name: tk-mari-projectmanager
   type: app_store
   version: v1.4.0
-frameworks: '@frameworks'
+frameworks: "@frameworks"

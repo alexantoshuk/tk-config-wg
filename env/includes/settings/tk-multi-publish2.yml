@@ -265,7 +265,7 @@ settings.tk-multi-publish2.maya.shot_step:
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_geometry_fbx.py"
       settings:
-        Publish Template: shot_fbx
+        Publish Template: maya_shot_fbx
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera.py"
       settings:
@@ -273,7 +273,7 @@ settings.tk-multi-publish2.maya.shot_step:
     - name: Publish to Flow Production Tracking
       hook: "{self}/publish_file.py:{config}/tk-maya/tk-multi-publish2/publish_session_camera_fbx.py"
       settings:
-        Publish Template: shot_fbx
+        Publish Template: maya_shot_fbx
   post_phase: "{self}/post_phase.py:{config}/tk-maya/tk-multi-publish2/post_phase.py"
 
   help_url: *help_url

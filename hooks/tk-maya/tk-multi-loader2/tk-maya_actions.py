@@ -263,10 +263,11 @@ class MayaActions(HookBaseClass):
             entity = sg_publish_data.get("entity")
             namespace = entity.get("name")
 
-            if entity.get('type') == 'Shot':
-                basename = os.path.basename(path)
-                basename = basename.split('.')[0]
-                namespace = "_".join((namespace, basename))
+            # if entity.get('type') == 'Shot':
+            basename = os.path.basename(path)
+            basename = basename.split('.')[0]
+            namespace = "_".join((namespace, basename))
+
             namespace = namespace.replace(' ', '_')
 
             # perform a more or less standard maya import, putting all nodes brought in into a specific namespace

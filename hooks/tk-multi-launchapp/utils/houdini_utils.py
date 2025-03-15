@@ -549,8 +549,10 @@ def update_rops(env, create_if_not_exists=False):
     mantra_rop_type = ROPTYPEMAP['mantra']
     redshift_rop_type = ROPTYPEMAP['redshift']
 
-    RENDERNAME = project_field_value('sg_render', 'mantra').lower()
-    ROPTYPE = ROPTYPEMAP[RENDERNAME]
+    RENDERNAME = project_field_value('sg_render', 'mantra')
+    if not RENDERNAME:
+        return
+    ROPTYPE = ROPTYPEMAP[RENDERNAME.lower()]
 
     def create_beauty_rop():
         outnet = hou.node("/out")

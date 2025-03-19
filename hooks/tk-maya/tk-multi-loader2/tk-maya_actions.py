@@ -104,6 +104,17 @@ class MayaActions(HookBaseClass):
                     "description": "This will import the item into the current scene.",
                 }
             )
+
+        if "import_into_selection" in actions:
+            action_instances.append(
+                {
+                    "name": "import_into_selection",
+                    "params": None,
+                    "caption": "Import into Selection",
+                    "description": "This will import the item into the current scene.",
+                }
+            )
+
         if "texture_node" in actions:
             action_instances.append(
                 {
@@ -201,6 +212,9 @@ class MayaActions(HookBaseClass):
         elif name == "import_with_namespace":
             self._do_import(path, sg_publish_data, namespace=True)
 
+        elif name == "import_into_selection":
+            self._do_import_into_selection(path, sg_publish_data)
+
         elif name == "texture_node":
             self._create_texture_node(path, sg_publish_data)
 
@@ -287,6 +301,25 @@ class MayaActions(HookBaseClass):
                 loadReferenceDepth="all",
                 preserveReferences=True,
             )
+
+    def _do_import_into_selection(self, path, sg_publish_data):
+        """
+        """
+        if not os.path.exists(path):
+            raise Exception("File not found on disk - '%s'" % path)
+
+        import playsense.animationTools as atools
+
+        entity = sg_publish_data.get("entity")
+        entity_name = entity.get("name")
+
+        animfile = os.path.basename(path)
+        animfile = animfile.split('.', 1)[0]
+
+        atools.fixRetargetReference(entity_name, animfile)
+        mel.eval('FBXImportMode -v exmerge;')
+        mel.eval('FBXImport -file "%s";' % path)
+        atools.bakeSetBake(layer='%s_corrections' % animfile)
 
     def _create_texture_node(self, path, sg_publish_data):
         """

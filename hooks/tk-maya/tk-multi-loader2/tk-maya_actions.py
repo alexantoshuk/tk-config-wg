@@ -106,6 +106,7 @@ class MayaActions(HookBaseClass):
             )
 
         if "import_into_selection" in actions:
+            # if cmds.ls(selection=True, type='dagNode'):
             action_instances.append(
                 {
                     "name": "import_into_selection",
@@ -318,7 +319,7 @@ class MayaActions(HookBaseClass):
 
         atools.fixRetargetReference(entity_name, animfile)
         mel.eval('FBXImportMode -v exmerge;')
-        mel.eval('FBXImport -file "%s";' % path)
+        mel.eval('FBXImport -file "%s";' % path.replace("\\", "/"))
         atools.bakeSetBake(layer='%s_corrections' % animfile)
 
     def _create_texture_node(self, path, sg_publish_data):

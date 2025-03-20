@@ -105,11 +105,11 @@ class MayaActions(HookBaseClass):
                 }
             )
 
-        if "import_into_selection" in actions:
+        if "bake_into_selection" in actions:
             # if cmds.ls(selection=True, type='dagNode'):
             action_instances.append(
                 {
-                    "name": "import_into_selection",
+                    "name": "bake_into_selection",
                     "params": None,
                     "caption": "Import into Selection",
                     "description": "This will import the item into the current scene.",
@@ -213,7 +213,7 @@ class MayaActions(HookBaseClass):
         elif name == "import_with_namespace":
             self._do_import(path, sg_publish_data, namespace=True)
 
-        elif name == "import_into_selection":
+        elif name == "bake_into_selection":
             self._do_import_into_selection(path, sg_publish_data)
 
         elif name == "texture_node":

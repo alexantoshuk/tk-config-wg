@@ -146,7 +146,7 @@ settings.tk-multi-loader2.maya:
     Photoshop Image: [texture_node, image_plane]
     Rendered Image: [texture_node, image_plane]
     Texture: [texture_node, image_plane]
-    FBX: [reference, import, import_with_namespace, import_into_selection]
+    FBX: [reference, import, import_with_namespace, bake_into_selection]
     FBX Camera: [reference, import, import_with_namespace]
   entities:
     - caption: Assets

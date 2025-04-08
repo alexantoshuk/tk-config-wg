@@ -155,6 +155,7 @@ class BreakdownSceneOperations(Hook):
             except:
                 pass
 
+        houdini_utils.sync_frame_range_and_fps()
         return items
 
     def update(self, item=None, items=None):

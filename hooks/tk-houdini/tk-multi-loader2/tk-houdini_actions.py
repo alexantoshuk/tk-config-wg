@@ -196,6 +196,8 @@ class HoudiniActions(HookBaseClass):
             params = single_action["params"]
             self.execute_action(name, params, sg_publish_data)
 
+        houdini_utils.sync_frame_range_and_fps()
+
     def execute_action(self, name, params, sg_publish_data):
         """
         Execute a given action. The data sent to this be method will

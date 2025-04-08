@@ -105,14 +105,14 @@ class MayaActions(HookBaseClass):
                 }
             )
 
-        if "bake_into_selection" in actions:
+        if "bake_to_selection" in actions:
             # if cmds.ls(selection=True, type='dagNode'):
             action_instances.append(
                 {
-                    "name": "bake_into_selection",
+                    "name": "bake_to_selection",
                     "params": None,
-                    "caption": "Import into Selection",
-                    "description": "This will import the item into the current scene.",
+                    "caption": "Bake to Selection",
+                    "description": "This bakes animation to selected 'retarget rig'. \nMust select the Retarget:CharName:Group of your destination rig before attempting this action.",
                 }
             )
 
@@ -213,8 +213,8 @@ class MayaActions(HookBaseClass):
         elif name == "import_with_namespace":
             self._do_import(path, sg_publish_data, namespace=True)
 
-        elif name == "bake_into_selection":
-            self._do_import_into_selection(path, sg_publish_data)
+        elif name == "bake_to_selection":
+            self._do_bake_to_selection(path, sg_publish_data)
 
         elif name == "texture_node":
             self._create_texture_node(path, sg_publish_data)
@@ -303,7 +303,7 @@ class MayaActions(HookBaseClass):
                 preserveReferences=True,
             )
 
-    def _do_import_into_selection(self, path, sg_publish_data):
+    def _do_bake_to_selection(self, path, sg_publish_data):
         """
         """
         if not os.path.exists(path):

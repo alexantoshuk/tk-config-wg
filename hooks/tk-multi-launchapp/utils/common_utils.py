@@ -89,10 +89,10 @@ def datetime_str():
     return now.strftime("%b-%d-%Y %H:%M:%S")
 
 
-def project_field_value(name, default=None):
+def project_field_value(name, default=None, context=None):
     import sgtk
     en = sgtk.platform.current_engine()
-    ctx = en.context
+    ctx = context if context else en.context
     sg = en.shotgun
 
     field_val = sg.find_one(
@@ -104,10 +104,10 @@ def project_field_value(name, default=None):
     return field_val
 
 
-def entity_field_value(name, default=None):
+def entity_field_value(name, default=None, context=None):
     import sgtk
     en = sgtk.platform.current_engine()
-    ctx = en.context
+    ctx = context if context else en.context
     sg = en.shotgun
 
     entity_type = ctx.entity['type']
@@ -122,10 +122,10 @@ def entity_field_value(name, default=None):
     return field_val
 
 
-def task_field_value(name, default=None):
+def task_field_value(name, default=None, context=None):
     import sgtk
     en = sgtk.platform.current_engine()
-    ctx = en.context
+    ctx = context if context else en.context
     sg = en.shotgun
 
     field_val = sg.find_one(

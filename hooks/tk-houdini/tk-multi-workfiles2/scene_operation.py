@@ -71,6 +71,7 @@ class SceneOperation(HookClass):
 
         if file_path:
             file_path = file_path.replace(os.path.sep, "/")
+        # print(f"{operation}; \n{file_path}; \n{context}; \n{parent_action}; \n{file_version}; \n{read_only}; \n{kwargs};\n")
 
         if operation == "current_path":
             return str(hou.hipFile.name())
@@ -92,5 +93,6 @@ class SceneOperation(HookClass):
 
         elif operation == "reset":
             hou.hipFile.clear()
-            houdini_utils.sync_fps()
+            houdini_utils.sync_frame_range_and_fps(
+                context=context, confirm=False)
             return True

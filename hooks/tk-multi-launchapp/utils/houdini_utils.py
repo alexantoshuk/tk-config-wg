@@ -109,17 +109,20 @@ def abstract_paths_from_template(self, template, fields):
     return list(abstract_paths)
 
 
-def sync_fps():
-    fps = int(project_field_value('sg_fps', 25))
+def sync_fps(context=None):
+    fps = int(project_field_value('sg_fps', 25, context=context))
     cur_fps = int(hou.fps())
     hou.setFps(fps)
 
 
-def sync_frame_range_and_fps():
-    fps = int(project_field_value('sg_fps', 25))
-    edit_handles = int(entity_field_value('sg_edit_handles', 0))
-    cut_in = int(entity_field_value('sg_cut_in', 1001)) - edit_handles
-    cut_out = int(entity_field_value('sg_cut_out', 1100)) + edit_handles
+def sync_frame_range_and_fps(context=None, confirm=True):
+    fps = int(project_field_value('sg_fps', 25, context=context))
+    edit_handles = int(entity_field_value(
+        'sg_edit_handles', 0, context=context))
+    cut_in = int(entity_field_value(
+        'sg_cut_in', 1001, context=context)) - edit_handles
+    cut_out = int(entity_field_value(
+        'sg_cut_out', 1100, context=context)) + edit_handles
 
     cur_fps = int(hou.fps())
     cur_cut_in, cur_cut_out = hou.playbar.frameRange()
@@ -136,8 +139,11 @@ def sync_frame_range_and_fps():
             "END_FRAME:  {0} -> {1}".format(int(cur_cut_out), cut_out))
 
     if out:
-        ok = not hou.ui.displayMessage('\n'.join(out), buttons=('Ok', 'Cancel'), title="Frame range and FPS change detected.",
-                                       help="Update with the latest frame ranges and FPS from Shotgrid?")
+        if confirm:
+            ok = not hou.ui.displayMessage('\n'.join(out), buttons=('Ok', 'Cancel'), title="Frame range and FPS change detected.",
+                                           help="Update with the latest frame ranges and FPS from Shotgrid?")
+        else:
+            ok = True
         if ok:
             hou.setFps(fps)
             hou.playbar.setFrameRange(cut_in, cut_out)

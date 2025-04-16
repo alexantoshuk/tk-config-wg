@@ -72,7 +72,7 @@ class MayaActions(HookBaseClass):
             "Actions: %s. Publish Data: %s" % (
                 ui_area, actions, sg_publish_data)
         )
-
+        print(f"PUBLISH_DATA!!!!!: {sg_publish_data}")
         action_instances = []
 
         if "reference" in actions:
@@ -199,19 +199,21 @@ class MayaActions(HookBaseClass):
                 name, params, sg_publish_data)
         )
 
+        file_type = sg_publish_data['published_file_type']['name']
+        group = file_type == 'FBX Group'
         # resolve path
         # toolkit uses utf-8 encoded strings internally and Maya API expects unicode
         # so convert the path to ensure filenames containing complex characters are supported
         path = six.ensure_str(self.get_publish_path(sg_publish_data))
 
         if name == "reference":
-            self._create_reference(path, sg_publish_data)
+            self._create_reference(path, sg_publish_data, group=group)
 
         elif name == "import":
-            self._do_import(path, sg_publish_data)
+            self._do_import(path, sg_publish_data, group=group)
 
         elif name == "import_with_namespace":
-            self._do_import(path, sg_publish_data, namespace=True)
+            self._do_import(path, sg_publish_data, namespace=True, group=group)
 
         elif name == "bake_to_selection":
             self._do_bake_to_selection(path, sg_publish_data)
@@ -228,7 +230,7 @@ class MayaActions(HookBaseClass):
     ##############################################################################################################
     # helper methods which can be subclassed in custom hooks to fine tune the behaviour of things
 
-    def _create_reference(self, path, sg_publish_data):
+    def _create_reference(self, path, sg_publish_data, group=False):
         """
         Create a reference with the same settings Maya would use
         if you used the create settings dialog.
@@ -261,9 +263,10 @@ class MayaActions(HookBaseClass):
             loadReferenceDepth="all",
             mergeNamespacesOnClash=False,
             namespace=namespace,
+            groupReference=group,
         )
 
-    def _do_import(self, path, sg_publish_data, namespace=False):
+    def _do_import(self, path, sg_publish_data, namespace=False, group=False):
         """
         Create a reference with the same settings Maya would use
         if you used the create settings dialog.
@@ -293,6 +296,7 @@ class MayaActions(HookBaseClass):
                 namespace=namespace,
                 loadReferenceDepth="all",
                 preserveReferences=True,
+                groupReference=group,
             )
         else:
             cmds.file(
@@ -301,6 +305,7 @@ class MayaActions(HookBaseClass):
                 renameAll=False,
                 loadReferenceDepth="all",
                 preserveReferences=True,
+                groupReference=group,
             )
 
     def _do_bake_to_selection(self, path, sg_publish_data):

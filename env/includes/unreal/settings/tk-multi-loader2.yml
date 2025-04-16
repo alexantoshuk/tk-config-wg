@@ -13,6 +13,7 @@ settings.tk-multi-loader2.unreal:
     # Unreal FBX: [import_fbx]
     FBX: [import_fbx]
     FBX Camera: [import_fbx_camera]
+    FBX Group: [import_fbx]
     Alembic Cache: [import_alembic]
     # Alembic Camera: [import_alembic_camera]
 

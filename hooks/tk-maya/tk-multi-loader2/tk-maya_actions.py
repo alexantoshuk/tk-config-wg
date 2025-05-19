@@ -314,7 +314,7 @@ class MayaActions(HookBaseClass):
         if not os.path.exists(path):
             raise Exception("File not found on disk - '%s'" % path)
 
-        import playsense.animationTools as atools
+        import animationTools as atools
 
         entity = sg_publish_data.get("entity")
         entity_name = entity.get("name")

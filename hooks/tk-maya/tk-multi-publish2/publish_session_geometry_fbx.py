@@ -265,19 +265,23 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # find the animated frame range to use:
         start_frame, end_frame = _find_scene_animation_range()
 
+        en = sgtk.platform.current_engine()
+        ctx = en.context
+
+        bake = True
+        if ctx.entity.get('type') != 'Shot':
+            bake = False
+
         # ...and execute it:
         try:
             self.parent.log_debug("Export FBX: %s" % publish_path)
             maya_utils.fbx_export(maya_nodes, publish_path, start=start_frame,
-                                  end=end_frame, preroll=preroll, samples=samples)
+                                  end=end_frame, preroll=preroll, samples=samples, bake=bake)
         except Exception as e:
             self.logger.error("Failed to export Geometry: %s" % e)
             return
 
         name = item.properties["name"]
-
-        en = sgtk.platform.current_engine()
-        ctx = en.context
 
         # entity_type = ctx.entity['type']
         entity_name = ctx.entity['name']

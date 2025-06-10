@@ -24,7 +24,7 @@ HookBaseClass = sgtk.get_hook_baseclass()
 VER_LIMIT = 0
 
 
-class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
+class HoudiniGeometryPublishPlugin(HookBaseClass):
     """
     Plugin for publishing an open houdini session.
 
@@ -70,7 +70,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         """
         # inherit the settings from the base publish plugin
         base_settings = super(
-            HoudiniSessionGeometryPublishPlugin, self).settings or {}
+            HoudiniGeometryPublishPlugin, self).settings or {}
 
         # settings specific to this class
         houdini_publish_settings = {
@@ -225,7 +225,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
 
         # * return grand parent validate method
 
-        return super(HoudiniSessionGeometryPublishPlugin, self).validate(settings, item)
+        return super(HoudiniGeometryPublishPlugin, self).validate(settings, item)
 
     def publish(self, settings, item):
         """
@@ -246,9 +246,9 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         preroll = item.properties["preroll"]
         samples = item.properties["samples"]
         units = item.properties["units"]
-        abc_scale = 1
+        scale = 1
         if units == 'centimeters':
-            abc_scale = 100
+            scale = 100
         # get the path to create and publish
         publish_path = item.properties["path"]
 
@@ -269,7 +269,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         try:
             self.parent.log_debug("Export alembic file: %s" % publish_path)
             houdini_utils.alembic_subnet_export(node_path, publish_path, start=start_frame,
-                                                end=end_frame, preroll=preroll, samples=samples, scale=abc_scale)
+                                                end=end_frame, preroll=preroll, samples=samples, scale=scale)
         except Exception as e:
             error_msg = "Failed to export Geometry: %s" % e
             self.logger.error(error_msg)
@@ -277,7 +277,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
             return
 
         # Now that the path has been generated, hand it off to the
-        super(HoudiniSessionGeometryPublishPlugin,
+        super(HoudiniGeometryPublishPlugin,
               self).publish(settings, item)
 
     def finalize(self, settings, item):
@@ -294,7 +294,7 @@ class HoudiniSessionGeometryPublishPlugin(HookBaseClass):
         # common_utils.cleanup_versions(
         #     item.properties["publish_path"], pattern=".v???.abc", max_versions=VER_LIMIT, logger=self.logger)
 
-        # super(HoudiniSessionGeometryPublishPlugin,
+        # super(HoudiniGeometryPublishPlugin,
         #       self).finalize(settings, item)
         return
 

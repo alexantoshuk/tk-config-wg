@@ -107,9 +107,10 @@ class HoudiniSessionCollector(HookBaseClass):
         self._collect_textures(item)
         self._collect_matnet(item)
         self._collect_objnet(item)
-        self._collect_session_camera(item)
-        self._collect_session_camera_fbx(item)
-        self._collect_session_geometry(item)
+        self._collect_camera(item)
+        self._collect_camera_fbx(item)
+        self._collect_geometry(item)
+        self._collect_vdb(item)
 
     def collect_current_houdini_session(self, settings, parent_item):
         """
@@ -393,7 +394,7 @@ class HoudiniSessionCollector(HookBaseClass):
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = node.path()
 
-    def _collect_session_camera(self, parent_item):
+    def _collect_camera(self, parent_item):
         """
         Creates items for session camera to be exported.
 
@@ -439,7 +440,7 @@ class HoudiniSessionCollector(HookBaseClass):
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0}.abc ({1})".format(node.name(), cam_path)
 
-    def _collect_session_camera_fbx(self, parent_item):
+    def _collect_camera_fbx(self, parent_item):
         """
         Creates items for session camera to be exported.
 
@@ -485,7 +486,7 @@ class HoudiniSessionCollector(HookBaseClass):
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0}.fbx ({1})".format(node.name(), cam_path)
 
-    def _collect_session_geometry(self, parent_item):
+    def _collect_geometry(self, parent_item):
         """
         Creates items for session geometry to be exported.
 
@@ -518,10 +519,48 @@ class HoudiniSessionCollector(HookBaseClass):
             except:
                 geo_item.properties["units"] = 'centimeters'
             # get the icon path to display for this item
-            icon_path = self._icons_dir() + "/geometry.png"
+            icon_path = self._icons_dir() + "/alembic.png"
 
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0}.abc ({1})".format(node.name(), node.path())
+
+    def _collect_vdb(self, parent_item):
+        """
+        Creates items for session geometry to be exported.
+
+        :param parent_item: Parent Item instance
+        """
+
+        # * collect all checked objects in scene for publishing
+        for node in hou.node("/obj").children():
+            if not houdini_utils.is_publish_vdb(node):
+                continue
+            # sys.stderr.write("{0}\n".format(node.path()))
+            geo_item = parent_item.create_item(
+                "houdini.session.vdb", "VDB", node.path()
+            )
+            geo_item.properties["node"] = node.path()
+
+            try:
+                geo_item.properties["preroll"] = node.evalParm(
+                    "preroll")
+            except:
+                geo_item.properties["preroll"] = 0
+            try:
+                geo_item.properties["samples"] = node.evalParm(
+                    "samples")
+            except:
+                geo_item.properties["samples"] = 1
+            try:
+                geo_item.properties["units"] = node.evalParm(
+                    "units")
+            except:
+                geo_item.properties["units"] = 'centimeters'
+            # get the icon path to display for this item
+            icon_path = self._icons_dir() + "/geometry.png"
+
+            geo_item.set_icon_from_path(icon_path)
+            geo_item.name = "{0}.vdb ({1})".format(node.name(), node.path())
 
     def collect_tk_alembicnodes(self, parent_item):
         """

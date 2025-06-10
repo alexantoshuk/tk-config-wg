@@ -110,11 +110,11 @@ settings.tk-multi-publish2.houdini.asset_step:
       settings:
         Publish Template: houdini_asset_publish
     - name: Publish to Flow Production Tracking
-      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry.py"
+      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_geometry.py"
       settings:
         Publish Template: houdini_asset_alembic_cache
     - name: Publish to Flow Production Tracking
-      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera.py"
+      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_camera.py"
       settings:
         Publish Template: houdini_asset_alembic_cache
     - name: Publish to Flow Production Tracking
@@ -154,15 +154,15 @@ settings.tk-multi-publish2.houdini.shot_step:
       settings:
         Publish Template: houdini_shot_publish
     - name: Publish to Flow Production Tracking
-      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_geometry.py"
+      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_geometry.py"
       settings:
         Publish Template: houdini_shot_alembic_cache
     - name: Publish to Flow Production Tracking
-      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera.py"
+      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_camera.py"
       settings:
         Publish Template: houdini_shot_alembic_cache
     - name: Publish to Flow Production Tracking
-      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_session_camera_fbx.py"
+      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_camera_fbx.py"
       settings:
         Publish Template: houdini_shot_fbx
     - name: Publish to Flow Production Tracking

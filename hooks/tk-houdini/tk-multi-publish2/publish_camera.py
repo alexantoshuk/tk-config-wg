@@ -24,7 +24,7 @@ HookBaseClass = sgtk.get_hook_baseclass()
 VER_LIMIT = 0
 
 
-class HoudiniSessionCamerPublishPlugin(HookBaseClass):
+class HoudiniCamerPublishPlugin(HookBaseClass):
     """
     Plugin for publishing an open houdini session.
 
@@ -70,7 +70,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         """
         # inherit the settings from the base publish plugin
         base_settings = super(
-            HoudiniSessionCamerPublishPlugin, self).settings or {}
+            HoudiniCamerPublishPlugin, self).settings or {}
 
         # settings specific to this class
         houdini_publish_settings = {
@@ -97,7 +97,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         accept() method. Strings can contain glob patters such as *, for example
         ["houdini.*", "file.houdini"]
         """
-        return ["houdini.session.camera.fbx"]
+        return ["houdini.session.camera"]
 
     def accept(self, settings, item):
         """
@@ -225,14 +225,14 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         # publish plugin. Also set the publish_path to be explicit.
         item.properties["path"] = publish_template.apply_fields(work_fields)
         item.properties["publish_path"] = item.properties["path"]
-        item.properties["publish_type"] = "FBX Camera"
+        item.properties["publish_type"] = "Alembic Camera"
         # use the work file's version number when publishing
         if "version" in work_fields:
             item.properties["publish_version"] = work_fields["version"]
 
         # * return grand parent validate method
 
-        return super(HoudiniSessionCamerPublishPlugin, self).validate(settings, item)
+        return super(HoudiniCamerPublishPlugin, self).validate(settings, item)
 
     def publish(self, settings, item):
         """
@@ -260,16 +260,21 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         publish_folder = os.path.dirname(publish_path)
         self.parent.ensure_folder_exists(publish_folder)
 
+        # set the alembic args that make the most sense when working with Mari.
+        # These flags will ensure the export of an Alembic file that contains
+        # all visible geometry from the current scene together with UV's and
+        # face sets for use in Mari.
+
         # find the animated frame range to use:
         start_frame, end_frame = _find_scene_animation_range()
 
         # ...and execute it:
         try:
             self.parent.log_debug(
-                "Export camera fbx file: %s" % publish_path)
+                "Export camera alembic file: %s" % publish_path)
 
-            houdini_utils.fbx_camera_export(cam_path, publish_path, start=start_frame,
-                                            end=end_frame, preroll=preroll, samples=samples, scale=scale)
+            houdini_utils.alembic_camera_export(cam_path, publish_path, start=start_frame,
+                                                end=end_frame, preroll=preroll, samples=samples, scale=scale)
 
         except Exception as e:
             error_msg = "Failed to export Camera: %s" % e
@@ -278,7 +283,7 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
             return
 
         # Now that the path has been generated, hand it off to the
-        super(HoudiniSessionCamerPublishPlugin,
+        super(HoudiniCamerPublishPlugin,
               self).publish(settings, item)
 
     def finalize(self, settings, item):
@@ -291,6 +296,12 @@ class HoudiniSessionCamerPublishPlugin(HookBaseClass):
         :param item: Item to process
         """
 
+        # * limit number of versions to VER_LIMIT
+        # common_utils.cleanup_versions(
+        #     item.properties["publish_path"], pattern=".v???.abc", max_versions=VER_LIMIT, logger=self.logger)
+
+        # super(HoudiniCamerPublishPlugin,
+        #       self).finalize(settings, item)
         return
 
 

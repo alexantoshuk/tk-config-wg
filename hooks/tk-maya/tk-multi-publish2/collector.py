@@ -269,6 +269,7 @@ class MayaSessionCollector(HookBaseClass):
             geo_item.properties["nodes"] = data['nodes']
             geo_item.properties["preroll"] = data['preroll']
             geo_item.properties["samples"] = data['samples']
+            geo_item.properties["triangulate"] = data['triangulate']
 
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/geometry.png"
@@ -283,6 +284,7 @@ class MayaSessionCollector(HookBaseClass):
             geo_item.properties["nodes"] = data['nodes']
             geo_item.properties["preroll"] = data['preroll']
             geo_item.properties["samples"] = data['samples']
+            geo_item.properties["triangulate"] = data['triangulate']
 
             # get the icon path to display for this item
             icon_path = self._icons_dir() + "/fbx.png"

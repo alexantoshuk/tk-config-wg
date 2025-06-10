@@ -254,6 +254,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         # * get fbx cache data
         maya_nodes = item.properties["nodes"]
         preroll = item.properties["preroll"]
+        triangulate = item.properties["triangulate"]
         samples = item.properties["samples"]
         # get the path to create and publish
         publish_path = item.properties["path"]
@@ -276,7 +277,7 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         try:
             self.parent.log_debug("Export FBX: %s" % publish_path)
             maya_utils.fbx_export(maya_nodes, publish_path, start=start_frame,
-                                  end=end_frame, preroll=preroll, samples=samples, bake=bake)
+                                  end=end_frame, preroll=preroll, samples=samples, bake=bake, triangulate=triangulate)
         except Exception as e:
             self.logger.error("Failed to export Geometry: %s" % e)
             return

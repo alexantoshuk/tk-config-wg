@@ -72,10 +72,18 @@ def collect_publish_items(toggle_attr="publishABC"):
             name = basename
 
         item = items.setdefault(name, {})
+        triangulate = item.setdefault('triangulate', 0)
         preroll = item.setdefault('preroll', 0)
         samples = item.setdefault('samples', 1)
         nodes_list = item.setdefault('nodes', [])
         nodes_list.append(g)
+
+        try:
+            triangulate = max(triangulate, cmds.getAttr(
+                g + ".triangulate"))
+        except:
+            pass
+        item['triangulate'] = triangulate
 
         try:
             preroll = max(preroll, cmds.getAttr(
@@ -248,7 +256,7 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
             pass
 
 
-def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True):
+def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True, triangulate=False):
     start_frame = start - 2 - preroll
     end_frame = end + 2
     filename = filename.replace("\\", "/")
@@ -261,7 +269,10 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True):
     mel.eval('FBXExportInputConnections -v false')
     if bake:
         mel.eval('FBXExportBakeComplexAnimation -v 1')
-    # mel.eval('FBXExportBakeResampleAll -v 1')
+        # mel.eval('FBXExportBakeResampleAll -v 1')
+    if triangulate:
+        mel.eval('FBXExportTriangulate -v 1')
+
     mel.eval('FBXExportBakeComplexStart -v %i' % start_frame)
     mel.eval('FBXExportBakeComplexEnd -v %i' % end_frame)
     mel.eval('FBXExportBakeComplexStep -v %i' % step)

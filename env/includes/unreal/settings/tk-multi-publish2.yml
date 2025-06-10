@@ -41,6 +41,8 @@ settings.tk-multi-publish2.unreal.project:
       hook: "{self}/publish_file.py:{engine}/tk-multi-publish2/basic/publish_movie.py"
       settings:
         Publish Template: unreal.movie_publish
+
+  post_phase: "{self}/post_phase.py:{engine}/tk-multi-publish2/basic/post_phase.py"
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"
 
@@ -80,5 +82,6 @@ settings.tk-multi-publish2.maya.asset_step.unreal:
         Turntable Map Path: "/Game/turntable/level/turntable.umap"
         Sequence Path: "/Game/turntable/sequence/turntable_sequence.turntable_sequence"
         Turntable Assets Path: "/Game/maya_turntable_assets"
+
   help_url: *help_url
   location: "@apps.tk-multi-publish2.location"

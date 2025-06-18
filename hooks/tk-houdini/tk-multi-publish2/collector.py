@@ -530,34 +530,19 @@ class HoudiniSessionCollector(HookBaseClass):
 
         :param parent_item: Parent Item instance
         """
-
-        # * collect all checked objects in scene for publishing
-        for node in hou.node("/obj").children():
-            if not houdini_utils.is_publish_vdb(node):
+        filecache_type = hou.nodeType("Sop/filecache::2.0")
+        for node in filecache_type.instances():
+            filename = node.evalParm("sopoutput")
+            basename, ext = os.path.splitext(filename)
+            if ext.lower() != ".vdb":
                 continue
-            # sys.stderr.write("{0}\n".format(node.path()))
+
             geo_item = parent_item.create_item(
                 "houdini.session.vdb", "VDB", node.path()
             )
             geo_item.properties["node"] = node.path()
 
-            try:
-                geo_item.properties["preroll"] = node.evalParm(
-                    "preroll")
-            except:
-                geo_item.properties["preroll"] = 0
-            try:
-                geo_item.properties["samples"] = node.evalParm(
-                    "samples")
-            except:
-                geo_item.properties["samples"] = 1
-            try:
-                geo_item.properties["units"] = node.evalParm(
-                    "units")
-            except:
-                geo_item.properties["units"] = 'centimeters'
-            # get the icon path to display for this item
-            icon_path = self._icons_dir() + "/geometry.png"
+            icon_path = self._icons_dir() + "/openvdb.svg"
 
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0}.vdb ({1})".format(node.name(), node.path())

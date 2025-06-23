@@ -202,15 +202,19 @@ class HoudiniVDBPublishPlugin(HookBaseClass):
         work_fields = work_template.get_fields(path)
 
         work_fields['node'] = node_name
-        # work_fields['SEQ'] = '%04d'
+
+        filename = node.evalParm("sopoutput")
+        basename, _, ext = filename.rsplit('.', 2)
+        filepattern = f"{basename}.*.{ext}"
+        for f in glob.iglob(filepattern):
+            _, src_frame, ext = f.rsplit('.', 2)
+            work_fields['seq'] = src_frame
+            break
 
         # ensure the fields work for the publish template
         missing_keys = publish_template.missing_keys(work_fields)
         if missing_keys:
-            error_msg = (
-                "Work file '%s' missing keys required for the "
-                "publish template: %s" % (path, missing_keys)
-            )
+            error_msg = "Sequence files '%s' not found." % filename
 
             self.logger.error(error_msg)
             raise Exception(error_msg)
@@ -220,7 +224,6 @@ class HoudiniVDBPublishPlugin(HookBaseClass):
         # publish plugin. Also set the publish_path to be explicit.
         item.properties["path"] = publish_template.apply_fields(work_fields)
         item.properties["publish_path"] = item.properties["path"]
-
         item.properties["publish_type"] = "VDB"
         # use the work file's version number when publishing
         if "version" in work_fields:
@@ -266,7 +269,7 @@ class HoudiniVDBPublishPlugin(HookBaseClass):
             raise Exception(error_msg)
 
         src_filename_pattern = f"{src_basename}.*.{ext}"
-        publish_basename,  _ = os.path.splitext(publish_path)
+        publish_basename = publish_path.rsplit('.', 2)[0]
         # print(src_filename_pattern)
         files = glob.glob(src_filename_pattern)
         if not files:

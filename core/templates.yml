@@ -128,6 +128,9 @@ keys:
     type: sequence
     format_spec: "04"
 
+  seq:
+    type: str
+
   # Represents a frame sequence exported from Flame
   flame.frame:
     type: sequence
@@ -401,7 +404,7 @@ paths:
     definition: "@shot_root/publish/houdini/{node}.v{version}.abc"
   # VDB
   houdini_shot_vdb_cache:
-    definition: "@shot_root/publish/houdini/{node}.v{version}.vdb/{node}.v{version}.vdb"
+    definition: "@shot_root/publish/houdini/{node}.vdb/v{version}/{node}.{seq}.vdb"
   # FBX
   houdini_shot_fbx:
     definition: "@shot_root/publish/houdini/{node}.v{version}.fbx"
@@ -638,7 +641,7 @@ paths:
     definition: "@asset_root/publish/houdini/{node}.v{version}.abc"
   # VDB
   houdini_asset_vdb_cache:
-    definition: "@asset_root/publish/houdini/{node}.v{version}.vdb/{node}.v{version}.vdb"
+    definition: "@asset_root/publish/houdini/{node}.vdb/v{version}/{node}.{seq}.vdb"
   # FBX
   houdini_asset_fbx:
     definition: "@asset_root/publish/houdini/{node}.v{version}.fbx"

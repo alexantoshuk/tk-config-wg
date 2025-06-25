@@ -541,12 +541,20 @@ def update_materials():
 def update_rops(env, create_if_not_exists=False):
     import hou
 
-    main_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_acescg.{VER}.$F4.exr".format(
-        **env))
-    cryptoobj_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_cryptoobj.{VER}.$F4.exr".format(
-        **env))
-    cryptomat_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_cryptomat.{VER}.$F4.exr".format(
-        **env))
+    # main_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_acescg.{VER}.$F4.exr".format(
+    #     **env))
+    # cryptoobj_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_cryptoobj.{VER}.$F4.exr".format(
+    #     **env))
+    # cryptomat_path = injectJOB("{STEPPATH}/publish/render/${{OS}}/{VER}/{ENTITY}_{TASK}_${{OS}}_cryptomat.{VER}.$F4.exr".format(
+    #     **env))
+
+    SCENE, SHOT = env["ENTITYPATH"].rsplit("/", 2)[-2:]
+    VER = env["VER"]
+    TASK = env["TASK"]
+
+    main_path = f"${{JOB}}/render/{SCENE}/{SHOT}/${{OS}}/{VER}/{SHOT}_{TASK}_${{OS}}_acescg.{VER}.$F4.exr"
+    cryptoobj_path = f"${{JOB}}/render/{SCENE}/{SHOT}/${{OS}}/{VER}/{SHOT}_{TASK}_${{OS}}_cryptoobj.{VER}.$F4.exr"
+    cryptomat_path = f"${{JOB}}/render/{SCENE}/{SHOT}/${{OS}}/{VER}/{SHOT}_{TASK}_${{OS}}_cryptomat.{VER}.$F4.exr"
 
     ROPTYPEMAP = {
         'mantra': 'ifd',
@@ -558,7 +566,7 @@ def update_rops(env, create_if_not_exists=False):
     RENDERNAME = project_field_value('sg_render', 'mantra')
     if not RENDERNAME:
         return
-    ROPTYPE = ROPTYPEMAP[RENDERNAME.lower()]
+    ROPTYPE = ROPTYPEMAP.get(RENDERNAME.lower(), 'mantra')
 
     def create_beauty_rop():
         outnet = hou.node("/out")

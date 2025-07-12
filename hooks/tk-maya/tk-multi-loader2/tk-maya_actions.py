@@ -14,6 +14,7 @@ Hook that loads defines all the available actions, broken down by publish type.
 
 import glob
 import os
+import platform
 import re
 import maya.cmds as cmds
 import maya.mel as mel
@@ -72,7 +73,7 @@ class MayaActions(HookBaseClass):
             "Actions: %s. Publish Data: %s" % (
                 ui_area, actions, sg_publish_data)
         )
-        print(f"PUBLISH_DATA!!!!!: {sg_publish_data}")
+
         action_instances = []
 
         if "reference" in actions:
@@ -146,6 +147,16 @@ class MayaActions(HookBaseClass):
                     "params": None,
                     "caption": "Create Image Plane",
                     "description": "Creates an image plane for the selected item..",
+                }
+            )
+
+        if "delete" in actions:
+            action_instances.append(
+                {
+                    "name": "delete",
+                    "params": None,
+                    "caption": "Delete Item",
+                    "description": "This will delete the item",
                 }
             )
 
@@ -227,6 +238,9 @@ class MayaActions(HookBaseClass):
         elif name == "image_plane":
             self._create_image_plane(path, sg_publish_data)
 
+        elif name == "delete":
+            self._delete(path, sg_publish_data)
+
     ##############################################################################################################
     # helper methods which can be subclassed in custom hooks to fine tune the behaviour of things
 
@@ -307,6 +321,39 @@ class MayaActions(HookBaseClass):
                 preserveReferences=True,
                 groupReference=group,
             )
+
+    def _delete(self, path, sg_publish_data):
+        """
+        Delete item
+        """
+        # Get the current engine
+        engine = sgtk.platform.current_engine()
+
+        # Access the ShotGrid API
+        sg = engine.shotgun
+
+        filters = [
+            ["name", "is", sg_publish_data['name']],
+            ["published_file_type", "is", sg_publish_data['published_file_type']],
+            ["project", "is",  sg_publish_data['project']]
+        ]
+
+        if platform.system() == "Windows":
+            path_key = "local_path_windows"
+        else:
+            path_key = "local_path_linux"
+
+        items = sg.find("PublishedFile", filters, ["path"])
+
+        for item in items:
+            entity_id = item['id']
+            sg.delete("PublishedFile", entity_id)
+            path = item["path"][path_key]
+
+            if os.path.exists(path):
+                os.remove(path)
+
+        return
 
     def _do_bake_to_selection(self, path, sg_publish_data):
         """

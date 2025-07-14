@@ -15,6 +15,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 import sgtk
 import maya_utils
+import common_utils
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -116,6 +117,9 @@ class MayaSessionCollector(HookBaseClass):
         self._collect_session_camera(item)
         if cmds.ls(geometry=True, noIntermediate=True):
             self._collect_session_geometry(item)
+
+        if common_utils.need_update():
+            self.parent.engine.apps["tk-multi-breakdown2"].show_dialog()
 
     def collect_current_maya_session(self, settings, parent_item):
         """

@@ -15,6 +15,7 @@ except:
     pass
 
 import sgtk
+import common_utils
 from sgtk.platform.qt import QtGui
 
 HookClass = sgtk.get_hook_baseclass()
@@ -82,6 +83,9 @@ class SceneOperation(HookClass):
             import shotgunRoutines as sr
             reload(sr)
             sr.openMayaScene('Animation')
+
+            if common_utils.need_update():
+                self.parent.engine.apps["tk-multi-breakdown2"].show_dialog()
 
         elif operation == "save":
             # save the current scene:

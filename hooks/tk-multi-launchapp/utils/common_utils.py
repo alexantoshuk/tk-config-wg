@@ -6,6 +6,50 @@ import subprocess
 import platform
 
 
+def need_update():
+    import sgtk
+
+    # Get the current engine
+    engine = sgtk.platform.current_engine()
+
+    # Access the ShotGrid API
+    sg = engine.shotgun
+
+    # Get the current engine
+    engine = sgtk.platform.current_engine()
+
+    # Get the breakdown app
+    breakdown_app = engine.apps["tk-multi-breakdown"]
+
+    # Run the scene analysis
+    breakdown_items = breakdown_app.analyze_scene()
+
+    for breakdown_item in breakdown_items:
+        sg_data = breakdown_item['sg_data']
+        project = sg_data['project']
+        filters = [
+            ["name", "is", sg_data['name']],
+            ["published_file_type", "is", sg_data['published_file_type']],
+            ["project", "is", project]
+        ]
+
+        fields = ["version_number"]
+
+        versions = sg.find("PublishedFile", filters, fields, order=[
+                           {"field_name": "version_number", "direction": "desc"}])
+
+        # Check if versions exist
+        if versions:
+            # The first version in the sorted list is the latest version
+            latest_version = versions[0]
+            latest_version_number = latest_version["version_number"]
+            cur_version_number = sg_data['version_number']
+            if latest_version_number != cur_version_number:
+                return True
+
+    return False
+
+
 def remove_version_from_path(path):
     path = path.rsplit('.', 2)
     del path[-2]

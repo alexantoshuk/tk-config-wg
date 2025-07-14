@@ -23,13 +23,15 @@ def need_update():
 
     # Run the scene analysis
     breakdown_items = breakdown_app.analyze_scene()
-
+    # print(breakdown_items)
     for breakdown_item in breakdown_items:
         sg_data = breakdown_item['sg_data']
         project = sg_data['project']
+        entity = sg_data['entity']
         filters = [
             ["name", "is", sg_data['name']],
             ["published_file_type", "is", sg_data['published_file_type']],
+            ["entity", "is", entity],
             ["project", "is", project]
         ]
 

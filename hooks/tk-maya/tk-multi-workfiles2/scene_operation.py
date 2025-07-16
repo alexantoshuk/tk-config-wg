@@ -86,6 +86,7 @@ class SceneOperation(HookClass):
 
             if common_utils.need_update():
                 self.parent.engine.apps["tk-multi-breakdown2"].show_dialog()
+            print(f"SG DEBUG: Open scene '{file_path}'")
 
         elif operation == "save":
             # save the current scene:

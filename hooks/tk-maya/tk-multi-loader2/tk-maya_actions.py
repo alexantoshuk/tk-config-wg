@@ -335,6 +335,7 @@ class MayaActions(HookBaseClass):
         filters = [
             ["name", "is", sg_publish_data['name']],
             ["published_file_type", "is", sg_publish_data['published_file_type']],
+            ["entity", "is", sg_publish_data['entity']],
             ["project", "is",  sg_publish_data['project']]
         ]
 

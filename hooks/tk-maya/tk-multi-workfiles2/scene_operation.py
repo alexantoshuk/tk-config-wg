@@ -78,7 +78,10 @@ class SceneOperation(HookClass):
             # do new scene as Maya doesn't like opening
             # the scene it currently has open!
             cmds.file(new=True, force=True)
-            cmds.file(file_path, open=True, ignoreVersion=True, force=True)
+            try:
+                cmds.file(file_path, open=True, ignoreVersion=True, force=True)
+            except Exception as err:
+                cmds.error(err)
 
             import shotgunRoutines as sr
             reload(sr)

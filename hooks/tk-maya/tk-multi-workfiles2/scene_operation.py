@@ -81,7 +81,7 @@ class SceneOperation(HookClass):
             try:
                 cmds.file(file_path, open=True, ignoreVersion=True, force=True)
             except Exception as err:
-                cmds.error(err)
+                pass
 
             import shotgunRoutines as sr
             reload(sr)

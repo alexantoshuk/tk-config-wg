@@ -23,9 +23,11 @@ def need_update():
 
     # Run the scene analysis
     breakdown_items = breakdown_app.analyze_scene()
-    # print(breakdown_items)
+    print("SG DEBUG: ", breakdown_items)
     for breakdown_item in breakdown_items:
         sg_data = breakdown_item['sg_data']
+        if not sg_data:
+            continue
         project = sg_data['project']
         entity = sg_data['entity']
         filters = [

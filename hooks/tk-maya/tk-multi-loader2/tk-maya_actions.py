@@ -349,7 +349,7 @@ class MayaActions(HookBaseClass):
             entity_id = item['id']
             sg.delete("PublishedFile", entity_id)
             path = item["path"][path_key]
-
+            print(f"Delete published file: '{path}'")
             if os.path.exists(path):
                 os.remove(path)
 

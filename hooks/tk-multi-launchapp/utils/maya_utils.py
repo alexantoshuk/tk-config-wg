@@ -197,7 +197,7 @@ def alembic_camera_export(camera, filename, start=1, end=1, preroll=0, samples=8
         cmds.delete(tmp_group)
 
 
-def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
+def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2, renderable_only=False):
     is_animated = end > start
 
     # add 2 frames to the ends and preroll
@@ -209,8 +209,6 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
     # all visible geometry from the current scene together with UV's and
     # face sets for use in Mari.
     alembic_args = [
-        # only renderable objects (visible and not templated)
-        "-renderableOnly",
         # write shading group set assignments (Maya 2015+)
         "-writeFaceSets",
         # write uv's (only the current uv set gets written)
@@ -222,6 +220,9 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2):
         "-attrPrefix 'abc_'",
         "-attrPrefix 'attr_'",
     ]
+    if renderable_only:
+        # only renderable objects (visible and not templated)
+        alembic_args.append("-renderableOnly")
 
     if is_animated:
         alembic_args.append("-fr %d %d" % (start_frame, end_frame))

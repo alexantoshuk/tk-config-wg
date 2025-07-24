@@ -299,8 +299,8 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True, 
             fps = get_current_fps()
             new_fps = fps*samples
 
-            print(f"SG DEBUG: Change scene FPS to '{new_fps}'")
             set_current_fps(new_fps)
+            print(f"SG DEBUG: Change scene FPS to '{new_fps}'")
 
             start_frame = start_frame*samples
             end_frame = end_frame*samples
@@ -314,8 +314,8 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True, 
     mel.eval('FBXExport -f "%s" -s' % tmp_filename)
     # cmds.file(tmp_filename, force=True, options="v=0;", typ="FBX export", es=True)
     if fps is not None:
-        print(f"SG DEBUG: Restore scene FPS to '{fps}'")
         set_current_fps(fps)
+        print(f"SG DEBUG: Restore scene FPS to '{fps}'")
 
     try:
         shutil.move(tmp_filename, filename)

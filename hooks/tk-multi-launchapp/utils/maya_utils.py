@@ -257,28 +257,63 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2, rendera
             pass
 
 
+def get_current_fps():
+    # get current time unit
+    time_unit = cmds.currentUnit(q=1, t=1)
+
+    # get the index in the list defined for the settings windows
+    index = mel.eval(f'getIndexFromCurrentUnitCmdValue("{time_unit}")') - 1
+
+    # get the ui name for the tiem unit (something fps)
+    fps_name = mel.eval(f'getTimeUnitDisplayString({index});')
+
+    # if you want the number now you can process the name since it will be consistent
+    fps_number = float(fps_name.split(' ')[0])
+    return fps_number
+
+
+def set_current_fps(fps):
+    # get current time unit
+    return cmds.currentUnit(t=f"{fps}fps")
+
+
 def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True, triangulate=False):
     start_frame = start - 2 - preroll
     end_frame = end + 2
     filename = filename.replace("\\", "/")
     tmp_filename = get_tempfile_name() + '.fbx'
-    # step = 1.0/samples
-    step = 1  # !FIXME: use default step for now
+
     cmds.select(root, replace=True)
     # This ensures the user's settings are ignored so that you can just set values which differ from the default
     mel.eval('FBXResetExport')
     mel.eval('FBXExportInputConnections -v false')
+    fps = None
     if bake:
         mel.eval('FBXExportBakeComplexAnimation -v 1')
-        # mel.eval('FBXExportBakeResampleAll -v 1')
+        mel.eval('FBXExportBakeResampleAnimation -v 1')
+        if samples > 1:
+            fps = get_current_fps()
+
+            new_fps = fps*samples
+            int_new_fps = int(new_fps)
+            if int_new_fps == new_fps:
+                new_fps = int_new_fps
+
+            set_current_fps(new_fps)
+            start_frame = start_frame*samples
+            end_frame = end_frame*samples
+
     if triangulate:
         mel.eval('FBXExportTriangulate -v 1')
 
     mel.eval('FBXExportBakeComplexStart -v %i' % start_frame)
     mel.eval('FBXExportBakeComplexEnd -v %i' % end_frame)
-    mel.eval('FBXExportBakeComplexStep -v %i' % step)
+    mel.eval('FBXExportBakeComplexStep -v 1')
     mel.eval('FBXExport -f "%s" -s' % tmp_filename)
     # cmds.file(tmp_filename, force=True, options="v=0;", typ="FBX export", es=True)
+    if fps is not None:
+        set_current_fps(fps)
+
     try:
         shutil.move(tmp_filename, filename)
     finally:

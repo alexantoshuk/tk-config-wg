@@ -268,8 +268,12 @@ def get_current_fps():
     fps_name = mel.eval(f'getTimeUnitDisplayString({index});')
 
     # if you want the number now you can process the name since it will be consistent
-    fps_number = float(fps_name.split(' ')[0])
-    return fps_number
+    fps_float = float(fps_name.split(' ')[0])
+    fps_int = int(fps_float)
+    if fps_float == fps_int:
+        return fps_int
+
+    return fps_float
 
 
 def set_current_fps(fps):
@@ -293,11 +297,7 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True, 
         mel.eval('FBXExportBakeResampleAnimation -v 1')
         if samples > 1:
             fps = get_current_fps()
-
             new_fps = fps*samples
-            int_new_fps = int(new_fps)
-            if int_new_fps == new_fps:
-                new_fps = int_new_fps
 
             print(f"SG DEBUG: Change scene FPS to '{new_fps}'")
             set_current_fps(new_fps)

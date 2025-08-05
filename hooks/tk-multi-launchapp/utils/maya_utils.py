@@ -9,7 +9,7 @@ import tempfile
 def collect_publish_cameras(toggle_attr="publishABC"):
     items = []
     for n in cmds.ls(type='transform'):
-        if not is_publish_alembic_camera(n):
+        if not is_publish_camera(n):
             continue
 
         cam_path = search_camera(n)
@@ -54,7 +54,7 @@ def collect_publish_cameras(toggle_attr="publishABC"):
 def collect_publish_items(toggle_attr="publishABC"):
     items = dict()
     for g in cmds.ls(type='transform'):
-        if not is_publish_alembic(g):
+        if not is_publish_geo(g):
             continue
 
         try:
@@ -100,6 +100,8 @@ def collect_publish_items(toggle_attr="publishABC"):
             pass
         item['samples'] = samples
 
+    # print(f"ITEMS: {items}")
+
     return items
 
 
@@ -119,7 +121,7 @@ def get_tempfile_name():
     return os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names())).replace("\\", "/")
 
 
-def is_publish_alembic(node):
+def is_publish_geo(node):
     if not cmds.getAttr(node + ".useOutlinerColor"):
         return False
     color = cmds.getAttr(node + ".outlinerColor")[0]
@@ -127,7 +129,7 @@ def is_publish_alembic(node):
     return (round(r, 1), round(g, 1), round(b, 1)) == (0.1, 0.7, 0.1)
 
 
-def is_publish_alembic_camera(node):
+def is_publish_camera(node):
     if not cmds.getAttr(node + ".useOutlinerColor"):
         return False
     color = cmds.getAttr(node + ".outlinerColor")[0]
@@ -259,7 +261,7 @@ def alembic_export(root, filename, start=1, end=1, preroll=0, samples=2, rendera
 
 def get_current_fps():
     # get current time unit
-    time_unit = cmds.currentUnit(q=1, t=1)
+    time_unit = mel.eval("currentUnit -q -t")
 
     # get the index in the list defined for the settings windows
     index = mel.eval(f'getIndexFromCurrentUnitCmdValue("{time_unit}")') - 1
@@ -269,7 +271,7 @@ def get_current_fps():
 
     # if you want the number now you can process the name since it will be consistent
     fps_float = float(fps_name.split(' ')[0])
-    fps_int = int(fps_float)
+    fps_int = round(fps_float)
     if fps_float == fps_int:
         return fps_int
 
@@ -278,7 +280,7 @@ def get_current_fps():
 
 def set_current_fps(fps):
     # get current time unit
-    return cmds.currentUnit(t=f"{fps}fps")
+    return mel.eval(f"currentUnit -t {fps}fps")
 
 
 def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True, triangulate=False):
@@ -287,35 +289,39 @@ def fbx_export(root, filename, start=1, end=1, preroll=0, samples=2, bake=True, 
     filename = filename.replace("\\", "/")
     tmp_filename = get_tempfile_name() + '.fbx'
 
+    fps = None
+    if bake and (samples > 1):
+        fps = get_current_fps()
+        new_fps = fps*samples
+
+        fps_str = set_current_fps(new_fps)
+        sys.stderr.write(
+            f"SG DEBUG: Change scene FPS to '{new_fps}' ({fps_str})\n")
+
+        start_frame = start_frame*samples
+        end_frame = end_frame*samples
+
     cmds.select(root, replace=True)
     # This ensures the user's settings are ignored so that you can just set values which differ from the default
-    mel.eval('FBXResetExport')
-    mel.eval('FBXExportInputConnections -v false')
-    fps = None
+    mel.eval('FBXResetExport;')
+    mel.eval('FBXExportInputConnections -v false;')
     if bake:
-        mel.eval('FBXExportBakeComplexAnimation -v 1')
-        mel.eval('FBXExportBakeResampleAnimation -v 1')
-        if samples > 1:
-            fps = get_current_fps()
-            new_fps = fps*samples
+        mel.eval('FBXExportBakeComplexAnimation -v 1;')
+        mel.eval('FBXExportBakeResampleAnimation -v 1;')
 
-            set_current_fps(new_fps)
-            print(f"SG DEBUG: Change scene FPS to '{new_fps}'")
-
-            start_frame = start_frame*samples
-            end_frame = end_frame*samples
+    mel.eval('FBXExportBakeComplexStart -v %i;' % start_frame)
+    mel.eval('FBXExportBakeComplexEnd -v %i;' % end_frame)
+    mel.eval('FBXExportBakeComplexStep -v 1;')
 
     if triangulate:
-        mel.eval('FBXExportTriangulate -v 1')
+        mel.eval('FBXExportTriangulate -v 1;')
 
-    mel.eval('FBXExportBakeComplexStart -v %i' % start_frame)
-    mel.eval('FBXExportBakeComplexEnd -v %i' % end_frame)
-    mel.eval('FBXExportBakeComplexStep -v 1')
-    mel.eval('FBXExport -f "%s" -s' % tmp_filename)
+    mel.eval('FBXExport -f "%s" -s;' % tmp_filename)
     # cmds.file(tmp_filename, force=True, options="v=0;", typ="FBX export", es=True)
     if fps is not None:
-        set_current_fps(fps)
-        print(f"SG DEBUG: Restore scene FPS to '{fps}'")
+        fps_str = set_current_fps(fps)
+        sys.stderr.write(
+            f"SG DEBUG: Restore scene FPS to '{fps}' ({fps_str})\n")
 
     try:
         shutil.move(tmp_filename, filename)

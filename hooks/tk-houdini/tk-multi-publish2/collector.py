@@ -111,6 +111,7 @@ class HoudiniSessionCollector(HookBaseClass):
         self._collect_camera_fbx(item)
         self._collect_geometry(item)
         self._collect_vdb(item)
+        self._collect_rop(item)
 
     def collect_current_houdini_session(self, settings, parent_item):
         """
@@ -546,6 +547,49 @@ class HoudiniSessionCollector(HookBaseClass):
 
             geo_item.set_icon_from_path(icon_path)
             geo_item.name = "{0}.vdb ({1})".format(node.name(), node.path())
+
+    def _collect_rop(self, parent_item):
+        """
+        Creates items for rops to be exported.
+
+        :param parent_item: Parent Item instance
+        """
+        rop_node = hou.node("/out/beauty")
+        if not rop_node:
+            return
+
+        roptype = rop_node.type()
+        if roptype == 'ifd':
+            filename = rop_node.evalParm("vm_picture")
+        elif roptype == 'Redshift_ROP':
+            filename = rop_node.evalParm("RS_outputFileNamePrefix")
+        try:
+            basename, ver, frame, ext = filename.rsplit(filename, ".", 3)
+        except:
+            return
+
+        if ext.lower() != "exr":
+            return
+
+        dirname, basename = os.path.split(basename)
+        seq_basename = f"{basename}.{ver}.%04d.{ext}"
+        seq_filename = f"{dirname}/{seq_basename}"
+
+        rop_item = parent_item.create_item(
+            "houdini.session.render", "Rendered Sequence", seq_filename
+        )
+
+        mov_dir = "/".join(seq_filename.split("/")[:-3])
+
+        mov_filename = f"{mov_dir}/{basename}.mp4"
+
+        rop_item.properties["filename"] = seq_filename
+        rop_item.properties["movname"] = mov_filename
+
+        icon_path = self._icons_dir() + "/image_sequence.png"
+
+        rop_item.set_icon_from_path(icon_path)
+        rop_item.name = seq_basename
 
     def collect_tk_alembicnodes(self, parent_item):
         """

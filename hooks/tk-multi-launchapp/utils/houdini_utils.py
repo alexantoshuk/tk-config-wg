@@ -120,9 +120,9 @@ def sync_frame_range_and_fps(context=None, confirm=True):
     edit_handles = int(entity_field_value(
         'sg_edit_handles', 0, context=context))
     cut_in = int(entity_field_value(
-        'sg_cut_in', 1001, context=context)) - edit_handles
+        'sg_cut_in', 1, context=context)) - edit_handles
     cut_out = int(entity_field_value(
-        'sg_cut_out', 1100, context=context)) + edit_handles
+        'sg_cut_out', 120, context=context)) + edit_handles
 
     cur_fps = int(hou.fps())
     cur_cut_in, cur_cut_out = hou.playbar.frameRange()

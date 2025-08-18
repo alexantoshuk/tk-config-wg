@@ -204,7 +204,13 @@ class HoudiniVDBPublishPlugin(HookBaseClass):
         work_fields['node'] = node_name
 
         filename = node.evalParm("sopoutput")
-        basename, _, ext = filename.rsplit('.', 2)
+        try:
+            basename, _, ext = filename.rsplit('.', 2)
+        except:
+            error_msg = f"There should be a '.' before the frame number in output filename '{filename}'"
+            self.logger.error(error_msg)
+            raise Exception(error_msg)
+
         filepattern = f"{basename}.*.{ext}"
         for f in glob.iglob(filepattern):
             _, src_frame, ext = f.rsplit('.', 2)

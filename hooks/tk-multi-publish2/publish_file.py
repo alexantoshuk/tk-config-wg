@@ -201,7 +201,7 @@ class BasicFilePublishPlugin(HookBaseClass):
                     ["NukeStudio Project", "hrox"],
                     ["Houdini Scene", "hip", "hipnc"],
                     ["Maya Scene", "ma", "mb"],
-                    ["Motion Builder FBX", "fbx"],
+                    ["FBX", "fbx"],
                     ["Nuke Script", "nk"],
                     ["Photoshop Image", "psd", "psb"],
                     ["VRED Scene", "vpb", "vpe", "osb"],
@@ -261,6 +261,9 @@ class BasicFilePublishPlugin(HookBaseClass):
 
         :returns: dictionary with boolean keys accepted, required and enabled
         """
+        context = item.properties.get("context")
+        if context:
+            item.context = context
 
         path = item.properties.path
 
@@ -300,11 +303,11 @@ class BasicFilePublishPlugin(HookBaseClass):
             self.logger.error(error_msg)
             raise Exception(error_msg)
 
-        # TEXTURING
-        if ctx.step['name'] == 'Texture':
-            self._set_tex_publish_data(settings, item)
-        else:
-            self._set_abc_publish_data(settings, item)
+        # # TEXTURING
+        # if ctx.step['name'] == 'Texture':
+        #     self._set_tex_publish_data(settings, item)
+        # else:
+        #     self._set_abc_publish_data(settings, item)
 
         publish_path = self.get_publish_path(settings, item)
         publish_name = self.get_publish_name(settings, item)
@@ -636,7 +639,7 @@ class BasicFilePublishPlugin(HookBaseClass):
         name = os.path.basename(path).replace('.%04d.', '.####.')
 
         filters = [
-            #['project.Project.id', 'is', ctx.project['id']],
+            # ['project.Project.id', 'is', ctx.project['id']],
             ['entity.Asset.id', 'is', ctx.entity['id']],
             ['task.Task.step.Step.code', 'is', 'Texture'],
             ['published_file_type.PublishedFileType.code', 'is', 'Texture'],
@@ -910,46 +913,46 @@ class BasicFilePublishPlugin(HookBaseClass):
         """
         publish_file = None
 
-        #! FIXIT
-        ctx = item.context
-        if ctx.step:
-            # by default, the path that was collected for publishing
-            work_files = [item.properties.path]
+        # #! FIXIT
+        # ctx = item.context
+        # if ctx.step:
+        #     # by default, the path that was collected for publishing
+        #     work_files = [item.properties.path]
 
-            # if this is a sequence, get the attached files
-            if "sequence_paths" in item.properties:
-                work_files = item.properties.get("sequence_paths", [])
-                if not work_files:
-                    self.logger.warning(
-                        "Sequence publish without a list of files. Publishing "
-                        "the sequence path in place: %s" % (
-                            item.properties.path,)
-                    )
-                    return
+        #     # if this is a sequence, get the attached files
+        #     if "sequence_paths" in item.properties:
+        #         work_files = item.properties.get("sequence_paths", [])
+        #         if not work_files:
+        #             self.logger.warning(
+        #                 "Sequence publish without a list of files. Publishing "
+        #                 "the sequence path in place: %s" % (
+        #                     item.properties.path,)
+        #             )
+        #             return
 
-            # ---- copy the work files to the publish location
-            publish_file_seq = self.get_publish_path(settings, item)
-            for work_file in work_files:
-                udim = work_file.rsplit('.', 2)[-2]
-                publish_file = publish_file_seq.replace('<UDIM>', udim)
+        #     # ---- copy the work files to the publish location
+        #     publish_file_seq = self.get_publish_path(settings, item)
+        #     for work_file in work_files:
+        #         udim = work_file.rsplit('.', 2)[-2]
+        #         publish_file = publish_file_seq.replace('<UDIM>', udim)
 
-                # copy the file
-                try:
-                    publish_folder = os.path.dirname(publish_file)
-                    ensure_folder_exists(publish_folder)
-                    copy_file(work_file, publish_file)
-                except Exception:
-                    raise Exception(
-                        "Failed to copy work file from '%s' to '%s'.\n%s"
-                        % (work_file, publish_file, traceback.format_exc())
-                    )
+        #         # copy the file
+        #         try:
+        #             publish_folder = os.path.dirname(publish_file)
+        #             ensure_folder_exists(publish_folder)
+        #             copy_file(work_file, publish_file)
+        #         except Exception:
+        #             raise Exception(
+        #                 "Failed to copy work file from '%s' to '%s'.\n%s"
+        #                 % (work_file, publish_file, traceback.format_exc())
+        #             )
 
-                self.logger.debug(
-                    "Copied work file '%s' to publish file '%s'."
-                    % (work_file, publish_file)
-                )
-            return
-        #! END
+        #         self.logger.debug(
+        #             "Copied work file '%s' to publish file '%s'."
+        #             % (work_file, publish_file)
+        #         )
+        #     return
+        # #! END
         # ---- ensure templates are available
         work_template = item.properties.get("work_template")
         if not work_template:

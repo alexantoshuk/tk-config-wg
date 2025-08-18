@@ -16,6 +16,46 @@ from tank_vendor import six
 HookBaseClass = sgtk.get_hook_baseclass()
 
 
+def entity_task_from_name(name):
+    name = name.split(".", 1)[0]
+
+    splitted = name.split("_", 2)
+    if len(splitted) < 2:
+        return
+
+    entity = '_'.join(splitted[:2])
+    try:
+        task = splitted[2]
+        return entity, task
+    except:
+        return entity, None
+
+
+def create_shot_context(shot_code, task_name=None):
+    import sgtk
+    engine = sgtk.platform.current_engine()
+
+    ctx = engine.context
+    shot = engine.shotgun.find_one("Shot", [
+        ["project", "is", ctx.project],
+        ["code", "is", shot_code],
+    ])
+    if not shot:
+        return
+
+    task = None
+    if task_name:
+        task = engine.shotgun.find_one("Task", [
+            ["entity", "is", shot],
+            ["content", "is", task_name],
+        ], ["name", "content", "step.Step.short_name"])
+
+    if not task:
+        return engine.sgtk.context_from_entity("Shot", shot["id"])
+
+    return engine.sgtk.context_from_entity("Task", task["id"])
+
+
 class BasicSceneCollector(HookBaseClass):
     """
     A basic collector that handles files and general objects.
@@ -105,7 +145,7 @@ class BasicSceneCollector(HookBaseClass):
                     "icon": self._get_icon_path("maya.png"),
                     "item_type": "file.maya",
                 },
-                "Motion Builder FBX": {
+                "FBX": {
                     "extensions": ["fbx"],
                     "icon": self._get_icon_path("motionbuilder.png"),
                     "item_type": "file.motionbuilder",
@@ -133,6 +173,11 @@ class BasicSceneCollector(HookBaseClass):
                 "Texture Image": {
                     "extensions": ["tif", "tiff", "tx", "tga", "dds", "rat", "jpg", "exr"],
                     "icon": self._get_icon_path("texture.png"),
+                    "item_type": "file.texture",
+                },
+                "Movie": {
+                    "extensions": ["mp4", "mov"],
+                    "icon": self._get_icon_path("video.png"),
                     "item_type": "file.texture",
                 },
                 "PDF": {
@@ -222,6 +267,15 @@ class BasicSceneCollector(HookBaseClass):
         # make sure the path is normalized. no trailing separator, separators
         # are appropriate for the current os, no double separators, etc.
         path = sgtk.util.ShotgunPath.normalize(path)
+        filename = os.path.basename(path)
+
+        try:
+            shot, task = entity_task_from_name(filename)
+            ctx = create_shot_context(shot, task)
+        except:
+            self.logger.info(
+                f"Can't determine context from filename {filename}")
+            ctx = None
 
         publisher = self.parent
 
@@ -257,7 +311,7 @@ class BasicSceneCollector(HookBaseClass):
         # all we know about the file is its path. set the path in its
         # properties for the plugins to use for processing.
         file_item.properties["path"] = evaluated_path
-
+        file_item.properties["context"] = ctx
         self.logger.info("Collected file: %s" % (evaluated_path,))
 
         return file_item

@@ -305,6 +305,9 @@ class BasicFilePublishPlugin(HookBaseClass):
             self.logger.error(error_msg)
             raise Exception(error_msg)
 
+        ctx.sgtk.create_filesystem_structure(
+            ctx.entity['type'], ctx.entity['id'])
+
         if ext not in (".mp4", ".mov"):
             if ctx.step['name'] == 'Texture':
                 self._set_tex_publish_data(settings, item)
@@ -645,8 +648,7 @@ class BasicFilePublishPlugin(HookBaseClass):
         publisher = self.parent
 
         ctx = item.context
-        ctx.sgtk.create_filesystem_structure(
-            ctx.entity['type'], ctx.entity['id'])
+
         asset_root_template = publisher.get_template_by_name(
             "asset_root")
 

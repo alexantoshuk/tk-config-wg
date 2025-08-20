@@ -294,6 +294,8 @@ class BasicFilePublishPlugin(HookBaseClass):
 
         publisher = self.parent
         path = item.properties.get("path")
+        _, ext = os.path.splitext(path)
+        ext = ext.lower()
 
         ctx = item.context
         if not ctx.step:
@@ -303,11 +305,11 @@ class BasicFilePublishPlugin(HookBaseClass):
             self.logger.error(error_msg)
             raise Exception(error_msg)
 
-        # # TEXTURING
-        # if ctx.step['name'] == 'Texture':
-        #     self._set_tex_publish_data(settings, item)
-        # else:
-        #     self._set_abc_publish_data(settings, item)
+        if ext not in (".mp4", ".mov"):
+            if ctx.step['name'] == 'Texture':
+                self._set_tex_publish_data(settings, item)
+            else:
+                self._set_publish_data(settings, item)
 
         publish_path = self.get_publish_path(settings, item)
         publish_name = self.get_publish_name(settings, item)
@@ -411,12 +413,13 @@ class BasicFilePublishPlugin(HookBaseClass):
             )
 
         # handle copying of work to publish if templates are in play
+
         self._copy_work_to_publish(settings, item)
 
         # do not actualy publish Textures
-        # ctx = item.context
-        # if ctx.step and ctx.step['name'] == 'Texture':
-        #     return
+        ctx = item.context
+        if ctx.step and ctx.step['name'] == 'Texture':
+            return
 
         # arguments for publish registration
         self.logger.info("Registering publish...")
@@ -569,30 +572,45 @@ class BasicFilePublishPlugin(HookBaseClass):
 
         return publish_type
 
-    def _set_abc_publish_data(self, settings, item):
+    def _set_publish_data(self, settings, item):
         path = item.properties.get("path")
-        publisher = self.parent
-
-        ctx = item.context
-        ctx.sgtk.create_filesystem_structure(
-            ctx.entity['type'], ctx.entity['id'])
-        if ctx.entity['type'] == 'Asset':
-            template = publisher.get_template_by_name("asset_alembic_cache")
-            entity_id = 'entity.Asset.id'
-        elif ctx.entity['type'] == 'Shot':
-            template = publisher.get_template_by_name("shot_alembic_cache")
-            entity_id = 'entity.Shot.id'
-        else:
-            return
-
         name = os.path.basename(path)
-        publish_type = "Alembic Cache"
-        if name.lower().startswith("camera"):
-            item.properties["publish_type"] = publish_type = "Alembic Camera"
+        publisher = self.parent
+        ctx = item.context
+        entity_type = ctx.entity['type']
+
+        _, ext = os.path.splitext(path)
+        ext = ext.lower()
+        cache_type = None
+        if ext == ".abc":
+            if "camera" in name.lower():
+                publish_type = "Alembic Camera"
+            else:
+                publish_type = "Alembic Cache"
+
+            if entity_type == 'Asset':
+                entity_id_field = 'entity.Asset.id'
+                template = publisher.get_template_by_name(
+                    "asset_alembic_cache")
+            elif entity_type == 'Shot':
+                entity_id_field = 'entity.Shot.id'
+                template = publisher.get_template_by_name("shot_alembic_cache")
+        elif ext == ".fbx":
+            if "camera" in name.lower():
+                publish_type = "FBX Camera"
+            else:
+                publish_type = "FBX"
+
+            if entity_type == 'Asset':
+                entity_id_field = 'entity.Asset.id'
+                template = publisher.get_template_by_name("asset_fbx")
+            elif entity_type == 'Shot':
+                entity_id_field = 'entity.Shot.id'
+                template = publisher.get_template_by_name("shot_fbx")
 
         filters = [
             ['project.Project.id', 'is', ctx.project['id']],
-            [entity_id, 'is', ctx.entity['id']],
+            [entity_id_field, 'is', ctx.entity['id']],
             ['task.Task.step.Step.id', 'is', ctx.step['id']],
             ['published_file_type.PublishedFileType.code', 'is', publish_type],
             ['name', 'is', name]
@@ -954,21 +972,23 @@ class BasicFilePublishPlugin(HookBaseClass):
         #     return
         # #! END
         # ---- ensure templates are available
+
+        use_templates = True
         work_template = item.properties.get("work_template")
         if not work_template:
             self.logger.debug(
                 "No work template set on the item. "
-                "Skipping copy file to publish location."
+                # "Skipping copy file to publish location."
             )
-            return
+            use_templates = False
 
         publish_template = self.get_publish_template(settings, item)
         if not publish_template:
             self.logger.debug(
                 "No publish template set on the item. "
-                "Skipping copying file to publish location."
+                # "Skipping copying file to publish location."
             )
-            return
+            use_templates = False
 
         # ---- get a list of files to be copied
 
@@ -976,44 +996,49 @@ class BasicFilePublishPlugin(HookBaseClass):
         work_files = [item.properties.path]
 
         # if this is a sequence, get the attached files
-        if "sequence_paths" in item.properties:
-            work_files = item.properties.get("sequence_paths", [])
-            if not work_files:
-                self.logger.warning(
-                    "Sequence publish without a list of files. Publishing "
-                    "the sequence path in place: %s" % (item.properties.path,)
-                )
-                return
+        # if "sequence_paths" in item.properties:
+        #     work_files = item.properties.get("sequence_paths", [])
+        #     if not work_files:
+        #         self.logger.warning(
+        #             "Sequence publish without a list of files. Publishing "
+        #             "the sequence path in place: %s" % (item.properties.path,)
+        #         )
+        #         return
 
         # ---- copy the work files to the publish location
 
         for work_file in work_files:
+            if use_templates:
+                if not work_template.validate(work_file):
+                    self.logger.warning(
+                        "Work file '%s' did not match work template '%s'. "
+                        "Publishing in place." % (work_file, work_template)
+                    )
+                    return
 
-            if not work_template.validate(work_file):
-                self.logger.warning(
-                    "Work file '%s' did not match work template '%s'. "
-                    "Publishing in place." % (work_file, work_template)
-                )
-                return
+                work_fields = work_template.get_fields(work_file)
 
-            work_fields = work_template.get_fields(work_file)
+                missing_keys = publish_template.missing_keys(work_fields)
 
-            missing_keys = publish_template.missing_keys(work_fields)
+                if missing_keys:
+                    self.logger.warning(
+                        "Work file '%s' missing keys required for the publish "
+                        "template: %s" % (work_file, missing_keys)
+                    )
+                    return
 
-            if missing_keys:
-                self.logger.warning(
-                    "Work file '%s' missing keys required for the publish "
-                    "template: %s" % (work_file, missing_keys)
-                )
-                return
-
-            publish_file = publish_template.apply_fields(work_fields)
+                publish_file = publish_template.apply_fields(work_fields)
+            else:
+                publish_file = item.properties.get("publish_path")
+                if not publish_file:
+                    continue
 
             # copy the file
             try:
                 publish_folder = os.path.dirname(publish_file)
                 ensure_folder_exists(publish_folder)
-                copy_file(work_file, publish_file)
+                if work_file != publish_file:
+                    copy_file(work_file, publish_file)
             except Exception:
                 raise Exception(
                     "Failed to copy work file from '%s' to '%s'.\n%s"

@@ -19,7 +19,7 @@ HookBaseClass = sgtk.get_hook_baseclass()
 def entity_task_from_name(name):
     name = name.split(".", 1)[0]
 
-    splitted = name.split("_", 2)
+    splitted = name.split("_", 3)
     if len(splitted) < 2:
         return
 

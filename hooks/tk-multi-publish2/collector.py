@@ -245,14 +245,7 @@ class BasicSceneCollector(HookBaseClass):
 
             return None
         else:
-            dirname = os.path.dirname(path)
-            seq = self.parent.util.get_frame_sequence_path(path)
-            if not seq:
-                return self._collect_file(parent_item, path)
-            self._collect_folder(
-                parent_item, dirname, filter=[seq])
-
-            return None
+            return self._collect_file(parent_item, path)
 
     def _collect_file(self, parent_item, path, frame_sequence=False):
         """

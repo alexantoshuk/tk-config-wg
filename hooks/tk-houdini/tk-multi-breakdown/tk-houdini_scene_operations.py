@@ -176,8 +176,8 @@ class BreakdownSceneOperations(Hook):
         # new path as supplied by the breakdown app.
 
         def item_update(item):
-            node_path = item.get("node", item["node_name"])
-            node_type = item.get("type", item["node_type"])
+            node_path = item.get("node", item.get("node_name"))
+            node_type = item.get("type", item.get("node_type"))
             file_path = item["path"]
 
             file_path = file_path.replace("\\", "/")

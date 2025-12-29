@@ -3,7 +3,7 @@
 # file included in this repository.
 
 tk-unreal.location:
-  version: v1.3.1-51
+  version: v1.3.1-52
   type: github_release
   # type: path
   organization: alexantoshuk

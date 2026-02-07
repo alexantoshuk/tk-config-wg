@@ -4,22 +4,22 @@
 
 keys:
   # These are used by the Loader in Unreal
-  ue_sg_asset_type:
-    type: str
-    shotgun_entity_type: Asset
-    shotgun_field_name: sg_asset_type
-  ue_sg_asset_name:
-    type: str
-    shotgun_entity_type: Asset
-    shotgun_field_name: code
-  ue_sg_shot_name:
-    type: str
-    shotgun_entity_type: Shot
-    shotgun_field_name: code
-  ue_sg_sequence_name:
-    type: str
-    shotgun_entity_type: Shot
-    shotgun_field_name: sg_sequence
+  # ue_sg_asset_type:
+  #   type: str
+  #   shotgun_entity_type: Asset
+  #   shotgun_field_name: sg_asset_type
+  # ue_sg_asset_name:
+  #   type: str
+  #   shotgun_entity_type: Asset
+  #   shotgun_field_name: code
+  # ue_sg_shot_name:
+  #   type: str
+  #   shotgun_entity_type: Shot
+  #   shotgun_field_name: code
+  # ue_sg_sequence_name:
+  #   type: str
+  #   shotgun_entity_type: Shot
+  #   shotgun_field_name: sg_sequence
   # These are used by the Movie Publish in Unreal
   ue_level_sequence:
     type: str
@@ -64,9 +64,9 @@ strings:
   # entity-specific templates for importing files into the Unreal content browser
   # template logic is defined in Python, not settings:
   # tk-unreal/hooks/tk-multi-loader2/tk-unreal_actions.py
-  unreal_loader_asset_path: "/Game/assets/{ue_sg_asset_type}/{ue_sg_asset_name}/{Step}"
-  unreal_loader_asset_name: "{ue_sg_asset_name}"
-  unreal_loader_shot_path: "/Game/scenes/{ue_sg_sequence_name}/{ue_sg_shot_name}/{Step}"
-  unreal_loader_shot_name: "{ue_sg_shot_name}"
+  unreal_loader_asset_path: "/Game/assets/{sg_asset_type}/{Asset}/{Step}"
+  unreal_loader_asset_name: "{Asset}"
+  unreal_loader_shot_path: "/Game/scenes/{Sequence}/{Shot}/{Step}"
+  unreal_loader_shot_name: "{Shot}"
   unreal_loader_project_path: "/Game"
   unreal_loader_project_name: "{name}"

@@ -16,7 +16,7 @@ from tank import Hook
 import hou
 import houdini_utils
 from houdini_utils import set_comment
-from common_utils import datetime_str
+from common_utils import datetime_str, project_field_value
 
 
 class BreakdownSceneOperations(Hook):
@@ -171,7 +171,7 @@ class BreakdownSceneOperations(Hook):
         """
 
         engine = self.parent.engine
-
+        context = engine.context
         # these items are to be updated. swap out the fileName parm value with the
         # new path as supplied by the breakdown app.
 
@@ -201,6 +201,7 @@ class BreakdownSceneOperations(Hook):
                         node_path, file_path)
                 )
                 node.parm("fileName").set(houdini_utils.injectJOB(file_path))
+
                 set_comment(node, datetime_str())
 
             elif node_type == "fbx_camera":
@@ -211,7 +212,12 @@ class BreakdownSceneOperations(Hook):
                         node_path, file_path)
                 )
                 node.destroy()
-                houdini_utils.fbx_camera_import(file_path, name)
+                width = int(project_field_value(
+                    'sg_width', 1920, context=context))
+                height = int(project_field_value(
+                    'sg_height', 1080, context=context))
+                houdini_utils.fbx_camera_import(
+                    file_path, name, res=(width, height))
 
             elif node_type == "fbx_character":
 

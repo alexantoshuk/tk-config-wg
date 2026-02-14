@@ -438,7 +438,13 @@ class HoudiniActions(HookBaseClass):
 
         obj_context = _get_current_context("/obj")
 
-        camera_subnet_node = houdini_utils.fbx_camera_import(path, name)
+        width = int(project_field_value(
+                    'sg_width', 1920, context=context))
+        height = int(project_field_value(
+            'sg_height', 1080, context=context))
+
+        camera_subnet_node = houdini_utils.fbx_camera_import(
+            path, name, res=(width, height))
 
         app.log_debug("Created fbx_camera: %s  path: '%s' " %
                       (camera_subnet_node.path(), path))

@@ -788,7 +788,7 @@ def create_fetch_camera(parent, name, fetchcam_path):
     return fetch_camera_node
 
 
-def fbx_camera_import(file_name, node_name=None):
+def fbx_camera_import(file_name, node_name=None, res=(1920, 1080)):
     node, _ = hou.hipFile.importFBX(
         file_name,
         suppress_save_prompt=False,
@@ -824,7 +824,11 @@ def fbx_camera_import(file_name, node_name=None):
     node.setUserData("nodeshape", "camera")
     basename = os.path.basename(file_name)
     set_comment(node, f"{basename}\n{datetime_str()}")
-
+    try:
+        camnode = node.children()[0]
+        camnode.parmTuple("res").set(res)
+    except:
+        pass
     return node
 
 

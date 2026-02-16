@@ -439,9 +439,9 @@ class HoudiniActions(HookBaseClass):
         obj_context = _get_current_context("/obj")
 
         width = int(project_field_value(
-                    'sg_width', 1920, context=context))
+                    'sg_width', 1920))
         height = int(project_field_value(
-            'sg_height', 1080, context=context))
+            'sg_height', 1080))
 
         camera_subnet_node = houdini_utils.fbx_camera_import(
             path, name, res=(width, height))

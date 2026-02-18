@@ -101,17 +101,17 @@ class BeforeAppLaunch(tank.Hook):
             # else:
             #     os.environ['HOUDINI_PATHMAP'] = "{'W:/playsense':'/mnt/data'}"
 
-            hver = None
-            for i, ch in enumerate(app_path):
-                try:
-                    int(ch)
-                    hver = app_path[i:]
-                    hver = '.'.join(hver.split('.')[:2])
-                    break
-                except:
-                    pass
+            # hver = None
+            # for i, ch in enumerate(app_path):
+            #     try:
+            #         int(ch)
+            #         hver = app_path[i:]
+            #         hver = '.'.join(hver.split('.')[:2])
+            #         break
+            #     except:
+            #         pass
 
-            try:
-                os.remove(home + '/houdini%s/flipbook.pref' % hver)
-            except:
-                pass
+            # try:
+            #     os.remove(home + '/houdini%s/flipbook.pref' % hver)
+            # except:
+            #     pass

@@ -498,15 +498,21 @@ class HoudiniActions(HookBaseClass):
             'xform', 'scale')
         xform_node.parm("scale").set(0.01)
 
-        assign_material_sop = xform_node.createOutputNode(
-            'wg::assign_material')
-        assign_material_sop.parm('asset_name').set(name)
+        # assign_material_sop = xform_node.createOutputNode(
+        #     'wg::assign_material')
+        # assign_material_sop.parm('asset_name').set(name)
 
-        # cache_sop = assign_material_sop.createOutputNode(
-        #     'cache')
+        # # cache_sop = assign_material_sop.createOutputNode(
+        # #     'cache')
 
-        assign_material_sop.setDisplayFlag(True)
-        assign_material_sop.setRenderFlag(True)
+        # assign_material_sop.setDisplayFlag(True)
+        # assign_material_sop.setRenderFlag(True)
+
+        output_sop = xform_node.createOutputNode(
+            'output', 'OUT')
+
+        output_sop.setDisplayFlag(True)
+        output_sop.setRenderFlag(True)
 
         set_comment(geo_node, datetime_str())
         _show_node(alembic_sop)
@@ -572,14 +578,14 @@ class HoudiniActions(HookBaseClass):
         #     'xform', 'scale')
         # xform_node.parm("scale").set(0.01)
 
-        null_sop = bonedeform_sop.createOutputNode(
-            'null', 'OUT')
+        output_sop = bonedeform_sop.createOutputNode(
+            'output', 'OUT')
 
-        null_sop.setDisplayFlag(True)
-        null_sop.setRenderFlag(True)
+        output_sop.setDisplayFlag(True)
+        output_sop.setRenderFlag(True)
 
         set_comment(geo_node, datetime_str())
-        _show_node(null_sop)
+        _show_node(output_sop)
 
     ##############################################################################################################
 

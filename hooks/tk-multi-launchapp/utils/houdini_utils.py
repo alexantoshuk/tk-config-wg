@@ -813,7 +813,7 @@ def fbx_camera_import(file_name, node_name=None, res=(1920, 1080)):
         convert_units=True
     )
     if node_name:
-        node.setName(node_name)
+        node.setName(node_name, unique_name=True)
 
     node.moveToGoodPosition()
     path_parm = node.addSpareParmTuple(

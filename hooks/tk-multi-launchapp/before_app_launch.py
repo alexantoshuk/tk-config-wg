@@ -64,8 +64,9 @@ class BeforeAppLaunch(tank.Hook):
         JOB = cur_proj_path.replace('\\', '/')
         os.environ['JOB'] = JOB
 
+        tk_app_path = tkroot + '/app/' + platform.system()
+        os.environ['PATH'] += os.pathsep + tk_app_path + '/bin'
         if platform.system() == "Windows":
-            tk_app_path = tkroot + '/app/' + platform.system()
             os.environ['PATH'] += os.pathsep + tk_app_path + '/ffmpeg/bin'
             os.environ['PATH'] += os.pathsep + tk_app_path + '/ImageMagick'
             home = (os.environ['USERPROFILE'] +

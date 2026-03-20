@@ -236,3 +236,14 @@ def cleanup_versions(filepath, pattern="???.abc", max_versions=10, logger=None):
         except:
             if logger:
                 logger.info("Can't remove '{0}'".format(f))
+
+
+def fbx_remove_namespaces(path):
+    kwargs = {}
+    if os.name == 'nt':
+        kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+
+    result = subprocess.run(
+        ["fbx_find_replace", path, path, "^.*:", "", "--regex"], check=True, capture_output=True, text=True, **kwargs)
+
+    return result.stdout

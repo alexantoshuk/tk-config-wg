@@ -15,7 +15,6 @@ import maya.cmds as cmds
 import maya.mel as mel
 import sgtk
 import shutil
-
 from tank_vendor import six
 
 import maya_utils
@@ -269,34 +268,26 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
         en = sgtk.platform.current_engine()
         ctx = en.context
 
-        bake = True
-        if ctx.entity.get('type') != 'Shot':
-            bake = False
+        entity_type = ctx.entity.get('type')
 
         # ...and execute it:
         try:
             self.parent.log_debug("Export FBX: %s" % publish_path)
             maya_utils.fbx_export(maya_nodes, publish_path, start=start_frame,
-                                  end=end_frame, preroll=preroll, samples=samples, bake=bake, triangulate=triangulate)
+                                  end=end_frame, preroll=preroll, samples=samples, bake=(entity_type == 'Shot'), triangulate=triangulate)
         except Exception as e:
             self.logger.error("Failed to export Geometry: %s" % e)
             return
 
-        name = item.properties["name"]
-
-        # entity_type = ctx.entity['type']
-        entity_name = ctx.entity['name']
-        publish_path_without_version = os.path.join(publish_folder, "{}_{}.fbx".format(
-            name, entity_name))
-
-        try:
-            self.parent.log_debug("Copy '%s' to '%s'" % (
-                publish_path, publish_path_without_version))
-            shutil.copy(publish_path, publish_path_without_version)
-        except Exception as e:
-            self.logger.error("Failed to copy '%s' to '%s'" %
-                              (publish_path, publish_path_without_version))
-            return
+        if entity_type == 'Shot':
+            try:
+                self.parent.log_debug(
+                    f"Remove namespaces in FBX: {publish_path}")
+                res = common_utils.fbx_remove_namespaces(publish_path)
+                self.parent.log_debug(res)
+            except Exception as e:
+                self.logger.error("Failed to remove namespaces: %s" % e)
+                return
 
         # Now that the path has been generated, hand it off to the
         super(MayaSessionGeometryPublishPlugin, self).publish(settings, item)
@@ -310,6 +301,24 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
             instances.
         :param item: Item to process
         """
+        en = sgtk.platform.current_engine()
+        ctx = en.context
+
+        publish_path = item.properties["path"]
+        publish_folder = os.path.dirname(publish_path)
+        name = item.properties["name"]
+        # entity_type = ctx.entity['type']
+        entity_name = ctx.entity['name']
+        publish_path_without_version = os.path.join(publish_folder, "{}_{}.fbx".format(
+            name, entity_name))
+
+        try:
+            self.parent.log_debug("Copy '%s' to '%s'" % (
+                publish_path, publish_path_without_version))
+            shutil.copy(publish_path, publish_path_without_version)
+        except Exception as e:
+            self.logger.error("Failed to copy '%s' to '%s'" %
+                              (publish_path, publish_path_without_version))
 
         return
 

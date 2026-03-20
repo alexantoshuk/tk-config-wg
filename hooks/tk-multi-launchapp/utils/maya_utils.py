@@ -51,7 +51,7 @@ def collect_publish_cameras(toggle_attr="publishABC"):
     return items
 
 
-def collect_publish_items(toggle_attr="publishABC"):
+def collect_publish_items(toggle_attr="publishABC", combine_with_name=None):
     items = dict()
     for g in cmds.ls(type='transform'):
         if not is_publish_geo(g):
@@ -64,12 +64,15 @@ def collect_publish_items(toggle_attr="publishABC"):
         except:
             continue
 
-        basename = get_basename(g)
-        namespace = get_namespace(basename)
-        if namespace:
-            name = namespace
+        if combine_with_name:
+            name = combine_with_name
         else:
-            name = basename
+            basename = get_basename(g)
+            namespace = get_namespace(basename)
+            if namespace:
+                name = namespace
+            else:
+                name = basename
 
         item = items.setdefault(name, {})
         triangulate = item.setdefault('triangulate', 0)

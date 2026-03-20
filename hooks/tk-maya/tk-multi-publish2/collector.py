@@ -262,14 +262,21 @@ class MayaSessionCollector(HookBaseClass):
 
         :param parent_item: Parent Item instance
         """
-        # * collect all checked objects in scene for publishing
-        for name, data in maya_utils.collect_publish_items("publishABC").items():
-            # ABC ######################################################
+        en = sgtk.platform.current_engine()
+        ctx = en.context
+        combine_with_name = None
+        if ctx.entity.get('type') == 'Asset':
+            combine_with_name = ctx.entity.get('name')
 
+        # * collect all checked objects in scene for publishing
+        for name, data in maya_utils.collect_publish_items("publishABC", combine_with_name=combine_with_name).items():
+            # ABC ######################################################
+            display_name = f"{name} ({','.join(data['nodes'])})"
             geo_item = parent_item.create_item(
-                "maya.session.geometry", "Geometry ABC", name
+                "maya.session.geometry", "Geometry ABC", display_name
             )
             geo_item.properties["name"] = name
+
             geo_item.properties["nodes"] = data['nodes']
             geo_item.properties["preroll"] = data['preroll']
             geo_item.properties["samples"] = data['samples']
@@ -279,12 +286,14 @@ class MayaSessionCollector(HookBaseClass):
             icon_path = self._icons_dir() + "/geometry.png"
             geo_item.set_icon_from_path(icon_path)
 
-        for name, data in maya_utils.collect_publish_items("publishFBX").items():
+        for name, data in maya_utils.collect_publish_items("publishFBX", combine_with_name=combine_with_name).items():
             # FBX ######################################################
+            display_name = f"{name} ({','.join(data['nodes'])})"
             geo_item = parent_item.create_item(
-                "maya.session.geometry.fbx", "Geometry FBX", name
+                "maya.session.geometry.fbx", "Geometry FBX", display_name
             )
             geo_item.properties["name"] = name
+
             geo_item.properties["nodes"] = data['nodes']
             geo_item.properties["preroll"] = data['preroll']
             geo_item.properties["samples"] = data['samples']

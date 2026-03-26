@@ -336,7 +336,8 @@ class MayaActions(HookBaseClass):
             ["name", "is", sg_publish_data['name']],
             ["published_file_type", "is", sg_publish_data['published_file_type']],
             ["entity", "is", sg_publish_data['entity']],
-            ["project", "is",  sg_publish_data['project']]
+            ["project", "is",  sg_publish_data['project']],
+            ["task", "is",  sg_publish_data['task']]
         ]
 
         if platform.system() == "Windows":

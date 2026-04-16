@@ -123,16 +123,6 @@ class HoudiniActions(HookBaseClass):
                 }
             )
 
-        if "custom_import_fbx_character" in actions:
-            action_instances.append(
-                {
-                    "name": "custom_import_fbx_character",
-                    "params": None,
-                    "caption": "Custom Import",
-                    "description": "Custom Import FBX Character file",
-                }
-            )
-
         if "import_matnet" in actions:
             action_instances.append(
                 {
@@ -232,9 +222,6 @@ class HoudiniActions(HookBaseClass):
 
         elif name == "import_fbx_character":
             self._import_fbx_character(path, sg_publish_data)
-
-        elif name == "custom_import_fbx_character":
-            self._import_fbx_character(path, sg_publish_data, custom=True)
 
         elif name == "import_matnet":
             self._import_matnet(path, sg_publish_data)
@@ -519,7 +506,7 @@ class HoudiniActions(HookBaseClass):
 
     ##############################################################################################################
 
-    def _import_fbx_character(self, path, sg_publish_data, custom=False):
+    def _import_fbx_character(self, path, sg_publish_data):
         """Import the supplied path as a geo/fbxcharacterimport sop.
 
         :param str path: The path to the file to import.
@@ -527,9 +514,6 @@ class HoudiniActions(HookBaseClass):
 
         """
         nodetype_name = "fbxcharacterimport"
-        if custom:
-            nodetype_name = "custom_fbxcharacterimport"
-
         app = self.parent
 
         name = sg_publish_data.get("name", "fbx_character")
@@ -573,10 +557,6 @@ class HoudiniActions(HookBaseClass):
         bonedeform_sop = fbxcharacterimport_sop.createOutputNode('bonedeform')
         bonedeform_sop.setInput(1, fbxcharacterimport_sop, 1)
         bonedeform_sop.setInput(2, fbxcharacterimport_sop, 2)
-
-        # xform_node = bonedeform_sop.createOutputNode(
-        #     'xform', 'scale')
-        # xform_node.parm("scale").set(0.01)
 
         output_sop = bonedeform_sop.createOutputNode(
             'output', 'OUT')

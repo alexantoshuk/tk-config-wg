@@ -84,8 +84,6 @@ class BreakdownSceneOperations(Hook):
             hou.sopNodeTypeCategory(), "kinefx::fbxcharacterimport")
         fbxcharacterimport_type = hou.nodeType(
             hou.sopNodeTypeCategory(), "fbxcharacterimport")
-        custom_fbxcharacterimport_type = hou.nodeType(
-            hou.sopNodeTypeCategory(), "custom_fbxcharacterimport")
 
         fbxcharacterimport_nodes = []
         if kinefx__fbxcharacterimport_type:
@@ -94,20 +92,21 @@ class BreakdownSceneOperations(Hook):
         if fbxcharacterimport_type:
             fbxcharacterimport_nodes += list(
                 fbxcharacterimport_type.instances())
-        if custom_fbxcharacterimport_type:
-            fbxcharacterimport_nodes += list(
-                custom_fbxcharacterimport_type.instances())
 
         fbxcharacterimport_nodes = tuple(set(fbxcharacterimport_nodes))
         for fbxcharacterimport_node in fbxcharacterimport_nodes:
 
-            file_parm = fbxcharacterimport_node.parm("fbxfile")
-            file_path = os.path.normpath(file_parm.eval())
+            for parm in ("fbxfile", "animfbxfile"):
+                file_parm = fbxcharacterimport_node.parm(parm)
+                file_path = file_parm.eval()
+                if not file_path:
+                    continue
+                file_path = os.path.normpath(file_path)
 
-            items.append(
-                {"node": fbxcharacterimport_node.path(), "node_name": fbxcharacterimport_node.path(), "type": "fbx_character", "node_type": "fbx_character",
-                 "path": file_path}
-            )
+                items.append(
+                    {"node": "?".join((fbxcharacterimport_node.path(), parm)), "node_name": fbxcharacterimport_node.path(), "type": "fbx_character", "node_type": "fbx_character",
+                     "path": file_path}
+                )
 
         # Material Network
         for matnet_node in hou.node('/shop').children():
@@ -220,13 +219,13 @@ class BreakdownSceneOperations(Hook):
                     file_path, name, res=(width, height))
 
             elif node_type == "fbx_character":
-
+                node_path, _, parm = node_path.partition('?')
                 node = hou.node(node_path)
                 engine.log_debug(
                     "Updating fbxcharacterimport node '%s' to: %s" % (
                         node_path, file_path)
                 )
-                node.parm("fbxfile").set(houdini_utils.injectJOB(file_path))
+                node.parm(parm).set(houdini_utils.injectJOB(file_path))
                 set_comment(node, datetime_str())
 
             elif node_type == "matnet":

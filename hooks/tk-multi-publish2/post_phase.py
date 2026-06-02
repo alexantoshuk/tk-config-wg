@@ -11,6 +11,8 @@ import tempfile
 import uuid
 
 import sgtk
+import common_utils
+
 from tank_vendor import yaml
 
 HookBaseClass = sgtk.get_hook_baseclass()
@@ -127,7 +129,8 @@ class PostPhase(HookBaseClass):
         tmp_folder_path = tempfile.mkdtemp(dir=root_folder_path)
 
         # build the path to these files
-        self.__TREE_FILE_PATH = os.path.join(tmp_folder_path, "publish_tree.yml")
+        self.__TREE_FILE_PATH = os.path.join(
+            tmp_folder_path, "publish_tree.yml")
         monitor_file_path = os.path.join(tmp_folder_path, "monitor.yml")
 
         # finally, save the publish tree and the monitor data to the files
@@ -178,3 +181,11 @@ class PostPhase(HookBaseClass):
             # launch the background publishing process and show the monitor app
             bg_publish_app.launch_publish_process(self.__TREE_FILE_PATH)
             bg_publish_app.create_panel()
+
+        self.logger.debug("Executing post finalize hook method...")
+        try:
+            self.logger.debug("Update task status...")
+            common_utils.update_status()
+        except:
+            self.logger.error(
+                "You don't have permissions to update status on this task")

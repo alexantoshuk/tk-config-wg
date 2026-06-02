@@ -117,6 +117,10 @@ settings.tk-multi-publish2.houdini.asset_step:
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_camera.py"
       settings:
         Publish Template: houdini_asset_alembic_cache
+    - name: Publish Camera as FBX
+      hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_camera_fbx.py"
+      settings:
+        Publish Template: houdini_asset_fbx
     - name: Publish Object Network
       hook: "{self}/publish_file.py:{config}/tk-houdini/tk-multi-publish2/publish_objnet.py"
       settings:

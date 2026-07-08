@@ -244,6 +244,6 @@ def fbx_remove_namespaces(path):
         kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
 
     result = subprocess.run(
-        ["fbx_find_replace", path, path, "^.*:", "", "--regex"], check=True, capture_output=True, text=True, **kwargs)
+        ["fbx_find_replace", path, path, "^.*:", "--regex"], check=True, capture_output=True, text=True, **kwargs)
 
     return result.stdout

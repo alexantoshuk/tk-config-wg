@@ -279,15 +279,15 @@ class MayaSessionGeometryPublishPlugin(HookBaseClass):
             self.logger.error("Failed to export Geometry: %s" % e)
             return
 
-        # if entity_type == 'Shot':
-        try:
-            self.parent.log_debug(
-                f"Remove namespaces in FBX: {publish_path}")
-            res = common_utils.fbx_remove_namespaces(publish_path)
-            self.parent.log_debug(res)
-        except Exception as e:
-            self.logger.error("Failed to remove namespaces: %s" % e)
-            return
+        if entity_type == 'Shot':
+            try:
+                self.parent.log_debug(
+                    f"Remove namespaces in FBX: {publish_path}")
+                res = common_utils.fbx_remove_namespaces(publish_path)
+                self.parent.log_debug(res)
+            except Exception as e:
+                self.logger.error("Failed to remove namespaces: %s" % e)
+                return
 
         # Now that the path has been generated, hand it off to the
         super(MayaSessionGeometryPublishPlugin, self).publish(settings, item)

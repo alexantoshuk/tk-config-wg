@@ -233,11 +233,10 @@ class HoudiniSessionCollector(HookBaseClass):
         task_name = ctx.task['name']
 
         name = "{}: {}    task: {}".format(entity_type, entity_name, task_name)
-        out_movie_pat = hou.expandString(
-            "$HIP/data/{0}_{1}*.mp4".format(entity_name, task_name))
+        out_movie = hou.expandString("$HIP/flipbook/$HIPNAME.mp4")
 
         # ensure the movies dir exists
-        movies_dir = os.path.dirname(out_movie_pat)
+        movies_dir = os.path.dirname(out_movie)
         if not os.path.exists(movies_dir):
             return
 
@@ -245,18 +244,17 @@ class HoudiniSessionCollector(HookBaseClass):
             "Processing movies folder: %s" % (movies_dir,),
             extra={"action_show_folder": {"path": movies_dir}},
         )
+        
+        # allow the base class to collect and create the item. it knows how
+        # to handle movie files
+        item = super(HoudiniSessionCollector, self)._collect_file(
+            parent_item, out_movie
+        )
 
-        for out_movie in glob.iglob(out_movie_pat):
-            # allow the base class to collect and create the item. it knows how
-            # to handle movie files
-            item = super(HoudiniSessionCollector, self)._collect_file(
-                parent_item, out_movie
-            )
+        # the item has been created. update the display name to include
+        # the an indication of what it is and why it was collected
 
-            # the item has been created. update the display name to include
-            # the an indication of what it is and why it was collected
-
-            item.name = "%s (%s)" % (item.name, "flipbook")
+        item.name = "%s (%s)" % (item.name, "flipbook")
 
     def _collect_matnet(self, parent_item):
         """

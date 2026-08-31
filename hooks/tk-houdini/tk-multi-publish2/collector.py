@@ -235,16 +235,15 @@ class HoudiniSessionCollector(HookBaseClass):
         name = "{}: {}    task: {}".format(entity_type, entity_name, task_name)
         out_movie = hou.expandString("$HIP/flipbook/$HIPNAME.mp4")
 
-        # ensure the movies dir exists
-        movies_dir = os.path.dirname(out_movie)
-        if not os.path.exists(movies_dir):
+        if not os.path.isfile(out_movie):
             return
 
+        movies_dir = os.path.dirname(out_movie)
         self.logger.info(
             "Processing movies folder: %s" % (movies_dir,),
             extra={"action_show_folder": {"path": movies_dir}},
         )
-        
+
         # allow the base class to collect and create the item. it knows how
         # to handle movie files
         item = super(HoudiniSessionCollector, self)._collect_file(

@@ -472,14 +472,14 @@ def get_primary_storage(sg):
     Query the ShotGrid LocalStorage named 'primary'.
     """
 
-    result = sg.find(
+    result = sg.find_one(
         "LocalStorage",
         [
-            ["name", "is", PRIMARY_STORAGE_NAME],
+            ["code", "is", PRIMARY_STORAGE_NAME],
         ],
         [
             "id",
-            "name",
+            "code",
             "windows_path",
             "linux_path",
             "mac_path",
@@ -500,7 +500,7 @@ def get_primary_storage(sg):
             )
         )
 
-    return result[0]
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -648,7 +648,7 @@ def setup_primary_storage_dirmap(
         print(
             "Maya dirmap configured for ShotGrid LocalStorage '{}'. "
             "Current OS: {}".format(
-                storage["name"],
+                storage["code"],
                 current_key,
             )
         )

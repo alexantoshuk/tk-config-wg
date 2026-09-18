@@ -379,3 +379,278 @@ def fbx_camera_export(camera, filename, start=1, end=1, preroll=0, samples=2):
         cmds.delete(decompose_matrix)
         cmds.delete(fetched_cam)
         # cmds.delete(tmp_group)
+
+
+
+
+# maya_path_remap.py
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+PRIMARY_STORAGE_NAME = "primary"
+
+
+# ---------------------------------------------------------------------------
+# OS helpers
+# ---------------------------------------------------------------------------
+
+def get_current_storage_key():
+    """
+    Return the ShotGrid LocalStorage field corresponding to the current OS.
+    """
+
+    if sys.platform.startswith("win"):
+        return "windows_path"
+
+    if sys.platform == "darwin":
+        return "mac_path"
+
+    if sys.platform.startswith("linux"):
+        return "linux_path"
+
+    raise RuntimeError(
+        "Unsupported operating system: {}".format(sys.platform)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Path helpers
+# ---------------------------------------------------------------------------
+
+def normalize_path(path):
+    """
+    Normalize a ShotGrid storage path for Maya dirmap.
+
+    Maya dirmap expects absolute paths with forward slashes.
+    """
+
+    if not path:
+        return None
+
+    path = path.strip()
+    path = path.replace("\\", "/")
+
+    # Do not remove the slash from "/" itself.
+    if path != "/":
+        path = path.rstrip("/")
+
+    return path
+
+
+def is_valid_absolute_path(path):
+    """
+    Basic validation for a LocalStorage root.
+    """
+
+    if not path:
+        return False
+
+    path = normalize_path(path)
+
+    # Windows drive path: C:/foo
+    if len(path) >= 3 and path[1] == ":" and path[2] == "/":
+        return True
+
+    # UNC path: //server/share
+    if path.startswith("//"):
+        return True
+
+    # Unix / macOS
+    if path.startswith("/"):
+        return True
+
+    return False
+
+
+# ---------------------------------------------------------------------------
+# ShotGrid
+# ---------------------------------------------------------------------------
+
+def get_primary_storage(sg):
+    """
+    Query the ShotGrid LocalStorage named 'primary'.
+    """
+
+    result = sg.find(
+        "LocalStorage",
+        [
+            ["name", "is", PRIMARY_STORAGE_NAME],
+        ],
+        [
+            "id",
+            "name",
+            "windows_path",
+            "linux_path",
+            "mac_path",
+        ],
+    )
+
+    if not result:
+        raise RuntimeError(
+            "ShotGrid LocalStorage '{}' was not found.".format(
+                PRIMARY_STORAGE_NAME
+            )
+        )
+
+    if len(result) > 1:
+        raise RuntimeError(
+            "More than one LocalStorage named '{}' was found.".format(
+                PRIMARY_STORAGE_NAME
+            )
+        )
+
+    return result[0]
+
+
+# ---------------------------------------------------------------------------
+# Maya dirmap
+# ---------------------------------------------------------------------------
+
+def clear_existing_mappings():
+    """
+    Remove existing Maya dirmap mappings.
+
+    This is optional but makes the operation deterministic if the function
+    is called more than once during the same Maya session.
+    """
+
+    try:
+        mappings = cmds.dirmap(q=True, gam=True)
+    except Exception:
+        mappings = []
+
+    if not mappings:
+        return
+
+    # Maya returns:
+    #
+    # [source1, destination1, source2, destination2, ...]
+    #
+    for i in range(0, len(mappings), 2):
+        source = mappings[i]
+
+        try:
+            cmds.dirmap(um=source)
+        except Exception as exc:
+            print(
+                "WARNING: Failed to remove dirmap '{}': {}".format(
+                    source,
+                    exc,
+                )
+            )
+
+
+def setup_primary_storage_dirmap(
+    sg,
+    clear_existing=False,
+    verbose=True,
+):
+    """
+    Configure Maya dirmap for ShotGrid primary LocalStorage.
+
+    Every defined OS-specific path except the current OS is mapped to the
+    current OS path.
+
+    Example:
+
+        Linux:
+            /mnt/projects  <- P:/projects
+            /mnt/projects  <- /Volumes/projects
+
+        Windows:
+            P:/projects <- /mnt/projects
+            P:/projects <- /Volumes/projects
+
+        macOS:
+            /Volumes/projects <- /mnt/projects
+            /Volumes/projects <- P:/projects
+    """
+
+    current_key = get_current_storage_key()
+
+    storage = get_primary_storage(sg)
+
+    destination = normalize_path(
+        storage.get(current_key)
+    )
+
+    if not destination:
+        raise RuntimeError(
+            "Primary LocalStorage has no path for current OS: {}".format(
+                current_key
+            )
+        )
+
+    if not is_valid_absolute_path(destination):
+        raise RuntimeError(
+            "Invalid destination path for {}: {!r}".format(
+                current_key,
+                destination,
+            )
+        )
+
+    if clear_existing:
+        clear_existing_mappings()
+
+    cmds.dirmap(en=True)
+
+    mappings = []
+
+    for source_key in (
+        "windows_path",
+        "linux_path",
+        "mac_path",
+    ):
+        if source_key == current_key:
+            continue
+
+        source = normalize_path(
+            storage.get(source_key)
+        )
+
+        if not source:
+            continue
+
+        if not is_valid_absolute_path(source):
+            print(
+                "WARNING: Ignoring invalid {} path: {!r}".format(
+                    source_key,
+                    source,
+                )
+            )
+            continue
+
+        if source == destination:
+            continue
+
+        # Do not install duplicate mappings.
+        if (source, destination) in mappings:
+            continue
+
+        cmds.dirmap(
+            m=(source, destination)
+        )
+
+        mappings.append(
+            (source, destination)
+        )
+
+        if verbose:
+            print(
+                "Maya dirmap: {} -> {}".format(
+                    source,
+                    destination,
+                )
+            )
+
+    if verbose:
+        print(
+            "Maya dirmap configured for ShotGrid LocalStorage '{}'. "
+            "Current OS: {}".format(
+                storage["name"],
+                current_key,
+            )
+        )
+
+    return mappings

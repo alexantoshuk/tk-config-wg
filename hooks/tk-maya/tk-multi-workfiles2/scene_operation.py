@@ -16,10 +16,14 @@ except:
 
 import sgtk
 import common_utils
+import maya_utils
 from sgtk.platform.qt import QtGui
 
 HookClass = sgtk.get_hook_baseclass()
 
+
+engine = sgtk.platform.current_engine()
+maya_utils.setup_primary_storage_dirmap(engine.shotgun)
 
 class SceneOperation(HookClass):
     """

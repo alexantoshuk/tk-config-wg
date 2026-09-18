@@ -493,13 +493,6 @@ def get_primary_storage(sg):
             )
         )
 
-    if len(result) > 1:
-        raise RuntimeError(
-            "More than one LocalStorage named '{}' was found.".format(
-                PRIMARY_STORAGE_NAME
-            )
-        )
-
     return result
 
 
